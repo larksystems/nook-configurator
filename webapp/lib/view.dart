@@ -77,6 +77,9 @@ class DashboardView {
   List<AvailablePackagesViewPartial> availablepackages;
 
   DivElement dashboardViewElement;
+  DivElement _projectActionsContainer;
+  AnchorElement _conversationsLink;
+  AnchorElement _oversightDashboardLink;
   DivElement activePacakgesContainer;
   DivElement availablePackagesContainer;
 
@@ -84,10 +87,24 @@ class DashboardView {
     activePackages = [];
     availablepackages = [];
     dashboardViewElement = new DivElement()..classes.add('dashboard');
+    _projectActionsContainer = new DivElement()
+      ..classes.add('dashboard__project-actions');
+    _conversationsLink = new AnchorElement()
+      ..classes.add('dashboard__project-actions-link')
+      ..text = "Go to conversations"
+      ..href = "#";
+    _oversightDashboardLink = new AnchorElement()
+      ..classes.add('dashboard__project-actions-link')
+      ..text = "Go to oversight dashboard"
+      ..href = "#";
     activePacakgesContainer = new DivElement()
       ..classes.add('active-packages');
     availablePackagesContainer = new DivElement()
       ..classes.add('available-packages');
+
+    _projectActionsContainer.append(_conversationsLink);
+    _projectActionsContainer.append(_oversightDashboardLink);
+    dashboardViewElement.append(_projectActionsContainer);
     dashboardViewElement.append(activePacakgesContainer);
     dashboardViewElement.append(availablePackagesContainer);
   }
@@ -132,7 +149,7 @@ class ActivePackagesViewPartial {
       ..classes.add('active-packages__package-action')
       ..text = 'Conversations'
       ..href = '#';
-    _configureAction= new AnchorElement()
+    _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
       ..href = '#';
