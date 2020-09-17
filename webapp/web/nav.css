@@ -1,0 +1,15 @@
+.nav {
+    display: flex;
+    flex-flow: row nowrap;
+    width: 100%;
+
+}
+
+.nav__app-logo {
+    width: 120px;
+}
+
+.nav__project-title {
+    font-size: 1.2rem;
+    margin: 0em 20em;
+}
