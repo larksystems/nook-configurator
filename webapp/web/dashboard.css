@@ -1,0 +1,65 @@
+.dashboard {}
+
+.active-packages {}
+
+.active-packages__package {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: .5rem;
+    border-color: rgba(0, 0, 0, .1);
+    padding: 6px;
+    margin-bottom: 20px;
+    width: 80%
+}
+
+.active-packages__package-actions {
+    margin-bottom: 10px;
+}
+
+.active-packages__package-action {
+    padding: 11px;
+}
+
+.available-packages {
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+}
+
+.available-packages__package {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: .5rem;
+    border-color: rgba(0, 0, 0, .1);
+    padding: 6px;
+    margin-bottom: 20px;
+}
+
+.available-packages__add-package {
+    border-style: solid;
+    border-width: 1px;
+    border-width: .125rem;
+    align-self: center;
+    width: 25%;
+    text-align: center;
+    height: 60px;
+    margin: auto;
+    line-height: 60px;
+}
+
+.available-packages__add-package:hover {
+    cursor: pointer;
+}
+
+.available-packages__add-package-link {
+    color: #000000;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+.available-packages__package-description {
+    flex-basis: 70%;
+}
