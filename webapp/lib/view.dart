@@ -60,7 +60,7 @@ class ContentView {
           ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
         new AvailablePackagesViewPartial('Information Service',
           'Answer people\'s questions',
-          ['Needs: Response protocol, Labelling ream, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
+          ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
         new AvailablePackagesViewPartial('Bulk Message',
           'Send set of people a once off message',
           ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
