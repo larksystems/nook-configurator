@@ -66,8 +66,8 @@ class ContentView {
           ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
       ]);
 
-      dashboardView.pupolateActivePackages();
-      dashboardView.pupolateAvailablePackages();
+      dashboardView.renderActivePackages();
+      dashboardView.renderAvailablePackages();
       contentElement.append(dashboardView.dashboardViewElement);
   }
 }
@@ -80,7 +80,7 @@ class DashboardView {
   DivElement _projectActionsContainer;
   AnchorElement _conversationsLink;
   AnchorElement _oversightDashboardLink;
-  DivElement activePacakgesContainer;
+  DivElement activePackagesContainer;
   DivElement availablePackagesContainer;
 
   DashboardView() {
@@ -97,7 +97,7 @@ class DashboardView {
       ..classes.add('dashboard__project-actions-link')
       ..text = "Go to oversight dashboard"
       ..href = "#";
-    activePacakgesContainer = new DivElement()
+    activePackagesContainer = new DivElement()
       ..classes.add('active-packages');
     availablePackagesContainer = new DivElement()
       ..classes.add('available-packages');
@@ -105,19 +105,19 @@ class DashboardView {
     _projectActionsContainer.append(_conversationsLink);
     _projectActionsContainer.append(_oversightDashboardLink);
     dashboardViewElement.append(_projectActionsContainer);
-    dashboardViewElement.append(activePacakgesContainer);
+    dashboardViewElement.append(activePackagesContainer);
     dashboardViewElement.append(availablePackagesContainer);
   }
 
-  void pupolateActivePackages() {
-    activePacakgesContainer.children.clear();
-    activePacakgesContainer.append(new HeadingElement.h1()..text = "Active packages");
+  void renderActivePackages() {
+    activePackagesContainer.children.clear();
+    activePackagesContainer.append(new HeadingElement.h1()..text = "Active packages");
     if (activePackages.isNotEmpty) {
-      activePackages.forEach((package) => activePacakgesContainer.append(package.packageElement));
+      activePackages.forEach((package) => activePackagesContainer.append(package.packageElement));
     }
   }
 
-  void pupolateAvailablePackages() {
+  void renderAvailablePackages() {
     availablePackagesContainer.children.clear();
     availablePackagesContainer.append(new HeadingElement.h1()..text = "Add a package");
     if (activePackages.isNotEmpty) {
