@@ -9,7 +9,7 @@ body {
     align-items: stretch;
     width: 100%;
     min-height: 100%;
-    overflow: hidden;
+    overflow-y: scroll;
 }
 
 header {
@@ -25,6 +25,4 @@ header {
 main {
     flex: 1 1 auto;
     display: flex;
-    justify-content: center;
-    overflow: scroll;
 }
