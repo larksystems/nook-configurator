@@ -15,17 +15,17 @@ ContentView contentView;
 void init() {
   navView = new NavView();
   contentView = new ContentView();
-  headerElement.append(navView.navElement);
-  mainElement.append(contentView.contentElement);
+  headerElement.append(navView.navViewElement);
+  mainElement.append(contentView.contentViewElement);
 }
 
 class NavView {
-DivElement navElement;
-DivElement appLogos;
-DivElement projectTitle;
+  DivElement navViewElement;
+  DivElement appLogos;
+  DivElement projectTitle;
 
   NavView() {
-    navElement = new DivElement()
+    navViewElement = new DivElement()
       ..classes.add('nav');
     appLogos = new DivElement()
       ..classes.add('nav__app-logo');
@@ -35,20 +35,24 @@ DivElement projectTitle;
 
     appLogos.append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
 
-    navElement.append(appLogos);
-    navElement.append(projectTitle);
+    navViewElement.append(appLogos);
+    navViewElement.append(projectTitle);
   }
 }
 
 class ContentView {
-  DivElement contentElement;
+  DivElement contentViewElement;
+  DashboardView dashboardView;
+  ConfigurationView configurationView;
 
   ContentView() {
-    contentElement = new DivElement()..classes.add('content');
+    contentViewElement = new DivElement()..classes.add('content');
+    dashboardView = new DashboardView();
+    configurationView = new ConfigurationView();
   }
 
   void renderView(DivElement view) {
-    contentElement.append(view);
+    contentViewElement.append(view);
   }
 }
 
@@ -170,5 +174,81 @@ class AvailablePackagesViewPartial {
     _descriptionContaner.append(_descriptionDetails);
     packageElement.append(_addPackageLinkContainer);
     packageElement.append(_descriptionContaner);
+  }
+}
+
+class ConfigurationView {
+  DivElement configurationViewElement;
+  DivElement _tagsContainer;
+  ConfigurationViewTagListPartial tagList;
+  ConfigurationViewTagResponsesPartial tagResponses;
+
+  Map<String, Map<String, List<String>>> tagData;
+
+  ConfigurationView() {
+    configurationViewElement = new DivElement()
+      ..classes.add('configure-package');
+    _tagsContainer = new DivElement()
+      ..classes.add('configure-package__tags');
+    tagList = new ConfigurationViewTagListPartial();
+    tagResponses = new ConfigurationViewTagResponsesPartial();
+
+    _tagsContainer.append(tagList.tagListElement);
+    _tagsContainer.append(tagResponses.tagResponsesElement);
+    configurationViewElement.append(HeadingElement.h1()
+      ..classes.add('configure-package-title')
+      ..text = "Configure Package");
+    configurationViewElement.append(_tagsContainer);
+  }
+}
+
+class ConfigurationViewTagListPartial {
+  Element tagListElement;
+
+  ConfigurationViewTagListPartial() {
+    tagListElement = new Element.ul()
+      ..classes.add('configure-package__tags-list');
+  }
+
+  void renderTagList(List<String> tags) {
+    tagListElement.children.clear();
+    tags.forEach((tag) {
+      var tagItem = new Element.li()
+        ..classes.add('configure-package__tag-item')
+        ..text = tag;
+      tagItem.onClick.listen((event) => event.preventDefault());
+      tagListElement.append(tagItem);
+    });
+  }
+}
+
+class ConfigurationViewTagResponsesPartial {
+  DivElement tagResponsesElement;
+  DivElement _tagResponsesHeader;
+  DivElement _tagResponsesBody;
+
+  ConfigurationViewTagResponsesPartial() {
+    tagResponsesElement = new DivElement()
+      ..classes.add('configure-package__tag-responses');
+    _tagResponsesHeader = new DivElement()
+      ..classes.add('configure-package__tag-responses-header');
+    _tagResponsesBody = new DivElement()
+      ..classes.add('configure-package__tag-responses-body');
+  }
+
+  void renderResponses(Map<String, List<String>> responses) {
+    responses.forEach((k, v) {
+      _tagResponsesHeader.append(new HeadingElement.h5()..text = k);
+      var body = new DivElement()..classes.add('configure-package__tag-responses-body-items');
+      for (var response in v) {
+        body.append(new ParagraphElement()
+        ..classes.add('configure-package__tag-responses-body-item')
+        ..text = response);
+      }
+      _tagResponsesBody.append(body);
+    });
+
+    tagResponsesElement.append(_tagResponsesHeader);
+    tagResponsesElement.append(_tagResponsesBody);
   }
 }
