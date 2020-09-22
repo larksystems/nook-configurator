@@ -1,7 +1,5 @@
 library controller;
 
-import 'dart:async';
-
 import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
@@ -160,8 +158,7 @@ String selectedConfigurationTag ;
 enum UIAction {
   userSignedIn,
   goToConfigurator,
-  configurationTagSelected,
-  addNewConfigurationTagResponseLangauge
+  configurationTagSelected
 }
 
 class Data {}
@@ -215,10 +212,6 @@ void command(UIAction action, Data actionData) {
       ConfigurationData data = actionData;
       retrieveTagResponse(data.selectedTag);
       break;
-    case UIAction.addNewConfigurationTagResponseLangauge:
-      ConfigurationData data = actionData;
-      addNewConfigurationTagResponseLangauge(data.languageToAdd);
-      break;
   }
 }
 
@@ -232,12 +225,4 @@ void retrieveTagResponse(String selectedTag) {
   selectedConfigurationTag = selectedTag;
   var filteredTagResponses = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
   view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.values.toList().first);
-}
-
-void addNewConfigurationTagResponseLangauge(String languageToAdd) {
-  if (selectedConfigurationTag == null) {
-    selectedConfigurationTag = tagData.keys.toList().first;
-  }
-  tagData[selectedConfigurationTag][languageToAdd] = [];
-  retrieveTagResponse(selectedConfigurationTag);
 }
