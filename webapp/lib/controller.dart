@@ -159,6 +159,7 @@ String selectedConfigurationTag ;
 
 enum UIAction {
   userSignedIn,
+  goToConfigurator,
   configurationTagSelected,
   addNewConfigurationTagResponseLangauge
 }
@@ -197,12 +198,7 @@ void initUI() {
     ]);
   view.contentView.dashboardView.renderActivePackages();
   view.contentView.dashboardView.renderAvailablePackages();
-
-  //view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
-
-  view.contentView.configurationView.tagList.renderTagList(tagData.keys.toList());
-  view.contentView.configurationView.tagResponses.renderResponses(tagData.values.toList().first);
-  view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
+  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
 }
 
 void command(UIAction action, Data actionData) {
@@ -211,6 +207,9 @@ void command(UIAction action, Data actionData) {
 
     case UIAction.userSignedIn:
       initUI();
+      break;
+    case UIAction.goToConfigurator:
+      showConfigurationView();
       break;
     case UIAction.configurationTagSelected:
       ConfigurationData data = actionData;
@@ -221,6 +220,12 @@ void command(UIAction action, Data actionData) {
       addNewConfigurationTagResponseLangauge(data.languageToAdd);
       break;
   }
+}
+
+void showConfigurationView() {
+  view.contentView.configurationView.tagList.renderTagList(tagData.keys.toList());
+  view.contentView.configurationView.tagResponses.renderResponses(tagData.values.toList().first);
+  view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
 void retrieveTagResponse(String selectedTag) {

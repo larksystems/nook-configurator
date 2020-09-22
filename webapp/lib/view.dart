@@ -52,6 +52,7 @@ class ContentView {
   }
 
   void renderView(DivElement view) {
+    contentViewElement.children.clear();
     contentViewElement.append(view);
   }
 }
@@ -136,7 +137,8 @@ class ActivePackagesViewPartial {
     _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
-      ..href = '#';
+      ..href = '#'
+      ..onClick.listen((event) => controller.command(controller.UIAction.goToConfigurator, null));
     _packageActionsContainer.append(_dashboardAction);
     _packageActionsContainer.append(_conversationsAction);
     _packageActionsContainer.append(_configureAction);
