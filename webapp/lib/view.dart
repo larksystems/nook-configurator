@@ -222,6 +222,37 @@ class ConfigurationViewTagListPartial {
       });
       tagListElement.append(tagItem);
     });
+    tagListElement.append(
+      new ButtonElement()
+        ..classes.add('configure-package__button-add-tag-action')
+        ..text = '+'
+        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.addtitionalTagData.keys.toList())))
+    );
+  }
+
+  DivElement addTagDropDown(List<String> tags) {
+    var addTagModal = new DivElement()
+      ..classes.add('configure-package__response-add-tag-modal');
+    addTagModal.append(
+      HeadingElement.h6()
+      ..classes.add('configure-package__response-add-tag-modal-heading')
+      ..text = 'Select new tag to add');
+    var tagOptions = new SelectElement()
+      ..classes.add('configure-package__response-add-tag-modal-dropdown')
+      ..onChange.listen((event) {
+        var selectedOption = (event.currentTarget as SelectElement).value;
+        controller.command(controller.UIAction.addConfigurationTag, new controller.ConfigurationData(tagToAdd: selectedOption));
+        if(tagListElement.children.last is DivElement) tagListElement.children.removeLast();
+      });
+    tagOptions.add(new OptionElement()..text = '--Select Tag--', false);
+    tags.forEach((tag) {
+      var option = new OptionElement()
+        ..text = tag
+        ..value = tag;
+      tagOptions.add(option, false);
+    });
+    addTagModal.append(tagOptions);
+    return addTagModal;
   }
 }
 

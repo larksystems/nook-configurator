@@ -151,6 +151,57 @@ Map<String, Map<String, List<String>>> tagData = {
   }
   };
 
+  Map<String, Map<String, List<String>>> addtitionalTagData = {
+    'addtional Tag 1': {
+    'English' : [
+      '[addtional Tag 1 - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[addtional Tag 1 - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 1 - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'addtional Tag 2': {
+    'English' : [
+      '[addtional Tag 2 - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[addtional Tag 2 - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 2 - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'addtional Tag 3': {
+    'English' : [
+      '[addtional Tag 3 - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[addtional Tag 3- Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[addtional Tag 3 - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  }
+  };
+
 Logger log = new Logger('controller.dart');
 
 String selectedConfigurationTag ;
@@ -158,15 +209,16 @@ String selectedConfigurationTag ;
 enum UIAction {
   userSignedIn,
   goToConfigurator,
-  configurationTagSelected
+  configurationTagSelected,
+  addConfigurationTag
 }
 
 class Data {}
 
 class ConfigurationData extends Data {
   String selectedTag;
-  String languageToAdd;
-  ConfigurationData({this.selectedTag, this.languageToAdd});
+  String tagToAdd;
+  ConfigurationData({this.selectedTag, this.tagToAdd});
 }
 
 void init() async {
@@ -195,7 +247,8 @@ void initUI() {
     ]);
   view.contentView.dashboardView.renderActivePackages();
   view.contentView.dashboardView.renderAvailablePackages();
-  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
+  //view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
+  showConfigurationView();
 }
 
 void command(UIAction action, Data actionData) {
@@ -210,7 +263,11 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.configurationTagSelected:
       ConfigurationData data = actionData;
-      retrieveTagResponse(data.selectedTag);
+      retrieveConfigurationTagResponse(data.selectedTag);
+      break;
+    case UIAction.addConfigurationTag:
+      ConfigurationData data = actionData;
+      addNewConfigurationTag(data.tagToAdd);
       break;
   }
 }
@@ -221,8 +278,13 @@ void showConfigurationView() {
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
-void retrieveTagResponse(String selectedTag) {
+void retrieveConfigurationTagResponse(String selectedTag) {
   selectedConfigurationTag = selectedTag;
   var filteredTagResponses = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
   view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.values.toList().first);
+}
+
+void addNewConfigurationTag (String tagToAdd) {
+  tagData[tagToAdd] = addtitionalTagData[tagToAdd];
+  showConfigurationView();
 }

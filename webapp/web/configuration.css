@@ -17,6 +17,7 @@
     flex-basis: 60%;
     border-color: #ddd;
     border-style: solid;
+    border-bottom-style: none;
     border-radius: .5rem;
     border-width: 1px;
     padding: 0px;
@@ -30,13 +31,58 @@
     padding: 10px;
 }
 
-.configure-package__tag-item:last-child {
-    border-bottom-style: none;
-  }
-
 .configure-package__tag-item:hover {
     cursor: pointer;
     background-color: #b5b3b3;
+}
+
+.configure-package__button-add-tag-action {
+    margin: 5px;
+    background-color: #a7a4a4;
+    border: none;
+    border-radius: 100%;
+    outline: none;
+    height: 30px;
+    width: 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.configure-package__button-add-tag-action:hover {
+    cursor: pointer;
+}
+
+.configure-package__response-add-tag-modal-heading {
+    margin: 0px 0px 6px 6px;
+}
+
+.configure-package__response-add-tag-modal {
+    width: 275px;
+    position: absolute;
+    margin: -35px 0px 0px 45px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: .5rem;
+    background-color: #efefef;
+}
+
+.configure-package__response-add-tag-modal-dropdown {
+    border-radius: .5rem;
+    width: 100%;
+}
+
+.configure-package__response-add-tag-modal-close-button {
+    position: absolute;
+    border: none;
+    outline: none;
+    bottom: 32px;
+    right: -3px;
+    background: none;
+    font-size: .8rem;
+}
+
+.configure-package__response-add-tag-modal-close-button:hover {
+    cursor: pointer;
 }
 
 .configure-package__tag-responses {
@@ -55,64 +101,6 @@
     flex-direction: row;
     justify-content: space-around;
     position: relative;
-}
-
-.configure-package__button-add-response-action {
-    align-self: flex-end;
-    margin-bottom: 15px;
-    margin-right: -125px;
-    background-color: #a7a4a4;
-    border: none;
-    border-radius: 100%;
-    outline: none;
-    height: 30px;
-    width: 30px;
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
-.configure-package__button-add-response-action:hover {
-    cursor: pointer;
-}
-
-.configure-package__response-add-language-modal {
-    position: absolute;
-    bottom: 70px;
-    right: 0px;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: .5rem;
-    background-color: #efefef;
-}
-
-.configure-package__response-add-language-modal-input {
-    border-radius: .5rem;
-}
-
-.configure-package__response-add-language-modal-input-error {
-    border-color: #ff0000;
-}
-
-.configure-package__response-add-language-modal-add-button {
-    margin-left: 5px;
-}
-
-.configure-package__response-add-language-modal-add-button:hover {
-    cursor: pointer;
-}
-
-.configure-package__response-add-language-modal-close-button {
-    position: absolute;
-    border: none;
-    outline: none;
-    bottom: 32px;
-    right: -3px;
-    background: none;
-    font-size: .8rem;
-}
-
-.configure-package__response-add-language-modal-close-button:hover {
-    cursor: pointer;
 }
 
 .configure-package__tag-responses-body {
