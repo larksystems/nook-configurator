@@ -118,3 +118,7 @@
 .configure-package__tag-responses-body-item {
     overflow-y: scroll;
 }
+
+.configure-package__tag-responses-body-item:focus {
+    outline-color: #ddd;
+}

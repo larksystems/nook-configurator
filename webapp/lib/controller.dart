@@ -210,15 +210,22 @@ enum UIAction {
   userSignedIn,
   goToConfigurator,
   configurationTagSelected,
-  addConfigurationTag
+  addConfigurationTag,
+  editTagResponse
 }
 
 class Data {}
 
-class ConfigurationData extends Data {
+class ConfigurationTagData extends Data {
   String selectedTag;
   String tagToAdd;
-  ConfigurationData({this.selectedTag, this.tagToAdd});
+  ConfigurationTagData({this.selectedTag, this.tagToAdd});
+}
+
+class ConfigurationResponseData extends Data {
+  String parentTag;
+  Map<String, String> editedResponse;
+  ConfigurationResponseData({this.parentTag, this.editedResponse});
 }
 
 void init() async {
@@ -262,29 +269,39 @@ void command(UIAction action, Data actionData) {
       showConfigurationView();
       break;
     case UIAction.configurationTagSelected:
-      ConfigurationData data = actionData;
+      ConfigurationTagData data = actionData;
       retrieveConfigurationTagResponse(data.selectedTag);
       break;
     case UIAction.addConfigurationTag:
-      ConfigurationData data = actionData;
+      ConfigurationTagData data = actionData;
       addNewConfigurationTag(data.tagToAdd);
+      break;
+    case UIAction.editTagResponse:
+      ConfigurationResponseData data = actionData;
+      updateEditedTagResponse(data.parentTag, data.editedResponse);
       break;
   }
 }
 
 void showConfigurationView() {
   view.contentView.configurationView.tagList.renderTagList(tagData.keys.toList());
-  view.contentView.configurationView.tagResponses.renderResponses(tagData.values.toList().first);
+  view.contentView.configurationView.tagResponses.renderResponses(tagData.keys.toList().first, tagData.values.toList().first);
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
 void retrieveConfigurationTagResponse(String selectedTag) {
   selectedConfigurationTag = selectedTag;
   var filteredTagResponses = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
-  view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.values.toList().first);
+  view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.keys.toList().first, filteredTagResponses.values.toList().first);
 }
 
 void addNewConfigurationTag (String tagToAdd) {
   tagData[tagToAdd] = addtitionalTagData[tagToAdd];
   showConfigurationView();
+}
+
+void updateEditedTagResponse(String parentTag, Map<String, String> editedResponse) {
+  var language = editedResponse['language'];
+  var index = int.parse(editedResponse['index']);
+  tagData[parentTag][language][index]= editedResponse['text'];
 }

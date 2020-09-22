@@ -1,4 +1,5 @@
 import 'dart:html';
+import 'dart:web_gl';
 
 import 'logger.dart';
 import 'controller.dart' as controller;
@@ -218,7 +219,7 @@ class ConfigurationViewTagListPartial {
         ..text = tag;
       tagItem.onClick.listen((event) {
         String selectedTag = (event.target as Element).text.trim();
-        controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationData(selectedTag: selectedTag));
+        controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag));
       });
       tagListElement.append(tagItem);
     });
@@ -241,7 +242,7 @@ class ConfigurationViewTagListPartial {
       ..classes.add('configure-package__response-add-tag-modal-dropdown')
       ..onChange.listen((event) {
         var selectedOption = (event.currentTarget as SelectElement).value;
-        controller.command(controller.UIAction.addConfigurationTag, new controller.ConfigurationData(tagToAdd: selectedOption));
+        controller.command(controller.UIAction.addConfigurationTag, new controller.ConfigurationTagData(tagToAdd: selectedOption));
         if(tagListElement.children.last is DivElement) tagListElement.children.removeLast();
       });
     tagOptions.add(new OptionElement()..text = '--Select Tag--', false);
@@ -270,16 +271,26 @@ class ConfigurationViewTagResponsesPartial {
       ..classes.add('configure-package__tag-responses-body');
   }
 
-  void renderResponses(Map<String, List<String>> responses) {
+  void renderResponses(String tag, Map<String, List<String>> responses) {
     _tagResponsesHeader.children.clear();
     _tagResponsesBody.children.clear();
-    responses.forEach((k, v) {
-      _tagResponsesHeader.append(new HeadingElement.h5()..text = k);
+    responses.forEach((language, responseSet) {
+      _tagResponsesHeader.append(new HeadingElement.h5()..text = language);
       var body = new DivElement()..classes.add('configure-package__tag-responses-body-items');
-      for (var response in v) {
+      int responseIndex = 0;
+      for (var response in responseSet) {
         body.append(new ParagraphElement()
         ..classes.add('configure-package__tag-responses-body-item')
-        ..text = response);
+        ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$responseIndex'})
+        ..text = response
+        ..onBlur.listen((event) {
+          var reponseElement = (event.currentTarget as Element);
+          var parentTag = reponseElement.attributes['parent-tag'];
+          var editedResponse = {'index': reponseElement.attributes['index'], 'language': reponseElement.attributes['language'] ,'text': reponseElement.text};
+          controller.command(controller.UIAction.editTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, editedResponse: editedResponse));
+        })
+        );
+        responseIndex++;
       }
       _tagResponsesBody.append(body);
     });
