@@ -255,8 +255,7 @@ void initUI() {
     ]);
   view.contentView.dashboardView.renderActivePackages();
   view.contentView.dashboardView.renderAvailablePackages();
-  //view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
-  showConfigurationView();
+  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
 }
 
 void command(UIAction action, Data actionData) {
