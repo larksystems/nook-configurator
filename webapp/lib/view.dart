@@ -183,8 +183,6 @@ class ConfigurationView {
   ConfigurationViewTagListPartial tagList;
   ConfigurationViewTagResponsesPartial tagResponses;
 
-  Map<String, Map<String, List<String>>> tagData;
-
   ConfigurationView() {
     configurationViewElement = new DivElement()
       ..classes.add('configure-package');
@@ -216,7 +214,10 @@ class ConfigurationViewTagListPartial {
       var tagItem = new Element.li()
         ..classes.add('configure-package__tag-item')
         ..text = tag;
-      tagItem.onClick.listen((event) => event.preventDefault());
+      tagItem.onClick.listen((event) {
+        String selectedTag = (event.target as Element).text.trim();
+        controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationData(selectedTag: selectedTag));
+      });
       tagListElement.append(tagItem);
     });
   }
@@ -237,6 +238,8 @@ class ConfigurationViewTagResponsesPartial {
   }
 
   void renderResponses(Map<String, List<String>> responses) {
+    _tagResponsesHeader.children.clear();
+    _tagResponsesBody.children.clear();
     responses.forEach((k, v) {
       _tagResponsesHeader.append(new HeadingElement.h5()..text = k);
       var body = new DivElement()..classes.add('configure-package__tag-responses-body-items');
@@ -247,6 +250,44 @@ class ConfigurationViewTagResponsesPartial {
       }
       _tagResponsesBody.append(body);
     });
+    _tagResponsesHeader.append(
+      new ButtonElement()
+        ..classes.add('configure-package__button-add-response-action')
+        ..text = '+'
+        ..onClick.listen((event) {
+        //if (_tagResponsesHeader.children.length > 3) _tagResponsesHeader.children.removeLast();
+        _tagResponsesHeader.append(
+          new DivElement()
+            ..classes.add('configure-package__response-add-language-modal')
+            ..append(
+              new InputElement()
+                ..classes.add('configure-package__response-add-language-modal-input')
+                ..type = 'text'
+                ..placeholder = 'Enter a new language'
+            )
+            ..append(
+              new ButtonElement()
+                ..classes.add('configure-package__response-add-language-modal-add-button')
+                ..text = 'Add'
+                ..onClick.listen((event) {
+                  var langageInputElement = ((event.target as Element).previousElementSibling as InputElement);
+                  if (langageInputElement.value.isNotEmpty) {
+                    controller.command(controller.UIAction.addNewConfigurationTagResponseLangauge,
+                      new controller.ConfigurationData(languageToAdd: langageInputElement.value));
+                    _tagResponsesHeader.children.removeLast();
+                  } else {
+                    langageInputElement.classes.add('configure-package__response-add-language-modal-input-error');
+                  }
+                })
+            )
+            ..append(
+              new ButtonElement()
+                ..classes.add('configure-package__response-add-language-modal-close-button')
+                ..text = 'x'
+                ..onClick.listen((event) => _tagResponsesHeader.children.removeLast())
+            )
+        );
+        }));
 
     tagResponsesElement.append(_tagResponsesHeader);
     tagResponsesElement.append(_tagResponsesBody);

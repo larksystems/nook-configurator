@@ -6,13 +6,170 @@ import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
 
+Map<String, Map<String, List<String>>> tagData = {
+  'denial': {
+    'English' : [
+      '[denial - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[denial - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[denial - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'rumour/stigma/misinfo': {
+    'English' : [
+      '[rumour/stigma/misinfo - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[rumour/stigma/misinfo - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - Somali SMS3] SMS3 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - Somali SMS4] SMS4 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - Somali SMS5] SMS5 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'rumour/stigma/misinfo - misinfo on status' : {
+    'English' : [
+      '[rumour/stigma/misinfo - misinfo on status - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[rumour/stigma/misinfo - misinfo on status - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - misinfo on status - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'rumour/stigma/misinfo - negative stigma/anger': {
+    'English' : [
+      '[rumour/stigma/misinfo - negative stigma/anger - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[rumour/stigma/misinfo - negative stigma/anger - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - Somali SMS2], Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - Somali SMS3], Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - Somali SMS4], Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - negative stigma/anger - Somali SMS5], Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'rumour/stigma/misinfo - origin': {
+    'English' : [
+      '[rumour/stigma/misinfo - origin - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[rumour/stigma/misinfo - origin - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - origin - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'rumour/stigma/misinfo - the virus discriminates': {
+    'English' : [
+      '[rumour/stigma/misinfo - the virus discriminates - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[rumour/stigma/misinfo - the virus discriminates - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - the virus discriminates - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'rumour/stigma/misinfo - treatment/cure/remedy': {
+    'English' : [
+      '[rumour/stigma/misinfo - treatment/cure/remedy - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[rumour/stigma/misinfo - treatment/cure/remedy - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - treatment/cure/remedy - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'rumour/stigma/misinfo - virus description': {
+    'English' : [
+      '[rumour/stigma/misinfo - virus description - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[rumour/stigma/misinfo - virus description - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[rumour/stigma/misinfo - virus description - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  },
+  'somali update': {
+    'English' : [
+      '[somali update - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ],
+    'Somali': [
+      '[somali update - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
+      '[somali update - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
+    ]
+  }
+  };
+
 Logger log = new Logger('controller.dart');
+
+String selectedConfigurationTag ;
 
 enum UIAction {
   userSignedIn,
+  configurationTagSelected,
+  addNewConfigurationTagResponseLangauge
 }
 
 class Data {}
+
+class ConfigurationData extends Data {
+  String selectedTag;
+  String languageToAdd;
+  ConfigurationData({this.selectedTag, this.languageToAdd});
+}
 
 void init() async {
   view.init();
@@ -43,175 +200,10 @@ void initUI() {
 
   //view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
 
-  view.contentView.configurationView.tagData = {
-    'denial': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'rumour/stigma/misinfo': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'rumour/stigma/misinfo - misinfo on status' : {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'rumour/stigma/misinfo - negative stigma/anger': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'rumour/stigma/misinfo - origin': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'rumour/stigma/misinfo - the virus discriminates': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'rumour/stigma/misinfo - treatment/cure/remedy': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'rumour/stigma/misinfo - virus description': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    },
-    'somali update': {
-      'English' : [
-        'English SMS1',
-        'English SMS2',
-        'English SMS3',
-        'English SMS4',
-        'English SMS5'
-      ],
-      'Somali': [
-        'Somali SMS1',
-        'Somali SMS2',
-        'Somali SMS3',
-        'Somali SMS4',
-        'Somali SMS5'
-      ]
-    }
-  };
-
-  view.contentView.configurationView.tagList.renderTagList(view.contentView.configurationView.tagData.keys.toList());
-  Map<String, List<String>> tableData = {
-      'English' : [
-        'English SMS1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in. Ut eu sagittis sem. Nulla molestie est eleifend nisl semper vehicula. Aliquam volutpat faucibus nunc, et eleifend ex blandit quis. Etiam mollis justo.',
-        'English SMS2 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in. Ut eu sagittis sem. Nulla molestie est eleifend nisl semper vehicula. Aliquam volutpat faucibus nunc, et eleifend ex blandit quis. Etiam mollis justo.',
-        'English SMS3 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in. Ut eu sagittis sem. Nulla molestie est eleifend nisl semper vehicula. Aliquam volutpat faucibus nunc, et eleifend ex blandit quis. Etiam mollis justo.',
-        'English SMS4 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in. Ut eu sagittis sem. Nulla molestie est eleifend nisl semper vehicula. Aliquam volutpat faucibus nunc, et eleifend ex blandit quis. Etiam mollis justo.',
-        'English SMS5 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in. Ut eu sagittis sem. Nulla molestie est eleifend nisl semper vehicula. Aliquam volutpat faucibus nunc, et eleifend ex blandit quis. Etiam mollis justo.'
-      ],
-      'Somali': [
-        'Somali SMS1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-        'Somali SMS2 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-        'Somali SMS3 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-        'Somali SMS4 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-        'Somali SMS5 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
-      ]
-    };
-  view.contentView.configurationView.tagResponses.renderResponses(tableData);
+  view.contentView.configurationView.tagList.renderTagList(tagData.keys.toList());
+  view.contentView.configurationView.tagResponses.renderResponses(tagData.values.toList().first);
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
-
-
 
 void command(UIAction action, Data actionData) {
   log.verbose('command => $action : $actionData');
@@ -220,5 +212,27 @@ void command(UIAction action, Data actionData) {
     case UIAction.userSignedIn:
       initUI();
       break;
+    case UIAction.configurationTagSelected:
+      ConfigurationData data = actionData;
+      retrieveTagResponse(data.selectedTag);
+      break;
+    case UIAction.addNewConfigurationTagResponseLangauge:
+      ConfigurationData data = actionData;
+      addNewConfigurationTagResponseLangauge(data.languageToAdd);
+      break;
   }
+}
+
+void retrieveTagResponse(String selectedTag) {
+  selectedConfigurationTag = selectedTag;
+  var filteredTagResponses = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
+  view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.values.toList().first);
+}
+
+void addNewConfigurationTagResponseLangauge(String languageToAdd) {
+  if (selectedConfigurationTag == null) {
+    selectedConfigurationTag = tagData.keys.toList().first;
+  }
+  tagData[selectedConfigurationTag][languageToAdd] = [];
+  retrieveTagResponse(selectedConfigurationTag);
 }

@@ -15,6 +15,7 @@
 
 .configure-package__tags-list {
     flex-basis: 60%;
+    border-color: #ddd;
     border-style: solid;
     border-radius: .5rem;
     border-width: 1px;
@@ -23,13 +24,10 @@
 
 .configure-package__tag-item {
     list-style-type: none;
+    border-color: #ddd;
     border-bottom-style: solid;
     border-width: 1px;
     padding: 10px;
-}
-
-.configure-package__tag-item:hover {
-    background-color: #6e6e6e;
 }
 
 .configure-package__tag-item:last-child {
@@ -38,11 +36,13 @@
 
 .configure-package__tag-item:hover {
     cursor: pointer;
+    background-color: #b5b3b3;
 }
 
 .configure-package__tag-responses {
     display: flex;
     flex-direction: column;
+    border-color: #ddd;
     border-style: solid;
     border-radius: .5rem;
     border-width: 1px;
@@ -54,6 +54,65 @@
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+    position: relative;
+}
+
+.configure-package__button-add-response-action {
+    align-self: flex-end;
+    margin-bottom: 15px;
+    margin-right: -125px;
+    background-color: #a7a4a4;
+    border: none;
+    border-radius: 100%;
+    outline: none;
+    height: 30px;
+    width: 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.configure-package__button-add-response-action:hover {
+    cursor: pointer;
+}
+
+.configure-package__response-add-language-modal {
+    position: absolute;
+    bottom: 70px;
+    right: 0px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: .5rem;
+    background-color: #efefef;
+}
+
+.configure-package__response-add-language-modal-input {
+    border-radius: .5rem;
+}
+
+.configure-package__response-add-language-modal-input-error {
+    border-color: #ff0000;
+}
+
+.configure-package__response-add-language-modal-add-button {
+    margin-left: 5px;
+}
+
+.configure-package__response-add-language-modal-add-button:hover {
+    cursor: pointer;
+}
+
+.configure-package__response-add-language-modal-close-button {
+    position: absolute;
+    border: none;
+    outline: none;
+    bottom: 32px;
+    right: -3px;
+    background: none;
+    font-size: .8rem;
+}
+
+.configure-package__response-add-language-modal-close-button:hover {
+    cursor: pointer;
 }
 
 .configure-package__tag-responses-body {
@@ -69,6 +128,5 @@
 }
 
 .configure-package__tag-responses-body-item {
-    height: 110px;
     overflow-y: scroll;
 }
