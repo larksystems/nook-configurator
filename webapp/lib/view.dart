@@ -218,11 +218,14 @@ class ConfigurationViewTagListPartial {
         ..classes.add('configure-package__tag-item')
         ..text = tag;
       tagItem.onClick.listen((event) {
-        String selectedTag = (event.target as Element).text.trim();
-        controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag));
+        var selectedTag = (event.target as Element);
+        controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag.text.trim()));
+        tagListElement.children.forEach((t) => t.classes.remove('configure-package__tag-item-active'));
+        selectedTag.classes.add('configure-package__tag-item-active');
       });
       tagListElement.append(tagItem);
     });
+    tagListElement.children.first.classes.add('configure-package__tag-item-active');
     tagListElement.append(
       new ButtonElement()
         ..classes.add('configure-package__button-add-tag-action')
@@ -272,6 +275,7 @@ class ConfigurationViewTagResponsesPartial {
   }
 
   void renderResponses(String tag, Map<String, List<String>> responses) {
+    tagResponsesElement.children.clear();
     _tagResponsesHeader.children.clear();
     _tagResponsesBody.children.clear();
     responses.forEach((language, responseSet) {
@@ -287,7 +291,7 @@ class ConfigurationViewTagResponsesPartial {
           var reponseElement = (event.currentTarget as Element);
           var parentTag = reponseElement.attributes['parent-tag'];
           var editedResponse = {'index': reponseElement.attributes['index'], 'language': reponseElement.attributes['language'] ,'text': reponseElement.text};
-          controller.command(controller.UIAction.editTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, editedResponse: editedResponse));
+          controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, editedResponse: editedResponse));
         })
         );
         responseIndex++;
@@ -296,5 +300,14 @@ class ConfigurationViewTagResponsesPartial {
     });
     tagResponsesElement.append(_tagResponsesHeader);
     tagResponsesElement.append(_tagResponsesBody);
+    tagResponsesElement.append(
+      new ButtonElement()
+          ..classes.add('configure-package__button-add-responses-action')
+          ..text = '+'
+          ..onClick.listen((event) {
+            controller.command(controller.UIAction.addConfigurationResponseEntries, new controller.ConfigurationResponseData(parentTag: tag));
+            window.scrollTo(0, mainElement.scrollHeight);
+          })
+    );
   }
 }

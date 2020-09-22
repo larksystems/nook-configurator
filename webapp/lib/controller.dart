@@ -211,7 +211,8 @@ enum UIAction {
   goToConfigurator,
   configurationTagSelected,
   addConfigurationTag,
-  editTagResponse
+  editConfigurationTagResponse,
+  addConfigurationResponseEntries
 }
 
 class Data {}
@@ -276,9 +277,13 @@ void command(UIAction action, Data actionData) {
       ConfigurationTagData data = actionData;
       addNewConfigurationTag(data.tagToAdd);
       break;
-    case UIAction.editTagResponse:
+    case UIAction.editConfigurationTagResponse:
       ConfigurationResponseData data = actionData;
       updateEditedTagResponse(data.parentTag, data.editedResponse);
+      break;
+    case UIAction.addConfigurationResponseEntries:
+      ConfigurationResponseData data = actionData;
+      addConfigurationResponseEntries(data.parentTag);
       break;
   }
 }
@@ -295,7 +300,7 @@ void retrieveConfigurationTagResponse(String selectedTag) {
   view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.keys.toList().first, filteredTagResponses.values.toList().first);
 }
 
-void addNewConfigurationTag (String tagToAdd) {
+void addNewConfigurationTag(String tagToAdd) {
   tagData[tagToAdd] = addtitionalTagData[tagToAdd];
   showConfigurationView();
 }
@@ -304,4 +309,9 @@ void updateEditedTagResponse(String parentTag, Map<String, String> editedRespons
   var language = editedResponse['language'];
   var index = int.parse(editedResponse['index']);
   tagData[parentTag][language][index]= editedResponse['text'];
+}
+
+void addConfigurationResponseEntries(String parentTag) {
+  tagData[parentTag].forEach((k, v) => v.add(''));
+  retrieveConfigurationTagResponse(parentTag);
 }

@@ -31,6 +31,10 @@
     padding: 10px;
 }
 
+.configure-package__tag-item-active {
+    background-color: #b5b3b3;
+}
+
 .configure-package__tag-item:hover {
     cursor: pointer;
     background-color: #b5b3b3;
@@ -117,8 +121,29 @@
 
 .configure-package__tag-responses-body-item {
     overflow-y: scroll;
+    min-width: 340px;
+    min-height: 64px;
+    border: 1px solid #ddd;
+    border-radius: .5rem;
+    padding: 2px;
 }
 
 .configure-package__tag-responses-body-item:focus {
     outline-color: #ddd;
+}
+
+.configure-package__button-add-responses-action {
+    margin: 5px;
+    background-color: #a7a4a4;
+    border: none;
+    border-radius: 100%;
+    outline: none;
+    height: 30px;
+    width: 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.configure-package__button-add-responses-action:hover {
+    cursor: pointer;
 }
