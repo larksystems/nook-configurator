@@ -278,7 +278,7 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.editConfigurationTagResponse:
       ConfigurationResponseData data = actionData;
-      updateEditedTagResponse(data.parentTag, data.editedResponse);
+      updateEditedConfigurationTagResponse(data.parentTag, data.editedResponse);
       break;
     case UIAction.addConfigurationResponseEntries:
       ConfigurationResponseData data = actionData;
@@ -304,7 +304,7 @@ void addNewConfigurationTag(String tagToAdd) {
   showConfigurationView();
 }
 
-void updateEditedTagResponse(String parentTag, Map<String, String> editedResponse) {
+void updateEditedConfigurationTagResponse(String parentTag, Map<String, String> editedResponse) {
   var language = editedResponse['language'];
   var index = int.parse(editedResponse['index']);
   tagData[parentTag][language][index]= editedResponse['text'];
