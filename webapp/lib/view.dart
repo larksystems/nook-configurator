@@ -197,7 +197,7 @@ class ConfigurationView {
     _tagsContainer.append(tagList.tagListElement);
     _tagsContainer.append(tagResponses.tagResponsesElement);
     configurationViewElement.append(HeadingElement.h1()
-      ..classes.add('configure-package-title')
+      ..classes.add('configure-package__title')
       ..text = "Configure Package");
     configurationViewElement.append(_tagsContainer);
   }
