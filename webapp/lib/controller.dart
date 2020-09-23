@@ -225,8 +225,10 @@ class ConfigurationTagData extends Data {
 
 class ConfigurationResponseData extends Data {
   String parentTag;
-  Map<String, String> editedResponse;
-  ConfigurationResponseData({this.parentTag, this.editedResponse});
+  String language;
+  String text;
+  int index;
+  ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
 }
 
 void init() async {
@@ -278,7 +280,7 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.editConfigurationTagResponse:
       ConfigurationResponseData data = actionData;
-      updateEditedConfigurationTagResponse(data.parentTag, data.editedResponse);
+      updateEditedConfigurationTagResponse(data.parentTag, data.index, data.language, data.text);
       break;
     case UIAction.addConfigurationResponseEntries:
       ConfigurationResponseData data = actionData;
@@ -304,10 +306,8 @@ void addNewConfigurationTag(String tagToAdd) {
   showConfigurationView();
 }
 
-void updateEditedConfigurationTagResponse(String parentTag, Map<String, String> editedResponse) {
-  var language = editedResponse['language'];
-  var index = int.parse(editedResponse['index']);
-  tagData[parentTag][language][index]= editedResponse['text'];
+void updateEditedConfigurationTagResponse(String parentTag, int index, String language, String text) {
+  tagData[parentTag][language][index]= text;
 }
 
 void addConfigurationResponseEntries(String parentTag) {

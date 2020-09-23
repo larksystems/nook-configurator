@@ -285,16 +285,17 @@ class ConfigurationViewTagResponsesPartial {
         var response = responseSet[i];
         body.append(new ParagraphElement()
         ..classes.add('configure-package__tag-responses-body-item')
-        ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$responseIndex'})
+        ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
         ..text = response
         ..onBlur.listen((event) {
           var reponseElement = (event.currentTarget as Element);
           var parentTag = reponseElement.attributes['parent-tag'];
-          var editedResponse = {'index': reponseElement.attributes['index'], 'language': reponseElement.attributes['language'] ,'text': reponseElement.text};
-          controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, editedResponse: editedResponse));
+          var index = int.parse(reponseElement.attributes['index']);
+          var language = reponseElement.attributes['language'];
+          var text = reponseElement.text;
+          controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
         })
         );
-        responseIndex++;
       }
       _tagResponsesBody.append(body);
     });
