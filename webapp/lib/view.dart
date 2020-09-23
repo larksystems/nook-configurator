@@ -271,7 +271,7 @@ class ConfigurationViewTagResponsesPartial {
     _tagResponsesHeader = new DivElement()
       ..classes.add('configure-package__tag-responses-header');
     _tagResponsesBody = new DivElement()
-      ..classes.add('configure-package__tag-responses-body');
+      ..classes.add('configure-package__tag-responses-content');
   }
 
   void renderResponses(String tag, Map<String, List<String>> responses) {
@@ -280,11 +280,11 @@ class ConfigurationViewTagResponsesPartial {
     _tagResponsesBody.children.clear();
     responses.forEach((language, responseSet) {
       _tagResponsesHeader.append(new HeadingElement.h5()..text = language);
-      var body = new DivElement()..classes.add('configure-package__tag-responses-body-items');
+      var items = new DivElement()..classes.add('configure-package__tag-responses-items');
       for (int i = 0; i < responseSet.length; i++) {
         var response = responseSet[i];
-        body.append(new ParagraphElement()
-        ..classes.add('configure-package__tag-responses-body-item')
+        items.append(new ParagraphElement()
+        ..classes.add('configure-package__tag-responses-item')
         ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
         ..text = response
         ..onBlur.listen((event) {
@@ -297,7 +297,7 @@ class ConfigurationViewTagResponsesPartial {
         })
         );
       }
-      _tagResponsesBody.append(body);
+      _tagResponsesBody.append(items);
     });
     tagResponsesElement.append(_tagResponsesHeader);
     tagResponsesElement.append(_tagResponsesBody);
