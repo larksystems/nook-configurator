@@ -281,8 +281,8 @@ class ConfigurationViewTagResponsesPartial {
     responses.forEach((language, responseSet) {
       _tagResponsesHeader.append(new HeadingElement.h5()..text = language);
       var body = new DivElement()..classes.add('configure-package__tag-responses-body-items');
-      int responseIndex = 0;
-      for (var response in responseSet) {
+      for (int i = 0; i < responseSet.length; i++) {
+        var response = responseSet[i];
         body.append(new ParagraphElement()
         ..classes.add('configure-package__tag-responses-body-item')
         ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$responseIndex'})
