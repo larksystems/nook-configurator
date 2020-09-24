@@ -155,8 +155,6 @@ Map<String, Map<String, List<String>>> tagData = {
 
 Logger log = new Logger('controller.dart');
 
-String selectedConfigurationTag ;
-
 enum UIAction {
   userSignedIn,
   goToConfigurator,
@@ -240,23 +238,30 @@ void command(UIAction action, Data actionData) {
   }
 }
 
-void showConfigurationView() {
-  view.contentView.configurationView.tagList.renderTagList(tagData.keys.toList());
-  view.contentView.configurationView.tagResponses.renderResponses(tagData.keys.toList().first, tagData.values.toList().first);
+void showConfigurationView([String selectedTag, Map<String, Map<String, List<String>>> filteredTagData]) {
+  Map<String, bool> tags = new Map.fromIterable(tagData.keys.toList(),
+    key: (tag) => tag,
+    value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
+  if (selectedTag == null) tags[tags.keys.toList()[0]] = true;
+  view.contentView.configurationView.tagList.renderTagList(tags);
+  if (filteredTagData != null) {
+    view.contentView.configurationView.tagResponses.renderResponses(filteredTagData.keys.toList().first, filteredTagData.values.toList().first);
+  } else {
+    view.contentView.configurationView.tagResponses.renderResponses(tagData.keys.toList().first, tagData.values.toList().first);
+  }
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
 void retrieveConfigurationTagResponse(String selectedTag) {
-  selectedConfigurationTag = selectedTag;
-  var filteredTagResponses = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
-  view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.keys.toList().first, filteredTagResponses.values.toList().first);
+  var filteredTagData = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
+  showConfigurationView(selectedTag, filteredTagData);
 }
 
 void addNewConfigurationTag(String tagToAdd) {
   var availableLanguages =  tagData.values.toList().map((d) => d.keys.toList()).expand((d) => d).toSet();
   tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
   addtitionalTags.remove(tagToAdd);
-  showConfigurationView();
+  retrieveConfigurationTagResponse(tagToAdd);
 }
 
 void updateEditedConfigurationTagResponse(String parentTag, int index, String language, String text) {

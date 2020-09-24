@@ -211,21 +211,19 @@ class ConfigurationViewTagListPartial {
       ..classes.add('configure-package__tags-list');
   }
 
-  void renderTagList(List<String> tags) {
+  void renderTagList(Map<String, bool> tags) {
     tagListElement.children.clear();
-    tags.forEach((tag) {
+    tags.forEach((tag, state) {
       var tagItem = new Element.li()
         ..classes.add('configure-package__tag-item')
         ..text = tag;
       tagItem.onClick.listen((event) {
         var selectedTag = (event.target as Element);
         controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag.text.trim()));
-        tagListElement.children.forEach((t) => t.classes.remove('configure-package__tag-item-active'));
-        selectedTag.classes.add('configure-package__tag-item-active');
       });
       tagListElement.append(tagItem);
     });
-    tagListElement.children.first.classes.add('configure-package__tag-item-active');
+    toggleTagsSelectedState(tags);
     tagListElement.append(
       new ButtonElement()
         ..classes.add('configure-package__button-add-tag-action')
@@ -262,6 +260,12 @@ class ConfigurationViewTagListPartial {
     });
     addTagModal.append(tagOptions);
     return addTagModal;
+  }
+
+  void toggleTagsSelectedState(Map<String, bool> tags) {
+    tagListElement.children.forEach((tag) {
+      tag.classes.toggle('configure-package__tag-item-active', tags[tag.text]);
+    });
   }
 }
 
