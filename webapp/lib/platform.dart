@@ -12,6 +12,8 @@ Logger log = new Logger('platform.dart');
 firestore.Firestore _firestoreInstance;
 
 init() async {
+  controller.command(controller.UIAction.userSignedIn, null);
+  return; // TODO Remove when we finally incoorporate firebase
   await platform_constants.init();
 
   firebase.initializeApp(
