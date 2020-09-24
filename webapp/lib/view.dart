@@ -230,7 +230,7 @@ class ConfigurationViewTagListPartial {
       new ButtonElement()
         ..classes.add('configure-package__button-add-tag-action')
         ..text = '+'
-        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.addtitionalTagData)))
+        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.addtitionalTags.toList())))
     );
   }
 
@@ -239,8 +239,13 @@ class ConfigurationViewTagListPartial {
       ..classes.add('configure-package__response-add-tag-modal');
     addTagModal.append(
       HeadingElement.h6()
-      ..classes.add('configure-package__response-add-tag-modal-heading')
-      ..text = 'Select new tag to add');
+        ..classes.add('configure-package__response-add-tag-modal-heading')
+        ..text = 'Select new tag to add');
+    addTagModal.append(
+      new ButtonElement()
+        ..classes.add('configure-package__response-add-tag-modal-close-button')
+        ..text = 'x'
+        ..onClick.listen((_) => addTagModal.remove()));
     var tagOptions = new SelectElement()
       ..classes.add('configure-package__response-add-tag-modal-dropdown')
       ..onChange.listen((event) {
@@ -248,7 +253,7 @@ class ConfigurationViewTagListPartial {
         controller.command(controller.UIAction.addConfigurationTag, new controller.ConfigurationTagData(tagToAdd: selectedOption));
         if(tagListElement.children.last is DivElement) tagListElement.children.removeLast();
       });
-    tagOptions.add(new OptionElement()..text = '--Select Tag--', false);
+    tagOptions.add(new OptionElement()..text = '-', false);
     tags.forEach((tag) {
       var option = new OptionElement()
         ..text = tag

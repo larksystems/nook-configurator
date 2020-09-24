@@ -151,7 +151,7 @@ Map<String, Map<String, List<String>>> tagData = {
   }
   };
 
-  List<String> addtitionalTagData = ['addtional Tag 1', 'addtional Tag 2', 'addtional Tag 3', 'addtional Tag 4', 'addtional Tag 5'];
+  Set<String> addtitionalTags = {'addtional Tag 1', 'addtional Tag 2', 'addtional Tag 3', 'addtional Tag 4', 'addtional Tag 5'};
 
 Logger log = new Logger('controller.dart');
 
@@ -255,6 +255,7 @@ void retrieveConfigurationTagResponse(String selectedTag) {
 void addNewConfigurationTag(String tagToAdd) {
   var availableLanguages =  tagData.values.toList().map((d) => d.keys.toList()).expand((d) => d).toSet();
   tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
+  addtitionalTags.remove(tagToAdd);
   showConfigurationView();
 }
 
