@@ -230,7 +230,7 @@ class ConfigurationViewTagListPartial {
       new ButtonElement()
         ..classes.add('configure-package__button-add-tag-action')
         ..text = '+'
-        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.addtitionalTagData.keys.toList())))
+        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.addtitionalTagData)))
     );
   }
 
