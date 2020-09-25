@@ -233,7 +233,7 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.addConfigurationResponseEntries:
       ConfigurationResponseData data = actionData;
-      addConfigurationResponseEntries(data.parentTag);
+      addConfigurationResponseEntries(data.parentTag, data.language, data.text);
       break;
   }
 }
@@ -268,7 +268,17 @@ void updateEditedConfigurationTagResponse(String parentTag, int index, String la
   tagData[parentTag][language][index]= text;
 }
 
-void addConfigurationResponseEntries(String parentTag) {
-  tagData[parentTag].forEach((k, v) => v.add(''));
+void addConfigurationResponseEntries(String parentTag, [String language, String text]) {
+  if (language != null && text != null) {
+    var pos = tagData[parentTag][language].indexOf('');
+    if (pos > -1) {
+      tagData[parentTag][language][pos] = text;
+    } else {
+      tagData[parentTag].forEach((k, v) => v.add(''));
+      tagData[parentTag][language].last = text;
+    }
+  } else {
+    tagData[parentTag].forEach((k, v) => v.add(''));
+  }
   retrieveConfigurationTagResponse(parentTag);
 }

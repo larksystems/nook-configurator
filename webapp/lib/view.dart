@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:html';
 import 'dart:web_gl';
 
@@ -221,6 +222,22 @@ class ConfigurationViewTagListPartial {
         var selectedTag = (event.target as Element);
         controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag.text.trim()));
       });
+      tagItem.onDragEnter.listen((event) => event.preventDefault());
+      tagItem.onDragOver.listen((event) {
+        event.preventDefault();
+        (event.target as Element).style.backgroundColor = '#b5b3b3';
+      });
+      tagItem.onDragLeave.listen((event) => (event.target as Element).style.backgroundColor = '#ffffff');
+      tagItem.onDrop.listen((event) {
+        event.preventDefault();
+        var dropTarget = (event.target as Element);
+        dropTarget.style.backgroundColor = '#ffffff';
+        if (dropTarget.classes.contains('configure-package__tag-item')) {
+          var responseData = jsonDecode(event.dataTransfer.getData("Text"));
+          controller.command(controller.UIAction.addConfigurationResponseEntries,
+            new controller.ConfigurationResponseData(parentTag: dropTarget.text, language: responseData['language'], text: responseData['text']));
+        }
+      });
       tagListElement.append(tagItem);
     });
     toggleTagsSelectedState(tags);
@@ -296,6 +313,7 @@ class ConfigurationViewTagResponsesPartial {
         ..classes.add('configure-package__tag-responses-item')
         ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
         ..text = response
+        ..draggable = true
         ..onBlur.listen((event) {
           var reponseElement = (event.currentTarget as Element);
           var parentTag = reponseElement.attributes['parent-tag'];
@@ -304,6 +322,13 @@ class ConfigurationViewTagResponsesPartial {
           var text = reponseElement.text;
           controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
         })
+        ..onDragStart.listen((event) {
+          var responseElement = event.target as Element;
+          var payload = {'language': responseElement.attributes['language'], 'text': responseElement.text};
+          event.dataTransfer.setData("Text", jsonEncode(payload));
+          responseElement.style.backgroundColor = '#b5b3b3';
+        })
+        ..onDragEnd.listen((event) => (event.target as Element).style.backgroundColor = '#ffffff')
         );
       }
       _tagResponsesBody.append(items);

@@ -128,6 +128,10 @@
     padding: 2px;
 }
 
+.configure-package__tag-responses-item:active {
+    cursor: move;
+}
+
 .configure-package__tag-responses-item:focus {
     outline-color: #ddd;
 }
