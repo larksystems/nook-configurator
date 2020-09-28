@@ -280,5 +280,4 @@ void addConfigurationResponseEntries(String parentTag, [String language, String 
   } else {
     tagData[parentTag].forEach((k, v) => v.add(''));
   }
-  retrieveConfigurationTagResponse(parentTag);
 }

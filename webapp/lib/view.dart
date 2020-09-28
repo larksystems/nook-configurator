@@ -234,8 +234,10 @@ class ConfigurationViewTagListPartial {
         dropTarget.style.backgroundColor = '#ffffff';
         if (dropTarget.classes.contains('configure-package__tag-item')) {
           var responseData = jsonDecode(event.dataTransfer.getData("Text"));
-          controller.command(controller.UIAction.addConfigurationResponseEntries,
-            new controller.ConfigurationResponseData(parentTag: dropTarget.text, language: responseData['language'], text: responseData['text']));
+          responseData.forEach((language, text) {
+            controller.command(controller.UIAction.addConfigurationResponseEntries,
+              new controller.ConfigurationResponseData(parentTag: dropTarget.text, language: language, text: text));
+          });
         }
       });
       tagListElement.append(tagItem);
@@ -324,17 +326,18 @@ class ConfigurationViewTagResponsesPartial {
                 var language = reponseElement.attributes['language'];
                 var text = reponseElement.text;
                 controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
-              })
-              ..onDragStart.listen((event) {
-                var responseElement = event.target as Element;
-                var payload = {'language': responseElement.attributes['language'], 'text': responseElement.text};
-                event.dataTransfer.setData("Text", jsonEncode(payload));
-                responseElement.style.backgroundColor = '#b5b3b3';
-              })
-              ..onDragEnd.listen((event) => (event.target as Element).style.backgroundColor = '#ffffff')
-          );
+          }));
         if (language == 'English') {
-          item.insertAdjacentElement('afterbegin', new DivElement()..classes.addAll(['configure-package__tag-responses-item-drag', 'configure-package__tag-responses-item-drag-$i']));
+          item.insertAdjacentElement('afterbegin', new DivElement()
+            ..draggable = true
+            ..classes.addAll(['configure-package__tag-responses-item-drag', 'configure-package__tag-responses-item-drag-$i']))
+            ..onDragStart.listen((event) {
+              (event.target as Element).style.cursor = 'grabbing';
+              var payload = {};
+              document.querySelectorAll('p[index="$i"]').forEach((el) => payload[el.attributes['language']] = el.text);
+              event.dataTransfer.setData("Text", jsonEncode(payload));
+            })
+            ..onDragEnd.listen((event) => (event.target as Element).style.cursor = 'grab');
         }
         items.append(item);
       }
