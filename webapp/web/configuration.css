@@ -119,6 +119,27 @@
     padding: 0px 30px;
 }
 
+.configure-package__tag-responses-item-row {
+    position: relative;
+}
+
+.configure-package__tag-responses-item-drag {
+    background-color: #ddd;
+    width: 12px;
+    height: 60px;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+}
+
+.configure-package__tag-responses-item-drag-0 {
+    top: 20px;
+}
+
+.configure-package__tag-responses-item-drag:hover {
+    cursor: grab;
+}
+
 .configure-package__tag-responses-item {
     overflow-y: scroll;
     min-width: 340px;

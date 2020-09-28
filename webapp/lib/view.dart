@@ -309,27 +309,34 @@ class ConfigurationViewTagResponsesPartial {
       var items = new DivElement()..classes.add('configure-package__tag-responses-items');
       for (int i = 0; i < responseSet.length; i++) {
         var response = responseSet[i];
-        items.append(new ParagraphElement()
-        ..classes.add('configure-package__tag-responses-item')
-        ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
-        ..text = response
-        ..draggable = true
-        ..onBlur.listen((event) {
-          var reponseElement = (event.currentTarget as Element);
-          var parentTag = reponseElement.attributes['parent-tag'];
-          var index = int.parse(reponseElement.attributes['index']);
-          var language = reponseElement.attributes['language'];
-          var text = reponseElement.text;
-          controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
-        })
-        ..onDragStart.listen((event) {
-          var responseElement = event.target as Element;
-          var payload = {'language': responseElement.attributes['language'], 'text': responseElement.text};
-          event.dataTransfer.setData("Text", jsonEncode(payload));
-          responseElement.style.backgroundColor = '#b5b3b3';
-        })
-        ..onDragEnd.listen((event) => (event.target as Element).style.backgroundColor = '#ffffff')
-        );
+        var item = new SpanElement()
+          ..classes.add('configure-package__tag-responses-item-row')
+          ..append(
+            new ParagraphElement()
+              ..classes.add('configure-package__tag-responses-item')
+              ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
+              ..text = response
+              ..draggable = true
+              ..onBlur.listen((event) {
+                var reponseElement = (event.currentTarget as Element);
+                var parentTag = reponseElement.attributes['parent-tag'];
+                var index = int.parse(reponseElement.attributes['index']);
+                var language = reponseElement.attributes['language'];
+                var text = reponseElement.text;
+                controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
+              })
+              ..onDragStart.listen((event) {
+                var responseElement = event.target as Element;
+                var payload = {'language': responseElement.attributes['language'], 'text': responseElement.text};
+                event.dataTransfer.setData("Text", jsonEncode(payload));
+                responseElement.style.backgroundColor = '#b5b3b3';
+              })
+              ..onDragEnd.listen((event) => (event.target as Element).style.backgroundColor = '#ffffff')
+          );
+        if (language == 'English') {
+          item.insertAdjacentElement('afterbegin', new DivElement()..classes.addAll(['configure-package__tag-responses-item-drag', 'configure-package__tag-responses-item-drag-$i']));
+        }
+        items.append(item);
       }
       _tagResponsesBody.append(items);
     });
