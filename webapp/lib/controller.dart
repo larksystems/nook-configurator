@@ -98,8 +98,8 @@ List<String> get configurationReponseLanguageData => ['English', 'Somali'];
 
 Set<String> get configurationTags => {'addtional Tag 1', 'addtional Tag 2', 'addtional Tag 3', 'addtional Tag 4', 'addtional Tag 5'};
 
-Map<String, Map<String, List<String>>> get configurationData {
-  return {
+Map<String, Map<String, List<String>>> get configurationData =>
+  {
   'denial': {
     'English' : [
       '[denial - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
