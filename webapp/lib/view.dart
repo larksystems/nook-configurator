@@ -223,7 +223,7 @@ class ConfigurationViewTagListPartial {
         controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag.text.trim()));
       });
       tagItem.onDragEnter.listen((event) => event.preventDefault());
-      tagItem.onDragOver.listen((event) {
+      tagItem.onDragEnter.listen((event) {
         event.preventDefault();
         (event.target as Element).classes.add('configure-package__tag-item-active');
       });

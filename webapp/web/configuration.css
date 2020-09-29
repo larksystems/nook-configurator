@@ -136,7 +136,7 @@
     top: 20px;
 }
 
-.configure-package__tag-responses-item-drag:hover {
+.configure-package__tag-responses-item-drag-handle:hover {
     cursor: grab;
 }
 
