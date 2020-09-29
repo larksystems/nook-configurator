@@ -286,5 +286,5 @@ void addConfigurationResponseEntries(String parentTag, String language, String t
   } else {
     tagData[parentTag].forEach((k, v) => v.add(''));
   }
-  showConfigurationView(parentTag, tagData);d
+  showConfigurationView(parentTag, tagData);
 }
