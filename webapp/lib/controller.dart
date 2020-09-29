@@ -94,7 +94,7 @@ void command(UIAction action, Data actionData) {
   }
 }
 
-Set<String> get configurationReponseLanguageData { return {'English', 'Somali'};}
+List<String> get configurationReponseLanguageData => ['English', 'Somali'];
 
 Set<String> get configurationTags { return {'addtional Tag 1', 'addtional Tag 2', 'addtional Tag 3', 'addtional Tag 4', 'addtional Tag 5'};}
 
