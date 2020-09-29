@@ -129,7 +129,7 @@
     height: 60px;
     position: absolute;
     top: 6px;
-    right: 6px;
+    right: 15px;
 }
 
 .configure-package__tag-responses-item-drag-0 {
@@ -138,6 +138,10 @@
 
 .configure-package__tag-responses-item-drag:hover {
     cursor: grab;
+}
+
+.configure-package__tag-responses-item-dragging{
+    cursor: grabbing;
 }
 
 .configure-package__tag-responses-item {

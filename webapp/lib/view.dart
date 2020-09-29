@@ -225,13 +225,13 @@ class ConfigurationViewTagListPartial {
       tagItem.onDragEnter.listen((event) => event.preventDefault());
       tagItem.onDragOver.listen((event) {
         event.preventDefault();
-        (event.target as Element).style.backgroundColor = '#b5b3b3';
+        (event.target as Element).classes.add('configure-package__tag-item-active');
       });
-      tagItem.onDragLeave.listen((event) => (event.target as Element).style.backgroundColor = '#ffffff');
+      tagItem.onDragLeave.listen((event) => (event.target as Element).classes.remove('configure-package__tag-item-active'));
       tagItem.onDrop.listen((event) {
         event.preventDefault();
         var dropTarget = (event.target as Element);
-        dropTarget.style.backgroundColor = '#ffffff';
+        dropTarget.classes.remove('configure-package__tag-item-active');
         if (dropTarget.classes.contains('configure-package__tag-item')) {
           var responseData = jsonDecode(event.dataTransfer.getData("Text"));
           responseData.forEach((language, text) {
@@ -332,12 +332,12 @@ class ConfigurationViewTagResponsesPartial {
             ..draggable = true
             ..classes.addAll(['configure-package__tag-responses-item-drag', 'configure-package__tag-responses-item-drag-$i']))
             ..onDragStart.listen((event) {
-              (event.target as Element).style.cursor = 'grabbing';
+              (event.target as Element).classes.add('configure-package__tag-responses-item-dragging');
               var payload = {};
               document.querySelectorAll('p[index="$i"]').forEach((el) => payload[el.attributes['language']] = el.text);
               event.dataTransfer.setData("Text", jsonEncode(payload));
             })
-            ..onDragEnd.listen((event) => (event.target as Element).style.cursor = 'grab');
+            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('configure-package__tag-responses-item-dragging'));
         }
         items.append(item);
       }
