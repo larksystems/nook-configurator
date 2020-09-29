@@ -245,7 +245,6 @@ Map<String, Map<String, List<String>>> get configurationData =>
     ]
   }
   };
-}
 
 void fetchConfigurationData() {
   configurationTagData = configurationData;
