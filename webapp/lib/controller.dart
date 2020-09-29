@@ -4,7 +4,102 @@ import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
 
-Map<String, Map<String, List<String>>> tagData = {
+Logger log = new Logger('controller.dart');
+
+enum UIAction {
+  userSignedIn,
+  goToConfigurator,
+  configurationTagSelected,
+  addConfigurationTag,
+  editConfigurationTagResponse,
+  addConfigurationResponseEntries
+}
+
+class Data {}
+
+class ConfigurationTagData extends Data {
+  String selectedTag;
+  String tagToAdd;
+  ConfigurationTagData({this.selectedTag, this.tagToAdd});
+}
+
+class ConfigurationResponseData extends Data {
+  String parentTag;
+  String language;
+  String text;
+  int index;
+  ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
+}
+
+Map<String, Map<String, List<String>>> configurationTagData;
+Set<String> additionalConfigurationTags;
+Set<String> configurationResponseLanguages;
+
+void init() async {
+  view.init();
+  await platform.init();
+}
+
+void initUI() {
+  view.contentView.dashboardView.activePackages.addAll(
+    [
+      new view.ActivePackagesViewPartial('Urgent conversations'),
+      new view.ActivePackagesViewPartial('Open conversations'),
+      new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
+    ]);
+  view.contentView.dashboardView.availablepackages.addAll(
+    [
+      new view.AvailablePackagesViewPartial('Quick Poll',
+        'Ask a question with fixed answers',
+        ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
+      new view.AvailablePackagesViewPartial('Information Service',
+        'Answer people\'s questions',
+        ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
+      new view.AvailablePackagesViewPartial('Bulk Message',
+        'Send set of people a once off message',
+        ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
+    ]);
+  view.contentView.dashboardView.renderActivePackages();
+  view.contentView.dashboardView.renderAvailablePackages();
+  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
+}
+
+void command(UIAction action, Data actionData) {
+  log.verbose('command => $action : $actionData');
+  switch (action) {
+
+    case UIAction.userSignedIn:
+      initUI();
+      break;
+    case UIAction.goToConfigurator:
+      fetchConfigurationData();
+      showConfigurationView(null, configurationTagData);
+      break;
+    case UIAction.configurationTagSelected:
+      ConfigurationTagData data = actionData;
+      showConfigurationView(data.selectedTag, configurationTagData);
+      break;
+    case UIAction.addConfigurationTag:
+      ConfigurationTagData data = actionData;
+      addNewConfigurationTag(data.tagToAdd, configurationResponseLanguages, additionalConfigurationTags, configurationTagData);
+      break;
+    case UIAction.editConfigurationTagResponse:
+      ConfigurationResponseData data = actionData;
+      updateEditedConfigurationTagResponse(data.parentTag, data.index, data.language, data.text);
+      break;
+    case UIAction.addConfigurationResponseEntries:
+      ConfigurationResponseData data = actionData;
+      addConfigurationResponseEntries(data.parentTag, data.language, data.text, configurationTagData);
+      break;
+  }
+}
+
+Set<String> get configurationReponseLanguageData { return {'English', 'Somali'};}
+
+Set<String> get configurationTags { return {'addtional Tag 1', 'addtional Tag 2', 'addtional Tag 3', 'addtional Tag 4', 'addtional Tag 5'};}
+
+Map<String, Map<String, List<String>>> get configurationData {
+  return {
   'denial': {
     'English' : [
       '[denial - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
@@ -150,125 +245,36 @@ Map<String, Map<String, List<String>>> tagData = {
     ]
   }
   };
-
-  Set<String> addtitionalTags = {'addtional Tag 1', 'addtional Tag 2', 'addtional Tag 3', 'addtional Tag 4', 'addtional Tag 5'};
-
-Logger log = new Logger('controller.dart');
-
-enum UIAction {
-  userSignedIn,
-  goToConfigurator,
-  configurationTagSelected,
-  addConfigurationTag,
-  editConfigurationTagResponse,
-  addConfigurationResponseEntries
 }
 
-class Data {}
-
-class ConfigurationTagData extends Data {
-  String selectedTag;
-  String tagToAdd;
-  ConfigurationTagData({this.selectedTag, this.tagToAdd});
+void fetchConfigurationData() {
+  configurationTagData = configurationData;
+  additionalConfigurationTags = new Set.from(configurationTags);
+  configurationResponseLanguages = new Set.from(configurationReponseLanguageData);
 }
 
-class ConfigurationResponseData extends Data {
-  String parentTag;
-  String language;
-  String text;
-  int index;
-  ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
-}
-
-void init() async {
-  view.init();
-  await platform.init();
-}
-
-void initUI() {
-  view.contentView.dashboardView.activePackages.addAll(
-    [
-      new view.ActivePackagesViewPartial('Urgent conversations'),
-      new view.ActivePackagesViewPartial('Open conversations'),
-      new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
-    ]);
-  view.contentView.dashboardView.availablepackages.addAll(
-    [
-      new view.AvailablePackagesViewPartial('Quick Poll',
-        'Ask a question with fixed answers',
-        ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
-      new view.AvailablePackagesViewPartial('Information Service',
-        'Answer people\'s questions',
-        ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
-      new view.AvailablePackagesViewPartial('Bulk Message',
-        'Send set of people a once off message',
-        ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
-    ]);
-  view.contentView.dashboardView.renderActivePackages();
-  view.contentView.dashboardView.renderAvailablePackages();
-  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
-}
-
-void command(UIAction action, Data actionData) {
-  log.verbose('command => $action : $actionData');
-  switch (action) {
-
-    case UIAction.userSignedIn:
-      initUI();
-      break;
-    case UIAction.goToConfigurator:
-      showConfigurationView();
-      break;
-    case UIAction.configurationTagSelected:
-      ConfigurationTagData data = actionData;
-      retrieveConfigurationTagResponse(data.selectedTag);
-      break;
-    case UIAction.addConfigurationTag:
-      ConfigurationTagData data = actionData;
-      addNewConfigurationTag(data.tagToAdd);
-      break;
-    case UIAction.editConfigurationTagResponse:
-      ConfigurationResponseData data = actionData;
-      updateEditedConfigurationTagResponse(data.parentTag, data.index, data.language, data.text);
-      break;
-    case UIAction.addConfigurationResponseEntries:
-      ConfigurationResponseData data = actionData;
-      addConfigurationResponseEntries(data.parentTag, data.language, data.text);
-      break;
-  }
-}
-
-void showConfigurationView([String selectedTag, Map<String, Map<String, List<String>>> filteredTagData]) {
+void showConfigurationView(String selectedTag, Map<String, Map<String, List<String>>> tagData) {
+  if (selectedTag == null) selectedTag = tagData.keys.toList().first;
   Map<String, bool> tags = new Map.fromIterable(tagData.keys.toList(),
     key: (tag) => tag,
     value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
-  if (selectedTag == null) tags[tags.keys.toList()[0]] = true;
+  var selectedTagResponses = tagData[selectedTag];
   view.contentView.configurationView.tagList.renderTagList(tags);
-  if (filteredTagData != null) {
-    view.contentView.configurationView.tagResponses.renderResponses(filteredTagData.keys.toList().first, filteredTagData.values.toList().first);
-  } else {
-    view.contentView.configurationView.tagResponses.renderResponses(tagData.keys.toList().first, tagData.values.toList().first);
-  }
+  view.contentView.configurationView.tagResponses.renderResponses(selectedTag, selectedTagResponses);
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
-void retrieveConfigurationTagResponse(String selectedTag) {
-  var filteredTagData = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
-  showConfigurationView(selectedTag, filteredTagData);
-}
-
-void addNewConfigurationTag(String tagToAdd) {
-  var availableLanguages =  tagData.values.toList().map((d) => d.keys.toList()).expand((d) => d).toSet();
+void addNewConfigurationTag(String tagToAdd, Set<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {
   tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
-  addtitionalTags.remove(tagToAdd);
-  retrieveConfigurationTagResponse(tagToAdd);
+  additionalTags.remove(tagToAdd);
+  showConfigurationView(tagToAdd, tagData);
 }
 
 void updateEditedConfigurationTagResponse(String parentTag, int index, String language, String text) {
-  tagData[parentTag][language][index]= text;
+  configurationTagData[parentTag][language][index]= text;
 }
 
-void addConfigurationResponseEntries(String parentTag, [String language, String text]) {
+void addConfigurationResponseEntries(String parentTag, String language, String text, Map<String, Map<String, List<String>>> tagData) {
   if (language != null && text != null) {
     var pos = tagData[parentTag][language].indexOf('');
     if (pos > -1) {
@@ -280,4 +286,5 @@ void addConfigurationResponseEntries(String parentTag, [String language, String 
   } else {
     tagData[parentTag].forEach((k, v) => v.add(''));
   }
+  showConfigurationView(parentTag, tagData);d
 }
