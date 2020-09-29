@@ -33,7 +33,7 @@ class ConfigurationResponseData extends Data {
 
 Map<String, Map<String, List<String>>> configurationTagData;
 Set<String> additionalConfigurationTags;
-Set<String> configurationResponseLanguages;
+List<String> configurationResponseLanguages;
 
 void init() async {
   view.init();
@@ -73,7 +73,7 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.goToConfigurator:
       fetchConfigurationData();
-      showConfigurationView(null, configurationTagData);
+      showConfigurationView(configurationData.keys.toList().first, configurationTagData);
       break;
     case UIAction.configurationTagSelected:
       ConfigurationTagData data = actionData;
@@ -248,12 +248,11 @@ Map<String, Map<String, List<String>>> get configurationData =>
 
 void fetchConfigurationData() {
   configurationTagData = configurationData;
-  additionalConfigurationTags = new Set.from(configurationTags);
-  configurationResponseLanguages = new Set.from(configurationReponseLanguageData);
+  additionalConfigurationTags = configurationTags;
+  configurationResponseLanguages = configurationReponseLanguageData;
 }
 
 void showConfigurationView(String selectedTag, Map<String, Map<String, List<String>>> tagData) {
-  if (selectedTag == null) selectedTag = tagData.keys.toList().first;
   Map<String, bool> tags = new Map.fromIterable(tagData.keys.toList(),
     key: (tag) => tag,
     value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
@@ -263,7 +262,7 @@ void showConfigurationView(String selectedTag, Map<String, Map<String, List<Stri
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
-void addNewConfigurationTag(String tagToAdd, Set<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {
+void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {
   tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
   additionalTags.remove(tagToAdd);
   showConfigurationView(tagToAdd, tagData);
