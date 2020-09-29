@@ -140,7 +140,7 @@
     cursor: grab;
 }
 
-.configure-package__tag-responses-item-dragging{
+.configure-package__tag-responses-item-drag-handle-dragging {
     cursor: grabbing;
 }
 

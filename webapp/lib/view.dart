@@ -330,14 +330,14 @@ class ConfigurationViewTagResponsesPartial {
         if (language == 'English') {
           item.insertAdjacentElement('afterbegin', new DivElement()
             ..draggable = true
-            ..classes.addAll(['configure-package__tag-responses-item-drag', 'configure-package__tag-responses-item-drag-$i']))
+            ..classes.addAll(['configure-package__tag-responses-item-drag-handle', 'configure-package__tag-responses-item-drag-handle-$i']))
             ..onDragStart.listen((event) {
-              (event.target as Element).classes.add('configure-package__tag-responses-item-dragging');
+              (event.target as Element).classes.add('configure-package__tag-responses-item-drag-handle-dragging');
               var payload = {};
               document.querySelectorAll('p[index="$i"]').forEach((el) => payload[el.attributes['language']] = el.text);
               event.dataTransfer.setData("Text", jsonEncode(payload));
             })
-            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('configure-package__tag-responses-item-dragging'));
+            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('configure-package__tag-responses-item-drag-handle-dragging'));
         }
         items.append(item);
       }
