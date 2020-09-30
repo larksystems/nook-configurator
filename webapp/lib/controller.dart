@@ -73,11 +73,12 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.goToConfigurator:
       fetchConfigurationData();
-      showConfigurationView(configurationData.keys.toList().first, configurationTagData);
+      var selectedTag = configurationData.keys.toList().first;
+      showConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationData[selectedTag]);
       break;
     case UIAction.configurationTagSelected:
       ConfigurationTagData data = actionData;
-      showConfigurationView(data.selectedTag, configurationTagData);
+      showConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationData[data.selectedTag]);
       break;
     case UIAction.addConfigurationTag:
       ConfigurationTagData data = actionData;
@@ -252,20 +253,22 @@ void fetchConfigurationData() {
   configurationResponseLanguages = configurationReponseLanguageData;
 }
 
-void showConfigurationView(String selectedTag, Map<String, Map<String, List<String>>> tagData) {
-  Map<String, bool> tags = new Map.fromIterable(tagData.keys.toList(),
+Map<String, bool> getTagList(String selectedTag, Map<String, Map<String, List<String>>> tagData) {
+  return new Map.fromIterable(tagData.keys.toList(),
     key: (tag) => tag,
     value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
-  var selectedTagResponses = tagData[selectedTag];
-  view.contentView.configurationView.tagList.renderTagList(tags);
-  view.contentView.configurationView.tagResponses.renderResponses(selectedTag, selectedTagResponses);
+}
+
+void showConfigurationView(String selectedTag, Map<String, bool> tagList, Map<String, List<String>> tagResponses) {
+  view.contentView.configurationView.tagList.renderTagList(tagList);
+  view.contentView.configurationView.tagResponses.renderResponses(selectedTag, tagResponses);
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
 void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {
   tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
   additionalTags.remove(tagToAdd);
-  showConfigurationView(tagToAdd, tagData);
+  showConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), tagData[tagToAdd]);
 }
 
 void updateEditedConfigurationTagResponse(String parentTag, int index, String language, String text) {
@@ -284,5 +287,5 @@ void addConfigurationResponseEntries(String parentTag, String language, String t
   } else {
     tagData[parentTag].forEach((k, v) => v.add(''));
   }
-  showConfigurationView(parentTag, tagData);
+  showConfigurationView(parentTag, getTagList(parentTag, tagData), tagData[parentTag]);
 }
