@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:html';
 import 'dart:web_gl';
 
@@ -211,26 +212,42 @@ class ConfigurationViewTagListPartial {
       ..classes.add('configure-package__tags-list');
   }
 
-  void renderTagList(List<String> tags) {
+  void renderTagList(Map<String, bool> tags) {
     tagListElement.children.clear();
-    tags.forEach((tag) {
+    tags.forEach((tag, state) {
       var tagItem = new Element.li()
         ..classes.add('configure-package__tag-item')
         ..text = tag;
       tagItem.onClick.listen((event) {
         var selectedTag = (event.target as Element);
         controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag.text.trim()));
-        tagListElement.children.forEach((t) => t.classes.remove('configure-package__tag-item-active'));
-        selectedTag.classes.add('configure-package__tag-item-active');
+      });
+      tagItem.onDragOver.listen((event) => event.preventDefault());
+      tagItem.onDragEnter.listen((event) {
+        event.preventDefault();
+        (event.target as Element).classes.add('configure-package__tag-item-active');
+      });
+      tagItem.onDragLeave.listen((event) => (event.target as Element).classes.remove('configure-package__tag-item-active'));
+      tagItem.onDrop.listen((event) {
+        event.preventDefault();
+        var dropTarget = (event.target as Element);
+        dropTarget.classes.remove('configure-package__tag-item-active');
+        if (dropTarget.classes.contains('configure-package__tag-item')) {
+          var responseData = jsonDecode(event.dataTransfer.getData("Text"));
+          responseData.forEach((language, text) {
+            controller.command(controller.UIAction.addConfigurationResponseEntries,
+              new controller.ConfigurationResponseData(parentTag: dropTarget.text, language: language, text: text));
+          });
+        }
       });
       tagListElement.append(tagItem);
     });
-    tagListElement.children.first.classes.add('configure-package__tag-item-active');
+    toggleTagsSelectedState(tags);
     tagListElement.append(
       new ButtonElement()
         ..classes.add('configure-package__button-add-tag-action')
         ..text = '+'
-        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.addtitionalTagData.keys.toList())))
+        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.additionalConfigurationTags.toList())))
     );
   }
 
@@ -239,8 +256,13 @@ class ConfigurationViewTagListPartial {
       ..classes.add('configure-package__response-add-tag-modal');
     addTagModal.append(
       HeadingElement.h6()
-      ..classes.add('configure-package__response-add-tag-modal-heading')
-      ..text = 'Select new tag to add');
+        ..classes.add('configure-package__response-add-tag-modal-heading')
+        ..text = 'Select new tag to add');
+    addTagModal.append(
+      new ButtonElement()
+        ..classes.add('configure-package__response-add-tag-modal-close-button')
+        ..text = 'x'
+        ..onClick.listen((_) => addTagModal.remove()));
     var tagOptions = new SelectElement()
       ..classes.add('configure-package__response-add-tag-modal-dropdown')
       ..onChange.listen((event) {
@@ -248,7 +270,7 @@ class ConfigurationViewTagListPartial {
         controller.command(controller.UIAction.addConfigurationTag, new controller.ConfigurationTagData(tagToAdd: selectedOption));
         if(tagListElement.children.last is DivElement) tagListElement.children.removeLast();
       });
-    tagOptions.add(new OptionElement()..text = '--Select Tag--', false);
+    tagOptions.add(new OptionElement()..text = '-', false);
     tags.forEach((tag) {
       var option = new OptionElement()
         ..text = tag
@@ -257,6 +279,12 @@ class ConfigurationViewTagListPartial {
     });
     addTagModal.append(tagOptions);
     return addTagModal;
+  }
+
+  void toggleTagsSelectedState(Map<String, bool> tags) {
+    tagListElement.children.forEach((tag) {
+      tag.classes.toggle('configure-package__tag-item-active', tags[tag.text]);
+    });
   }
 }
 
@@ -283,19 +311,35 @@ class ConfigurationViewTagResponsesPartial {
       var items = new DivElement()..classes.add('configure-package__tag-responses-items');
       for (int i = 0; i < responseSet.length; i++) {
         var response = responseSet[i];
-        items.append(new ParagraphElement()
-        ..classes.add('configure-package__tag-responses-item')
-        ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
-        ..text = response
-        ..onBlur.listen((event) {
-          var reponseElement = (event.currentTarget as Element);
-          var parentTag = reponseElement.attributes['parent-tag'];
-          var index = int.parse(reponseElement.attributes['index']);
-          var language = reponseElement.attributes['language'];
-          var text = reponseElement.text;
-          controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
-        })
-        );
+        var item = new SpanElement()
+          ..classes.add('configure-package__tag-responses-item-row')
+          ..append(
+            new ParagraphElement()
+              ..classes.add('configure-package__tag-responses-item')
+              ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
+              ..text = response
+              ..draggable = true
+              ..onBlur.listen((event) {
+                var reponseElement = (event.currentTarget as Element);
+                var parentTag = reponseElement.attributes['parent-tag'];
+                var index = int.parse(reponseElement.attributes['index']);
+                var language = reponseElement.attributes['language'];
+                var text = reponseElement.text;
+                controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
+          }));
+        if (language == 'English') {
+          item.insertAdjacentElement('afterbegin', new DivElement()
+            ..draggable = true
+            ..classes.addAll(['configure-package__tag-responses-item-drag-handle', 'configure-package__tag-responses-item-drag-handle-$i']))
+            ..onDragStart.listen((event) {
+              (event.target as Element).classes.add('configure-package__tag-responses-item-drag-handle-dragging');
+              var payload = {};
+              document.querySelectorAll('p[index="$i"]').forEach((el) => payload[el.attributes['language']] = el.text);
+              event.dataTransfer.setData("Text", jsonEncode(payload));
+            })
+            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('configure-package__tag-responses-item-drag-handle-dragging'));
+        }
+        items.append(item);
       }
       _tagResponsesBody.append(items);
     });

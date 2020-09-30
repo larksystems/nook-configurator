@@ -4,7 +4,103 @@ import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
 
-Map<String, Map<String, List<String>>> tagData = {
+Logger log = new Logger('controller.dart');
+
+enum UIAction {
+  userSignedIn,
+  goToConfigurator,
+  configurationTagSelected,
+  addConfigurationTag,
+  editConfigurationTagResponse,
+  addConfigurationResponseEntries
+}
+
+class Data {}
+
+class ConfigurationTagData extends Data {
+  String selectedTag;
+  String tagToAdd;
+  ConfigurationTagData({this.selectedTag, this.tagToAdd});
+}
+
+class ConfigurationResponseData extends Data {
+  String parentTag;
+  String language;
+  String text;
+  int index;
+  ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
+}
+
+Map<String, Map<String, List<String>>> configurationTagData;
+Set<String> additionalConfigurationTags;
+List<String> configurationResponseLanguages;
+
+void init() async {
+  view.init();
+  await platform.init();
+}
+
+void initUI() {
+  view.contentView.dashboardView.activePackages.addAll(
+    [
+      new view.ActivePackagesViewPartial('Urgent conversations'),
+      new view.ActivePackagesViewPartial('Open conversations'),
+      new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
+    ]);
+  view.contentView.dashboardView.availablepackages.addAll(
+    [
+      new view.AvailablePackagesViewPartial('Quick Poll',
+        'Ask a question with fixed answers',
+        ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
+      new view.AvailablePackagesViewPartial('Information Service',
+        'Answer people\'s questions',
+        ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
+      new view.AvailablePackagesViewPartial('Bulk Message',
+        'Send set of people a once off message',
+        ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
+    ]);
+  view.contentView.dashboardView.renderActivePackages();
+  view.contentView.dashboardView.renderAvailablePackages();
+  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
+}
+
+void command(UIAction action, Data actionData) {
+  log.verbose('command => $action : $actionData');
+  switch (action) {
+
+    case UIAction.userSignedIn:
+      initUI();
+      break;
+    case UIAction.goToConfigurator:
+      fetchConfigurationData();
+      var selectedTag = configurationData.keys.toList().first;
+      showConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationData[selectedTag]);
+      break;
+    case UIAction.configurationTagSelected:
+      ConfigurationTagData data = actionData;
+      showConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationData[data.selectedTag]);
+      break;
+    case UIAction.addConfigurationTag:
+      ConfigurationTagData data = actionData;
+      addNewConfigurationTag(data.tagToAdd, configurationResponseLanguages, additionalConfigurationTags, configurationTagData);
+      break;
+    case UIAction.editConfigurationTagResponse:
+      ConfigurationResponseData data = actionData;
+      updateEditedConfigurationTagResponse(data.parentTag, data.index, data.language, data.text);
+      break;
+    case UIAction.addConfigurationResponseEntries:
+      ConfigurationResponseData data = actionData;
+      addConfigurationResponseEntries(data.parentTag, data.language, data.text, configurationTagData);
+      break;
+  }
+}
+
+List<String> get configurationReponseLanguageData => ['English', 'Somali'];
+
+Set<String> get configurationTags => {'addtional Tag 1', 'addtional Tag 2', 'addtional Tag 3', 'addtional Tag 4', 'addtional Tag 5'};
+
+Map<String, Map<String, List<String>>> get configurationData =>
+  {
   'denial': {
     'English' : [
       '[denial - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
@@ -151,166 +247,45 @@ Map<String, Map<String, List<String>>> tagData = {
   }
   };
 
-  Map<String, Map<String, List<String>>> addtitionalTagData = {
-    'addtional Tag 1': {
-    'English' : [
-      '[addtional Tag 1 - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
-    ],
-    'Somali': [
-      '[addtional Tag 1 - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 1 - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
-    ]
-  },
-  'addtional Tag 2': {
-    'English' : [
-      '[addtional Tag 2 - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
-    ],
-    'Somali': [
-      '[addtional Tag 2 - Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 2 - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
-    ]
-  },
-  'addtional Tag 3': {
-    'English' : [
-      '[addtional Tag 3 - English SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - English SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - English SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - English SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - English SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
-    ],
-    'Somali': [
-      '[addtional Tag 3- Somali SMS1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - Somali SMS2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - Somali SMS3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - Somali SMS4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.',
-      '[addtional Tag 3 - Somali SMS5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis arcu lectus, id rutrum metus dignissim in.'
-    ]
-  }
-  };
-
-Logger log = new Logger('controller.dart');
-
-String selectedConfigurationTag ;
-
-enum UIAction {
-  userSignedIn,
-  goToConfigurator,
-  configurationTagSelected,
-  addConfigurationTag,
-  editConfigurationTagResponse,
-  addConfigurationResponseEntries
+void fetchConfigurationData() {
+  configurationTagData = configurationData;
+  additionalConfigurationTags = configurationTags;
+  configurationResponseLanguages = configurationReponseLanguageData;
 }
 
-class Data {}
-
-class ConfigurationTagData extends Data {
-  String selectedTag;
-  String tagToAdd;
-  ConfigurationTagData({this.selectedTag, this.tagToAdd});
+Map<String, bool> getTagList(String selectedTag, Map<String, Map<String, List<String>>> tagData) {
+  return new Map.fromIterable(tagData.keys.toList(),
+    key: (tag) => tag,
+    value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
 }
 
-class ConfigurationResponseData extends Data {
-  String parentTag;
-  String language;
-  String text;
-  int index;
-  ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
-}
-
-void init() async {
-  view.init();
-  await platform.init();
-}
-
-void initUI() {
-  view.contentView.dashboardView.activePackages.addAll(
-    [
-      new view.ActivePackagesViewPartial('Urgent conversations'),
-      new view.ActivePackagesViewPartial('Open conversations'),
-      new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
-    ]);
-  view.contentView.dashboardView.availablepackages.addAll(
-    [
-      new view.AvailablePackagesViewPartial('Quick Poll',
-        'Ask a question with fixed answers',
-        ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
-      new view.AvailablePackagesViewPartial('Information Service',
-        'Answer people\'s questions',
-        ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
-      new view.AvailablePackagesViewPartial('Bulk Message',
-        'Send set of people a once off message',
-        ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
-    ]);
-  view.contentView.dashboardView.renderActivePackages();
-  view.contentView.dashboardView.renderAvailablePackages();
-  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
-}
-
-void command(UIAction action, Data actionData) {
-  log.verbose('command => $action : $actionData');
-  switch (action) {
-
-    case UIAction.userSignedIn:
-      initUI();
-      break;
-    case UIAction.goToConfigurator:
-      showConfigurationView();
-      break;
-    case UIAction.configurationTagSelected:
-      ConfigurationTagData data = actionData;
-      retrieveConfigurationTagResponse(data.selectedTag);
-      break;
-    case UIAction.addConfigurationTag:
-      ConfigurationTagData data = actionData;
-      addNewConfigurationTag(data.tagToAdd);
-      break;
-    case UIAction.editConfigurationTagResponse:
-      ConfigurationResponseData data = actionData;
-      updateEditedConfigurationTagResponse(data.parentTag, data.index, data.language, data.text);
-      break;
-    case UIAction.addConfigurationResponseEntries:
-      ConfigurationResponseData data = actionData;
-      addConfigurationResponseEntries(data.parentTag);
-      break;
-  }
-}
-
-void showConfigurationView() {
-  view.contentView.configurationView.tagList.renderTagList(tagData.keys.toList());
-  view.contentView.configurationView.tagResponses.renderResponses(tagData.keys.toList().first, tagData.values.toList().first);
+void showConfigurationView(String selectedTag, Map<String, bool> tagList, Map<String, List<String>> tagResponses) {
+  view.contentView.configurationView.tagList.renderTagList(tagList);
+  view.contentView.configurationView.tagResponses.renderResponses(selectedTag, tagResponses);
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
-void retrieveConfigurationTagResponse(String selectedTag) {
-  selectedConfigurationTag = selectedTag;
-  var filteredTagResponses = Map<String, Map<String, List<String>>>.from(tagData)..removeWhere((k, v) => !k.contains(selectedTag));
-  view.contentView.configurationView.tagResponses.renderResponses(filteredTagResponses.keys.toList().first, filteredTagResponses.values.toList().first);
-}
-
-void addNewConfigurationTag(String tagToAdd) {
-  tagData[tagToAdd] = addtitionalTagData[tagToAdd];
-  showConfigurationView();
+void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {
+  tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
+  additionalTags.remove(tagToAdd);
+  showConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), tagData[tagToAdd]);
 }
 
 void updateEditedConfigurationTagResponse(String parentTag, int index, String language, String text) {
-  tagData[parentTag][language][index]= text;
+  configurationTagData[parentTag][language][index]= text;
 }
 
-void addConfigurationResponseEntries(String parentTag) {
-  tagData[parentTag].forEach((k, v) => v.add(''));
-  retrieveConfigurationTagResponse(parentTag);
+void addConfigurationResponseEntries(String parentTag, String language, String text, Map<String, Map<String, List<String>>> tagData) {
+  if (language != null && text != null) {
+    var pos = tagData[parentTag][language].indexOf('');
+    if (pos > -1) {
+      tagData[parentTag][language][pos] = text;
+    } else {
+      tagData[parentTag].forEach((k, v) => v.add(''));
+      tagData[parentTag][language].last = text;
+    }
+  } else {
+    tagData[parentTag].forEach((k, v) => v.add(''));
+  }
+  showConfigurationView(parentTag, getTagList(parentTag, tagData), tagData[parentTag]);
 }
