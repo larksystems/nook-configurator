@@ -1,14 +1,18 @@
 library controller;
 
+import 'dart:html';
+
 import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
+import 'router.dart';
 
 Logger log = new Logger('controller.dart');
+Router router;
 
 enum UIAction {
   userSignedIn,
-  goToConfigurator,
+  loadProjectConfiguration,
   configurationTagSelected,
   addConfigurationTag,
   editConfigurationTagResponse,
@@ -36,32 +40,21 @@ Set<String> additionalConfigurationTags;
 List<String> configurationResponseLanguages;
 
 void init() async {
+  setupRoutes();
   view.init();
   await platform.init();
 }
 
 void initUI() {
-  view.contentView.dashboardView.activePackages.addAll(
-    [
-      new view.ActivePackagesViewPartial('Urgent conversations'),
-      new view.ActivePackagesViewPartial('Open conversations'),
-      new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
-    ]);
-  view.contentView.dashboardView.availablepackages.addAll(
-    [
-      new view.AvailablePackagesViewPartial('Quick Poll',
-        'Ask a question with fixed answers',
-        ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
-      new view.AvailablePackagesViewPartial('Information Service',
-        'Answer people\'s questions',
-        ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
-      new view.AvailablePackagesViewPartial('Bulk Message',
-        'Send set of people a once off message',
-        ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
-    ]);
-  view.contentView.dashboardView.renderActivePackages();
-  view.contentView.dashboardView.renderAvailablePackages();
-  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
+  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
+  router.routeTo(window.location.hash);
+}
+
+void setupRoutes() {
+  router = new Router()
+    ..addHandler('#/dashboard', loadDashboardView)
+    ..addHandler('#/configuration', loadConfigurationView)
+    ..listen();
 }
 
 void command(UIAction action, Data actionData) {
@@ -71,14 +64,14 @@ void command(UIAction action, Data actionData) {
     case UIAction.userSignedIn:
       initUI();
       break;
-    case UIAction.goToConfigurator:
+    case UIAction.loadProjectConfiguration:
       fetchConfigurationData();
       var selectedTag = configurationData.keys.toList().first;
-      showConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationData[selectedTag]);
+      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationData[selectedTag]);
       break;
     case UIAction.configurationTagSelected:
       ConfigurationTagData data = actionData;
-      showConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationData[data.selectedTag]);
+      populateConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationData[data.selectedTag]);
       break;
     case UIAction.addConfigurationTag:
       ConfigurationTagData data = actionData;
@@ -247,6 +240,35 @@ Map<String, Map<String, List<String>>> get configurationData =>
   }
   };
 
+void loadDashboardView() {
+  view.contentView.dashboardView.activePackages.addAll(
+    [
+      new view.ActivePackagesViewPartial('Urgent conversations'),
+      new view.ActivePackagesViewPartial('Open conversations'),
+      new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
+    ]);
+  view.contentView.dashboardView.availablepackages.addAll(
+    [
+      new view.AvailablePackagesViewPartial('Quick Poll',
+        'Ask a question with fixed answers',
+        ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
+      new view.AvailablePackagesViewPartial('Information Service',
+        'Answer people\'s questions',
+        ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
+      new view.AvailablePackagesViewPartial('Bulk Message',
+        'Send set of people a once off message',
+        ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
+    ]);
+  view.contentView.dashboardView.renderActivePackages();
+  view.contentView.dashboardView.renderAvailablePackages();
+  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
+}
+
+loadConfigurationView() {
+  view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
+  command(UIAction.loadProjectConfiguration, null);
+}
+
 void fetchConfigurationData() {
   configurationTagData = configurationData;
   additionalConfigurationTags = configurationTags;
@@ -259,16 +281,15 @@ Map<String, bool> getTagList(String selectedTag, Map<String, Map<String, List<St
     value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
 }
 
-void showConfigurationView(String selectedTag, Map<String, bool> tagList, Map<String, List<String>> tagResponses) {
+void populateConfigurationView(String selectedTag, Map<String, bool> tagList, Map<String, List<String>> tagResponses) {
   view.contentView.configurationView.tagList.renderTagList(tagList);
   view.contentView.configurationView.tagResponses.renderResponses(selectedTag, tagResponses);
-  view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
 }
 
 void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {
   tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
   additionalTags.remove(tagToAdd);
-  showConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), tagData[tagToAdd]);
+  populateConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), tagData[tagToAdd]);
 }
 
 void updateEditedConfigurationTagResponse(String parentTag, int index, String language, String text) {
@@ -287,5 +308,5 @@ void addConfigurationResponseEntries(String parentTag, String language, String t
   } else {
     tagData[parentTag].forEach((k, v) => v.add(''));
   }
-  showConfigurationView(parentTag, getTagList(parentTag, tagData), tagData[parentTag]);
+  populateConfigurationView(parentTag, getTagList(parentTag, tagData), tagData[parentTag]);
 }

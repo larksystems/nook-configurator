@@ -131,16 +131,15 @@ class ActivePackagesViewPartial {
     _dashboardAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Dashboard'
-      ..href = '#';
+      ..href = '#/dashboard';
     _conversationsAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Conversations'
-      ..href = '#';
+      ..href = '#/conversations';
     _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
-      ..href = '#'
-      ..onClick.listen((event) => controller.command(controller.UIAction.goToConfigurator, null));
+      ..href = '#/configuration';
     _packageActionsContainer.append(_dashboardAction);
     _packageActionsContainer.append(_conversationsAction);
     _packageActionsContainer.append(_configureAction);
