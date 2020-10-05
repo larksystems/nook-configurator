@@ -13,7 +13,7 @@
     justify-content: space-between;
 }
 
-.configure-package__tags-list {
+.tags-list {
     flex-basis: 60%;
     border-color: #ddd;
     border-style: solid;
@@ -23,7 +23,7 @@
     padding: 0px;
 }
 
-.configure-package__tag-item {
+.tag-list__tag-item {
     list-style-type: none;
     border-color: #ddd;
     border-bottom-style: solid;
@@ -31,16 +31,20 @@
     padding: 10px;
 }
 
-.configure-package__tag-item-active {
+.tag-list__tag-item_active {
     background-color: #b5b3b3;
 }
 
-.configure-package__tag-item:hover {
+.tag-list__tag-item-drop-target {
+    background-color: #b5b3b3;
+}
+
+.tag-list__tag-item:hover {
     cursor: pointer;
     background-color: #b5b3b3;
 }
 
-.configure-package__button-add-tag-action {
+.tag-list__add-tag-action {
     margin: 5px;
     background-color: #a7a4a4;
     border: none;
@@ -52,44 +56,11 @@
     font-weight: bold;
 }
 
-.configure-package__button-add-tag-action:hover {
+.tag-list__add-tag-action:hover {
     cursor: pointer;
 }
 
-.configure-package__response-add-tag-modal-heading {
-    margin: 0px 0px 6px 6px;
-}
-
-.configure-package__response-add-tag-modal {
-    width: 275px;
-    position: absolute;
-    margin: -35px 0px 0px 45px;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: .5rem;
-    background-color: #efefef;
-}
-
-.configure-package__response-add-tag-modal-dropdown {
-    border-radius: .5rem;
-    width: 100%;
-}
-
-.configure-package__response-add-tag-modal-close-button {
-    position: absolute;
-    border: none;
-    outline: none;
-    bottom: 52px;
-    right: -4px;
-    background: none;
-    font-size: .8rem;
-}
-
-.configure-package__response-add-tag-modal-close-button:hover {
-    cursor: pointer;
-}
-
-.configure-package__tag-responses {
+.tag-responses {
     display: flex;
     flex-direction: column;
     border-color: #ddd;
@@ -100,30 +71,30 @@
     margin-left: 100px;
 }
 
-.configure-package__tag-responses-header {
+.tag-responses__header {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     position: relative;
 }
 
-.configure-package__tag-responses-content {
+.tag-responses__content {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     overflow-y: scroll;
 }
 
-.configure-package__tag-responses-items {
+.tag-responses__items {
     flex-basis: 50%;
     padding: 0px 30px;
 }
 
-.configure-package__tag-responses-item-row {
+.tag-responses__item-row {
     position: relative;
 }
 
-.configure-package__tag-responses-item-drag-handle {
+.tag-responses__item-drag-handle {
     background-color: #ddd;
     width: 12px;
     height: 60px;
@@ -132,19 +103,19 @@
     right: 15px;
 }
 
-.configure-package__tag-responses-item-drag-handle-0 {
+.tag-responses__item-drag-handle-0 {
     top: 20px;
 }
 
-.configure-package__tag-responses-item-drag-handle:hover {
+.tag-responses__item-drag-handle:hover {
     cursor: grab;
 }
 
-.configure-package__tag-responses-item-drag-handle-dragging {
+.tag-responses__item-drag-handle_dragging {
     cursor: grabbing;
 }
 
-.configure-package__tag-responses-item {
+.tag-responses__item {
     overflow-y: scroll;
     min-width: 340px;
     min-height: 64px;
@@ -153,11 +124,44 @@
     padding: 2px;
 }
 
-.configure-package__tag-responses-item:focus {
+.tag-responses__item:focus {
     outline-color: #ddd;
 }
 
-.configure-package__button-add-responses-action {
+.tag-responses__add-tag-modal {
+    width: 275px;
+    position: absolute;
+    margin: -35px 0px 0px 45px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: .5rem;
+    background-color: #efefef;
+}
+
+.tag-responses__add-tag-modal-heading {
+    margin: 0px 0px 6px 6px;
+}
+
+.tag-responses__add-tag-modal-dropdown {
+    border-radius: .5rem;
+    width: 100%;
+}
+
+.tag-responses__add-tag-modal-close-button {
+    position: absolute;
+    border: none;
+    outline: none;
+    bottom: 52px;
+    right: -4px;
+    background: none;
+    font-size: .8rem;
+}
+
+.tag-responses__add-tag-modal-close-button:hover {
+    cursor: pointer;
+}
+
+.tag-responses__add-responses-action {
     margin: 5px;
     background-color: #a7a4a4;
     border: none;
@@ -169,6 +173,6 @@
     font-weight: bold;
 }
 
-.configure-package__button-add-responses-action:hover {
+.tag-responses__add-responses-action:hover {
     cursor: pointer;
 }

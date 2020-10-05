@@ -208,14 +208,14 @@ class ConfigurationViewTagListPartial {
 
   ConfigurationViewTagListPartial() {
     tagListElement = new Element.ul()
-      ..classes.add('configure-package__tags-list');
+      ..classes.add('tags-list');
   }
 
   void renderTagList(Map<String, bool> tags) {
     tagListElement.children.clear();
     tags.forEach((tag, state) {
       var tagItem = new Element.li()
-        ..classes.add('configure-package__tag-item')
+        ..classes.add('tag-list__tag-item')
         ..text = tag;
       tagItem.onClick.listen((event) {
         var selectedTag = (event.target as Element);
@@ -224,14 +224,14 @@ class ConfigurationViewTagListPartial {
       tagItem.onDragOver.listen((event) => event.preventDefault());
       tagItem.onDragEnter.listen((event) {
         event.preventDefault();
-        (event.target as Element).classes.add('configure-package__tag-item-active');
+        (event.target as Element).classes.add('tag-list__tag-item-drop-target');
       });
-      tagItem.onDragLeave.listen((event) => (event.target as Element).classes.remove('configure-package__tag-item-active'));
+      tagItem.onDragLeave.listen((event) => (event.target as Element).classes.remove('tag-list__tag-item-drop-target'));
       tagItem.onDrop.listen((event) {
         event.preventDefault();
         var dropTarget = (event.target as Element);
-        dropTarget.classes.remove('configure-package__tag-item-active');
-        if (dropTarget.classes.contains('configure-package__tag-item')) {
+        dropTarget.classes.remove('tag-list__tag-item-drop-target');
+        if (dropTarget.classes.contains('tag-list__tag-item')) {
           var responseData = jsonDecode(event.dataTransfer.getData("Text"));
           responseData.forEach((language, text) {
             controller.command(controller.UIAction.addConfigurationResponseEntries,
@@ -244,7 +244,7 @@ class ConfigurationViewTagListPartial {
     toggleTagsSelectedState(tags);
     tagListElement.append(
       new ButtonElement()
-        ..classes.add('configure-package__button-add-tag-action')
+        ..classes.add('tag-list__add-tag-action')
         ..text = '+'
         ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.additionalConfigurationTags.toList())))
     );
@@ -252,18 +252,18 @@ class ConfigurationViewTagListPartial {
 
   DivElement addTagDropDown(List<String> tags) {
     var addTagModal = new DivElement()
-      ..classes.add('configure-package__response-add-tag-modal');
+      ..classes.add('tag-responses__add-tag-modal');
     addTagModal.append(
       HeadingElement.h6()
-        ..classes.add('configure-package__response-add-tag-modal-heading')
+        ..classes.add('tag-responses__add-tag-modal-heading')
         ..text = 'Select new tag to add');
     addTagModal.append(
       new ButtonElement()
-        ..classes.add('configure-package__response-add-tag-modal-close-button')
+        ..classes.add('tag-responses__add-tag-modal-close-button')
         ..text = 'x'
         ..onClick.listen((_) => addTagModal.remove()));
     var tagOptions = new SelectElement()
-      ..classes.add('configure-package__response-add-tag-modal-dropdown')
+      ..classes.add('tag-responses__add-tag-modal-dropdown')
       ..onChange.listen((event) {
         var selectedOption = (event.currentTarget as SelectElement).value;
         controller.command(controller.UIAction.addConfigurationTag, new controller.ConfigurationTagData(tagToAdd: selectedOption));
@@ -282,7 +282,7 @@ class ConfigurationViewTagListPartial {
 
   void toggleTagsSelectedState(Map<String, bool> tags) {
     tagListElement.children.forEach((tag) {
-      tag.classes.toggle('configure-package__tag-item-active', tags[tag.text]);
+      tag.classes.toggle('tag-list__tag-item_active', tags[tag.text]);
     });
   }
 }
@@ -294,11 +294,11 @@ class ConfigurationViewTagResponsesPartial {
 
   ConfigurationViewTagResponsesPartial() {
     tagResponsesElement = new DivElement()
-      ..classes.add('configure-package__tag-responses');
+      ..classes.add('tag-responses');
     _tagResponsesHeader = new DivElement()
-      ..classes.add('configure-package__tag-responses-header');
+      ..classes.add('tag-responses__header');
     _tagResponsesBody = new DivElement()
-      ..classes.add('configure-package__tag-responses-content');
+      ..classes.add('tag-responses__content');
   }
 
   void renderResponses(String tag, Map<String, List<String>> responses) {
@@ -307,14 +307,14 @@ class ConfigurationViewTagResponsesPartial {
     _tagResponsesBody.children.clear();
     responses.forEach((language, responseSet) {
       _tagResponsesHeader.append(new HeadingElement.h5()..text = language);
-      var items = new DivElement()..classes.add('configure-package__tag-responses-items');
+      var items = new DivElement()..classes.add('tag-responses__items');
       for (int i = 0; i < responseSet.length; i++) {
         var response = responseSet[i];
         var item = new SpanElement()
-          ..classes.add('configure-package__tag-responses-item-row')
+          ..classes.add('tag-responses__item-row')
           ..append(
             new ParagraphElement()
-              ..classes.add('configure-package__tag-responses-item')
+              ..classes.add('tag-responses__item')
               ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
               ..text = response
               ..draggable = true
@@ -329,14 +329,14 @@ class ConfigurationViewTagResponsesPartial {
         if (language == 'English') {
           item.insertAdjacentElement('afterbegin', new DivElement()
             ..draggable = true
-            ..classes.addAll(['configure-package__tag-responses-item-drag-handle', 'configure-package__tag-responses-item-drag-handle-$i']))
+            ..classes.addAll(['tag-responses__item-drag-handle', 'tag-responses__item-drag-handle-$i']))
             ..onDragStart.listen((event) {
-              (event.target as Element).classes.add('configure-package__tag-responses-item-drag-handle-dragging');
+              (event.target as Element).classes.add('tag-responses__item-drag-handle_dragging');
               var payload = {};
               document.querySelectorAll('p[index="$i"]').forEach((el) => payload[el.attributes['language']] = el.text);
               event.dataTransfer.setData("Text", jsonEncode(payload));
             })
-            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('configure-package__tag-responses-item-drag-handle-dragging'));
+            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('tag-responses__item-drag-handle_dragging'));
         }
         items.append(item);
       }
@@ -346,7 +346,7 @@ class ConfigurationViewTagResponsesPartial {
     tagResponsesElement.append(_tagResponsesBody);
     tagResponsesElement.append(
       new ButtonElement()
-          ..classes.add('configure-package__button-add-responses-action')
+          ..classes.add('tag-responses__add-responses-action')
           ..text = '+'
           ..onClick.listen((event) {
             controller.command(controller.UIAction.addConfigurationResponseEntries, new controller.ConfigurationResponseData(parentTag: tag));
