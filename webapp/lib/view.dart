@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:html';
-import 'dart:web_gl';
 
 import 'logger.dart';
 import 'controller.dart' as controller;
@@ -301,22 +300,38 @@ class ConfigurationViewTagResponsesPartial {
       ..classes.add('tag-responses__content');
   }
 
-  void renderResponses(String tag, Map<String, List<String>> responses) {
+  void renderResponses(String tag, List<String> responseLanguages, List<List<String>> responses) {
     tagResponsesElement.children.clear();
     _tagResponsesHeader.children.clear();
     _tagResponsesBody.children.clear();
-    responses.forEach((language, responseSet) {
-      _tagResponsesHeader.append(new HeadingElement.h5()..text = language);
-      var items = new DivElement()..classes.add('tag-responses__items');
-      for (int i = 0; i < responseSet.length; i++) {
-        var response = responseSet[i];
-        var item = new SpanElement()
+    responseLanguages.forEach((lang) => _tagResponsesHeader.append(
+      new HeadingElement.h5()
+        ..classes.add('tag-responses__header-title')
+        ..text = lang
+    ));
+    for (int i = 0; i < responses.length; i++) {
+      var item = new DivElement()
           ..classes.add('tag-responses__item-row')
           ..append(
+            new DivElement()
+            ..draggable = true
+            ..classes.add('tag-responses__item-drag-handle')
+            ..onDragStart.listen((event) {
+              var handle = event.target as Element;
+              var parent = handle.parent;
+              handle.classes.add('tag-responses__item-drag-handle_dragging');
+              var payload = {};
+              parent.children.skip(1).forEach((el) => payload[el.attributes['language']] = el.text);
+              event.dataTransfer.setData("Text", jsonEncode(payload));
+            })
+            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('tag-responses__item-drag-handle_dragging'))
+          );
+      for (int j = 0; j < responses[i].length; j++) {
+        item.append(
             new ParagraphElement()
               ..classes.add('tag-responses__item')
-              ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': '$language' ,'index': '$i'})
-              ..text = response
+              ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': responseLanguages[j] ,'index': '$i'})
+              ..text = responses[i][j]
               ..draggable = true
               ..onBlur.listen((event) {
                 var reponseElement = (event.currentTarget as Element);
@@ -326,22 +341,9 @@ class ConfigurationViewTagResponsesPartial {
                 var text = reponseElement.text;
                 controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
           }));
-        if (language == 'English') {
-          item.insertAdjacentElement('afterbegin', new DivElement()
-            ..draggable = true
-            ..classes.addAll(['tag-responses__item-drag-handle', 'tag-responses__item-drag-handle-$i']))
-            ..onDragStart.listen((event) {
-              (event.target as Element).classes.add('tag-responses__item-drag-handle_dragging');
-              var payload = {};
-              document.querySelectorAll('p[index="$i"]').forEach((el) => payload[el.attributes['language']] = el.text);
-              event.dataTransfer.setData("Text", jsonEncode(payload));
-            })
-            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('tag-responses__item-drag-handle_dragging'));
-        }
-        items.append(item);
+        _tagResponsesBody.append(item);
       }
-      _tagResponsesBody.append(items);
-    });
+    }
     tagResponsesElement.append(_tagResponsesHeader);
     tagResponsesElement.append(_tagResponsesBody);
     tagResponsesElement.append(
