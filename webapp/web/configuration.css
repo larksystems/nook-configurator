@@ -44,22 +44,6 @@
     background-color: #b5b3b3;
 }
 
-.tag-list__add-tag-action {
-    margin: 5px;
-    background-color: #a7a4a4;
-    border: none;
-    border-radius: 100%;
-    outline: none;
-    height: 30px;
-    width: 30px;
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
-.tag-list__add-tag-action:hover {
-    cursor: pointer;
-}
-
 .tag-responses {
     display: flex;
     flex-direction: column;
@@ -128,7 +112,7 @@
     outline-color: #ddd;
 }
 
-.tag-responses__add-tag-modal {
+.add-tag-modal {
     width: 275px;
     position: absolute;
     margin: -35px 0px 0px 45px;
@@ -138,16 +122,16 @@
     background-color: #efefef;
 }
 
-.tag-responses__add-tag-modal-heading {
+.add-tag-modal__heading {
     margin: 0px 0px 6px 6px;
 }
 
-.tag-responses__add-tag-modal-dropdown {
+.add-tag-modal__dropdown {
     border-radius: .5rem;
     width: 100%;
 }
 
-.tag-responses__add-tag-modal-close-button {
+.add-tag-modal__close-button {
     position: absolute;
     border: none;
     outline: none;
@@ -157,11 +141,11 @@
     font-size: .8rem;
 }
 
-.tag-responses__add-tag-modal-close-button:hover {
+.add-tag-modal__close-button:hover {
     cursor: pointer;
 }
 
-.tag-responses__add-responses-action {
+.add-button {
     margin: 5px;
     background-color: #a7a4a4;
     border: none;
@@ -173,6 +157,6 @@
     font-weight: bold;
 }
 
-.tag-responses__add-responses-action:hover {
+.add-button:hover {
     cursor: pointer;
 }
