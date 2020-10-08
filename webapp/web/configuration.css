@@ -111,7 +111,7 @@
     cursor: grab;
 }
 
-.tag-responses__item-drag-handle_dragging {
+.tag-responses__item-drag-handle--dragging {
     cursor: grabbing;
 }
 
