@@ -6,12 +6,16 @@ import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
 import 'router.dart';
+import 'model.dart' as model;
 
 Logger log = new Logger('controller.dart');
 Router router;
 
 enum UIAction {
   userSignedIn,
+  userSignedOut,
+  signInButtonClicked,
+  signOutButtonClicked,
   loadProjectConfiguration,
   configurationTagSelected,
   addConfigurationTag,
@@ -20,6 +24,18 @@ enum UIAction {
 }
 
 class Data {}
+
+class UserData extends Data {
+  String displayName;
+  String email;
+  String photoUrl;
+  UserData(this.displayName, this.email, this.photoUrl);
+
+  @override
+  String toString() {
+    return "UserData($displayName, $email, $photoUrl)";
+  }
+}
 
 class ConfigurationTagData extends Data {
   String selectedTag;
@@ -39,6 +55,8 @@ Map<String, Map<String, List<String>>> configurationTagData;
 Set<String> additionalConfigurationTags;
 List<String> configurationResponseLanguages;
 
+model.User signedInUser;
+
 void init() async {
   setupRoutes();
   view.init();
@@ -48,10 +66,12 @@ void init() async {
 void initUI() {
   window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
+  view.navView.projectTitle = 'COVID IMAQAL Batch replies (Week 12)'; //TODO To be replaced by data from model
 }
 
 void setupRoutes() {
   router = new Router()
+    ..addHandler('#/auth', loadAuthView)
     ..addHandler('#/dashboard', loadDashboardView)
     ..addHandler('#/configuration', loadConfigurationView)
     ..listen();
@@ -60,9 +80,25 @@ void setupRoutes() {
 void command(UIAction action, Data actionData) {
   log.verbose('command => $action : $actionData');
   switch (action) {
-
     case UIAction.userSignedIn:
+      UserData userData = actionData;
+      signedInUser = new model.User()
+        ..userName = userData.displayName
+        ..userEmail = userData.email;
+      view.navView.authHeaderViewPartial.signIn(userData.displayName, userData.photoUrl);
       initUI();
+      break;
+    case UIAction.userSignedOut:
+      signedInUser = null;
+      view.navView.authHeaderViewPartial.signOut();
+      view.navView.projectTitle = '';
+      router.routeTo('#/auth');
+      break;
+    case UIAction.signInButtonClicked:
+      platform.signIn();
+      break;
+    case UIAction.signOutButtonClicked:
+      platform.signOut();
       break;
     case UIAction.loadProjectConfiguration:
       fetchConfigurationData();
@@ -239,6 +275,10 @@ Map<String, Map<String, List<String>>> get configurationData =>
     ]
   }
   };
+
+void loadAuthView() {
+  view.contentView.renderView(view.contentView.authMainView.authElement);
+}
 
 void loadDashboardView() {
   view.contentView.dashboardView.activePackages.addAll(
