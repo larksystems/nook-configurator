@@ -31,7 +31,7 @@
     padding: 10px;
 }
 
-.tag-list__tag-item_active {
+.tag-list__tag-item--active {
     background-color: #b5b3b3;
 }
 
