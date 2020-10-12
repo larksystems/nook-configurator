@@ -172,3 +172,7 @@
 .configure-package__button-add-responses-action:hover {
     cursor: pointer;
 }
+
+.project-configuration {
+    width: 80%;
+}
