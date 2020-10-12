@@ -195,9 +195,12 @@ class BatchRepliesConfigurationView {
 
     _tagsContainer.append(tagList.tagListElement);
     _tagsContainer.append(tagResponses.tagResponsesElement);
-    configurationViewElement.append(HeadingElement.h1()
+    configurationViewElement.append(HeadingElement.h2()
       ..classes.add('configure-package__title')
-      ..text = "Configure Package");
+      ..text = "Batch replies (Week 12) package");
+    configurationViewElement.append(HeadingElement.h3()
+      ..classes.add('configure-package__sub-title')
+      ..text = "Configure");
     configurationViewElement.append(_tagsContainer);
   }
 }
