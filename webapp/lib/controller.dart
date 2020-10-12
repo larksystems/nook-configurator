@@ -46,7 +46,7 @@ void init() async {
 }
 
 void initUI() {
-  window.location.hash = '#/project-configuration'; //TODO This is just temporary initialization becuase we don't have a complete app
+  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
 }
 
