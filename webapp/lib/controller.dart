@@ -46,7 +46,7 @@ void init() async {
 }
 
 void initUI() {
-  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
+  window.location.hash = '#/project-configuration'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
 }
 
@@ -54,6 +54,7 @@ void setupRoutes() {
   router = new Router()
     ..addHandler('#/dashboard', loadDashboardView)
     ..addHandler('#/configuration', loadConfigurationView)
+    ..addHandler('#/project-configuration', loadProjectConfigurationView)
     ..listen();
 }
 
@@ -267,6 +268,11 @@ void loadDashboardView() {
 loadConfigurationView() {
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
   command(UIAction.loadProjectConfiguration, null);
+}
+
+loadProjectConfigurationView() {
+  print('project configuration view');
+  view.contentView.renderView(view.contentView.projectConfigurationView.configurationViewElement);
 }
 
 void fetchConfigurationData() {
