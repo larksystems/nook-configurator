@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:html';
-import 'dart:web_gl';
 
 import 'logger.dart';
 import 'controller.dart' as controller;
@@ -45,12 +44,12 @@ class NavView {
 class ContentView {
   DivElement contentViewElement;
   DashboardView dashboardView;
-  ConfigurationView configurationView;
+  BatchRepliesConfigurationView batchRepliesConfigurationView;
 
   ContentView() {
     contentViewElement = new DivElement()..classes.add('content');
     dashboardView = new DashboardView();
-    configurationView = new ConfigurationView();
+    batchRepliesConfigurationView= new BatchRepliesConfigurationView();
   }
 
   void renderView(DivElement view) {
@@ -139,7 +138,7 @@ class ActivePackagesViewPartial {
     _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
-      ..href = '#/configuration';
+      ..href = '#/batch-replies-configuration';
     _packageActionsContainer.append(_dashboardAction);
     _packageActionsContainer.append(_conversationsAction);
     _packageActionsContainer.append(_configureAction);
@@ -180,13 +179,13 @@ class AvailablePackagesViewPartial {
   }
 }
 
-class ConfigurationView {
+class BatchRepliesConfigurationView {
   DivElement configurationViewElement;
   DivElement _tagsContainer;
   ConfigurationViewTagListPartial tagList;
   ConfigurationViewTagResponsesPartial tagResponses;
 
-  ConfigurationView() {
+  BatchRepliesConfigurationView() {
     configurationViewElement = new DivElement()
       ..classes.add('configure-package');
     _tagsContainer = new DivElement()
