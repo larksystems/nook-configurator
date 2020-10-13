@@ -77,6 +77,7 @@ void setupRoutes() {
     ..addHandler('#/dashboard', loadDashboardView)
     ..addHandler('#/batch-replies-configuration', loadBatchRepliesConfigurationView)
     ..addHandler('#/escalates-configuration', loadEscalatesConfigurationView)
+    ..addHandler('#/project-configuration', loadProjectConfigurationView)
     ..listen();
 }
 
@@ -173,6 +174,10 @@ void loadBatchRepliesConfigurationView() {
 void loadEscalatesConfigurationView() {
   view.contentView.renderView(view.contentView.escalatesConfigurationView.configurationViewElement);
   command(UIAction.loadEscalatesPackageConfiguration, null);
+}
+
+loadProjectConfigurationView() {
+  view.contentView.renderView(view.contentView.projectConfigurationView.configurationViewElement);
 }
 
 void fetchConfigurationData() {
