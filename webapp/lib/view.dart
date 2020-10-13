@@ -22,32 +22,93 @@ void init() {
 
 class NavView {
   DivElement navViewElement;
-  DivElement appLogos;
-  DivElement projectTitle;
+  DivElement _appLogos;
+  DivElement _projectTitle;
+  AuthHeaderViewPartial authHeaderViewPartial;
+
 
   NavView() {
     navViewElement = new DivElement()
       ..classes.add('nav');
-    appLogos = new DivElement()
-      ..classes.add('nav__app-logo');
-    projectTitle = new DivElement()
-      ..classes.add('nav__project-title')
-      ..append(new SpanElement()..text = 'COVID IMAQAL Batch replies (Week 12)');
+    _appLogos = new DivElement()
+      ..classes.add('nav__app-logo')
+      ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
+    _projectTitle = new DivElement()
+      ..classes.add('nav__project-title');
+    authHeaderViewPartial = new AuthHeaderViewPartial();
 
-    appLogos.append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
+    navViewElement.append(_appLogos);
+    navViewElement.append(_projectTitle);
+    navViewElement.append(authHeaderViewPartial.authElement);
+  }
 
-    navViewElement.append(appLogos);
-    navViewElement.append(projectTitle);
+  void set projectTitle(String projectName) => _projectTitle.text = projectName;
+}
+
+class AuthHeaderViewPartial {
+  DivElement authElement;
+  DivElement _userPic;
+  DivElement _userName;
+  ButtonElement _signOutButton;
+  ButtonElement _signInButton;
+
+  AuthHeaderViewPartial() {
+    authElement = new DivElement()
+      ..classes.add('auth-header');
+
+    _userPic = new DivElement()
+      ..classes.add('auth-header__user-pic');
+    authElement.append(_userPic);
+
+    _userName = new DivElement()
+      ..classes.add('auth-header__user-name');
+    authElement.append(_userName);
+
+    _signOutButton = new ButtonElement()
+      ..text = 'Sign out'
+      ..onClick.listen((_) => controller.command(controller.UIAction.signOutButtonClicked, null));
+    authElement.append(_signOutButton);
+
+    _signInButton = new ButtonElement()
+      ..text = 'Sign in'
+      ..onClick.listen((_) => controller.command(controller.UIAction.signInButtonClicked, null));
+    authElement.append(_signInButton);
+  }
+
+  void signIn(String userName, userPicUrl) {
+    // Set the user's profile pic and name
+    _userPic.style.backgroundImage = 'url($userPicUrl)';
+    _userName.text = userName;
+
+    // Show user's profile pic, name and sign-out button.
+    _userName.attributes.remove('hidden');
+    _userPic.attributes.remove('hidden');
+    _signOutButton.attributes.remove('hidden');
+
+    // Hide sign-in button.
+    _signInButton.setAttribute('hidden', 'true');
+  }
+
+  void signOut() {
+    // Hide user's profile pic, name and sign-out button.
+    _userName.attributes['hidden'] = 'true';
+    _userPic.attributes['hidden'] = 'true';
+    _signOutButton.attributes['hidden'] = 'true';
+
+    // Show sign-in button.
+    _signInButton.attributes.remove('hidden');
   }
 }
 
 class ContentView {
   DivElement contentViewElement;
+  AuthMainView authMainView;
   DashboardView dashboardView;
   ConfigurationView configurationView;
 
   ContentView() {
     contentViewElement = new DivElement()..classes.add('content');
+    authMainView = new AuthMainView();
     dashboardView = new DashboardView();
     configurationView = new ConfigurationView();
   }
@@ -55,6 +116,38 @@ class ContentView {
   void renderView(DivElement view) {
     contentViewElement.children.clear();
     contentViewElement.append(view);
+  }
+}
+
+class AuthMainView {
+  DivElement authElement;
+  ButtonElement _signInButton;
+
+  final descriptionText1 = 'Sign in to Katikati';
+  final descriptionText2 = 'Please contact Africa\'s Voices for login details.';
+
+  AuthMainView() {
+    authElement = new DivElement()
+      ..classes.add('auth-main');
+
+    var logosContainer = new DivElement()
+      ..classes.add('auth-main__logos');
+    authElement.append(logosContainer);
+
+    var avfLogo = new ImageElement(src: 'assets/africas-voices-logo.svg')
+      ..classes.add('auth-main__partner-logo');
+    logosContainer.append(avfLogo);
+
+    var shortDescription = new DivElement()
+      ..classes.add('auth-main__project-description')
+      ..append(new ParagraphElement()..text = descriptionText1)
+      ..append(new ParagraphElement()..text = descriptionText2);
+    authElement.append(shortDescription);
+
+    _signInButton = new ButtonElement()
+      ..text = 'Sign in'
+      ..onClick.listen((_) => controller.command(controller.UIAction.signInButtonClicked, null));
+    authElement.append(_signInButton);
   }
 }
 

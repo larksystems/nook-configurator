@@ -10,8 +10,6 @@ Logger log = new Logger('platform.dart');
 firestore.Firestore _firestoreInstance;
 
 init() async {
-  controller.command(controller.UIAction.userSignedIn, null);
-  return; // TODO Remove when we finally incoorporate firebase
   await platform_constants.init();
 
   firebase.initializeApp(
@@ -25,6 +23,7 @@ init() async {
   // Firebase login
   firebaseAuth.onAuthStateChanged.listen((firebase.User user) async {
     if (user == null) { // User signed out
+      controller.command(controller.UIAction.userSignedOut, null);
       return;
     }
     // User signed in
@@ -33,6 +32,7 @@ init() async {
       photoURL =  '/assets/user_image_placeholder.png';
     }
     _firestoreInstance = firebase.firestore();
+    controller.command(controller.UIAction.userSignedIn, new controller.UserData(user.displayName, user.email, photoURL));
   });
 }
 
