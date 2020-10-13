@@ -1,5 +1,5 @@
 .content {
-    display: flex;
-    flex-grow: 1;
+    display: grid;
+    width: 100vw;
     margin: 40px 60px 20px 60px;
 }

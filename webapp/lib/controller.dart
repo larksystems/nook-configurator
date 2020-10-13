@@ -53,7 +53,7 @@ class ConfigurationResponseData extends Data {
   ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
 }
 
-Map<String, Map<String, List<String>>> configurationTagData;
+Map<String, List<List<String>>> configurationTagData;
 Set<String> additionalConfigurationTags;
 List<String> configurationResponseLanguages;
 
@@ -107,21 +107,21 @@ void command(UIAction action, Data actionData) {
     case UIAction.loadProjectConfiguration:
       fetchConfigurationData();
       var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
+      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
       break;
     case UIAction.loadBatchRepliesPackageConfiguration:
       fetchConfigurationData();
       var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
+      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
       break;
     case UIAction.loadEscalatesPackageConfiguration:
       fetchConfigurationData(); //TODO For now fetch from the same tag data. Escalates to use a new set of tags
       var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
+      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
       break;
     case UIAction.configurationTagSelected:
       ConfigurationTagData data = actionData;
-      populateConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationTagData[data.selectedTag]);
+      populateConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[data.selectedTag]);
       break;
     case UIAction.addConfigurationTag:
       ConfigurationTagData data = actionData;
@@ -129,11 +129,11 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.editConfigurationTagResponse:
       ConfigurationResponseData data = actionData;
-      updateEditedConfigurationTagResponse(data.parentTag, data.index, data.language, data.text);
+      updateEditedConfigurationTagResponse(data.parentTag, data.index, configurationResponseLanguages.indexOf(data.language), data.text, configurationTagData[data.parentTag]);
       break;
     case UIAction.addConfigurationResponseEntries:
       ConfigurationResponseData data = actionData;
-      addConfigurationResponseEntries(data.parentTag, data.language, data.text, configurationTagData);
+      addConfigurationResponseEntries(data.parentTag, configurationResponseLanguages.indexOf(data.language), data.text, configurationResponseLanguages, configurationTagData);
       break;
   }
 }
@@ -186,41 +186,41 @@ void fetchConfigurationData() {
   configurationResponseLanguages = model.configurationReponseLanguageData;
 }
 
-Map<String, bool> getTagList(String selectedTag, Map<String, Map<String, List<String>>> tagData) {
+Map<String, bool> getTagList(String selectedTag, Map<String, List<List<String>>> tagData) {
   return new Map.fromIterable(tagData.keys.toList(),
     key: (tag) => tag,
     value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
 }
 
-void populateConfigurationView(String selectedTag, Map<String, bool> tagList, Map<String, List<String>> tagResponses) {
+void populateConfigurationView(String selectedTag, Map<String, bool> tagList, List<String> responseLanguages, List<List<String>> tagResponses) {
   view.contentView.batchRepliesConfigurationView.tagList.renderTagList(tagList);
-  view.contentView.batchRepliesConfigurationView.tagResponses.renderResponses(selectedTag, tagResponses);
+  view.contentView.batchRepliesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
 
   view.contentView.escalatesConfigurationView.tagList.renderTagList(tagList);
-  view.contentView.escalatesConfigurationView.tagResponses.renderResponses(selectedTag, tagResponses);
+  view.contentView.escalatesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
 }
 
-void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {
-  tagData[tagToAdd] = new Map.fromIterable(availableLanguages, key: (d) => d, value: (d) => ['']);
+void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, List<List<String>>> tagData) {
+  tagData[tagToAdd] = [configurationResponseLanguages.map((e) => '').toList()];
   additionalTags.remove(tagToAdd);
-  populateConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), tagData[tagToAdd]);
+  populateConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), availableLanguages, tagData[tagToAdd]);
 }
 
-void updateEditedConfigurationTagResponse(String parentTag, int index, String language, String text) {
-  configurationTagData[parentTag][language][index]= text;
+void updateEditedConfigurationTagResponse(String parentTag, int textIndex, int languageIndex, String text, List<List<String>> tagResponses) {
+  tagResponses[textIndex][languageIndex] = text;
 }
 
-void addConfigurationResponseEntries(String parentTag, String language, String text, Map<String, Map<String, List<String>>> tagData) {
-  if (language != null && text != null) {
-    var pos = tagData[parentTag][language].indexOf('');
+void addConfigurationResponseEntries(String parentTag, int languageIndex, String text, List<String> responseLanguages, Map<String, List<List<String>>> tagData) {
+  if (languageIndex != null && text != null) {
+    var pos = tagData[parentTag].indexWhere((x)=> x.contains(''));
     if (pos > -1) {
-      tagData[parentTag][language][pos] = text;
+      tagData[parentTag][pos][languageIndex] = text;
     } else {
-      tagData[parentTag].forEach((k, v) => v.add(''));
-      tagData[parentTag][language].last = text;
+      tagData[parentTag].add(configurationResponseLanguages.map((e) => '').toList());
+      tagData[parentTag].last[languageIndex]= text;
     }
   } else {
-    tagData[parentTag].forEach((k, v) => v.add(''));
+    tagData[parentTag].add(['', '']);
   }
-  populateConfigurationView(parentTag, getTagList(parentTag, tagData), tagData[parentTag]);
+  populateConfigurationView(parentTag, getTagList(parentTag, tagData), responseLanguages,  tagData[parentTag]);
 }

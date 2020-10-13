@@ -1,4 +1,6 @@
-.dashboard {}
+.dashboard {
+    width: 50%;
+}
 
 .dashboard__project-actions {
     display: flex;
