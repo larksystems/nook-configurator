@@ -125,7 +125,7 @@ void loadBatchRepliesConfigurationView() {
   command(UIAction.loadBatchRepliesConfiguration, null);
 }
 
-void loadEscalatesConfigurationView () {
+void loadEscalatesConfigurationView() {
   view.contentView.renderView(view.contentView.escalatesConfigurationView.configurationViewElement);
   command(UIAction.loadEscalatesConfiguration, null);
 }
