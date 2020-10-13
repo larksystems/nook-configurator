@@ -123,7 +123,7 @@ class AuthMainView {
   DivElement authElement;
   ButtonElement _signInButton;
 
-  final descriptionText1 = 'Sign in to Nook Watcher where you can monitor Nook deployments.';
+  final descriptionText1 = 'Sign in to Katikati';
   final descriptionText2 = 'Please contact Africa\'s Voices for login details.';
 
   AuthMainView() {
