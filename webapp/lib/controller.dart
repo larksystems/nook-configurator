@@ -271,7 +271,6 @@ loadConfigurationView() {
 }
 
 loadProjectConfigurationView() {
-  print('project configuration view');
   view.contentView.renderView(view.contentView.projectConfigurationView.configurationViewElement);
 }
 

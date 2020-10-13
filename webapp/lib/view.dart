@@ -155,7 +155,7 @@ class ProjectConfigurationView {
       )
       ..append(
         _multipleFormGroup('User Configuration:',
-          {'person1@africanvoices.org:':
+          {'person1@africasvoices.org:':
             {'can see messages': FormGroupTypes.CHECKBOX,
               'can perform translations': FormGroupTypes.CHECKBOX,
               'can send messages': FormGroupTypes.CHECKBOX,
@@ -163,7 +163,7 @@ class ProjectConfigurationView {
               'can approve actions': FormGroupTypes.CHECKBOX,
               'can configure the project': FormGroupTypes.CHECKBOX
             },
-          'person2@africanvoices.org:':
+          'person2@africasvoices.org:':
             {'can see messages': FormGroupTypes.CHECKBOX,
               'can perform translations': FormGroupTypes.CHECKBOX,
               'can send messages': FormGroupTypes.CHECKBOX,
@@ -171,7 +171,7 @@ class ProjectConfigurationView {
               'can approve actions': FormGroupTypes.CHECKBOX,
               'can configure the project': FormGroupTypes.CHECKBOX
             },
-          'person3@africanvoices.org:':
+          'person3@africasvoices.org:':
             {'can see messages': FormGroupTypes.CHECKBOX,
               'can perform translations': FormGroupTypes.CHECKBOX,
               'can send messages': FormGroupTypes.CHECKBOX,
@@ -179,7 +179,7 @@ class ProjectConfigurationView {
               'can approve actions': FormGroupTypes.CHECKBOX,
               'can configure the project': FormGroupTypes.CHECKBOX
             },
-          'person4@africanvoices.org:':
+          'person4@africasvoices.org:':
             {'can see messages': FormGroupTypes.CHECKBOX,
               'can perform translations': FormGroupTypes.CHECKBOX,
               'can send messages': FormGroupTypes.CHECKBOX,
