@@ -413,8 +413,10 @@ class ConfigurationViewTagResponsesPartial {
               var handle = event.target as Element;
               var parent = handle.parent;
               handle.classes.add('tag-responses__item-drag-handle_dragging');
-              var payload = {};
-              parent.children.skip(1).forEach((el) => payload[el.attributes['language']] = el.text);
+              Map<String, String> payload = {};
+              for (int k = 1; k < parent.children.length; k++) {
+                payload[parent.children[k].attributes['language']] = parent.children[k].text;
+              }
               event.dataTransfer.setData("Text", jsonEncode(payload));
             })
             ..onDragEnd.listen((event) => (event.target as Element).classes.remove('tag-responses__item-drag-handle_dragging'))
