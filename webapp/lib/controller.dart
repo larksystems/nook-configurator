@@ -381,7 +381,7 @@ void populateConfigurationView(String selectedTag, Map<String, bool> tagList, Li
 }
 
 void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, List<List<String>>> tagData) {
-  tagData[tagToAdd] = [['','']];
+  tagData[tagToAdd] = [configurationResponseLanguages.map((e) => '').toList()];
   additionalTags.remove(tagToAdd);
   populateConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), availableLanguages, tagData[tagToAdd]);
 }
@@ -396,7 +396,7 @@ void addConfigurationResponseEntries(String parentTag, int languageIndex, String
     if (pos > -1) {
       tagData[parentTag][pos][languageIndex] = text;
     } else {
-      tagData[parentTag].add(['', '']);
+      tagData[parentTag].add(configurationResponseLanguages.map((e) => '').toList());
       tagData[parentTag].last[languageIndex]= text;
     }
   } else {
