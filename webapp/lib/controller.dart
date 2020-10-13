@@ -66,7 +66,7 @@ void init() async {
 void initUI() {
   window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
-  view.navView.projectTitle = 'COVID IMAQAL Batch replies (Week 12)'; //TODO To be replaced by data from model
+  view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
 }
 
 void setupRoutes() {
