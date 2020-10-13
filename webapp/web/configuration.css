@@ -6,6 +6,10 @@
     align-self: center;
 }
 
+.configure-package__sub-title {
+    align-self: center;
+}
+
 .configure-package__tags {
     display: grid;
     grid-template-columns: 30% auto;
@@ -161,4 +165,8 @@
 
 .add-button:hover {
     cursor: pointer;
+}
+
+.project-configuration {
+    width: 80%;
 }

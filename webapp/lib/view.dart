@@ -104,13 +104,17 @@ class ContentView {
   DivElement contentViewElement;
   AuthMainView authMainView;
   DashboardView dashboardView;
-  ConfigurationView configurationView;
+  BatchRepliesConfigurationView batchRepliesConfigurationView;
+  EscalatesConfigurationView escalatesConfigurationView;
+  ProjectConfigurationView projectConfigurationView;
 
   ContentView() {
     contentViewElement = new DivElement()..classes.add('content');
     authMainView = new AuthMainView();
     dashboardView = new DashboardView();
-    configurationView = new ConfigurationView();
+    batchRepliesConfigurationView = new BatchRepliesConfigurationView();
+    escalatesConfigurationView = new EscalatesConfigurationView();
+    projectConfigurationView = new ProjectConfigurationView();
   }
 
   void renderView(DivElement view) {
@@ -205,6 +209,130 @@ class DashboardView {
   }
 }
 
+enum FormGroupTypes {
+  TEXT,
+  CHECKBOX,
+  DATE
+}
+
+class ProjectConfigurationView {
+  DivElement configurationViewElement;
+  FormElement _projectConfigurationForm;
+
+  ProjectConfigurationView() {
+    configurationViewElement = new DivElement()
+      ..classes.add('project-configuration');
+    _projectConfigurationForm = new FormElement()
+      ..classes.add('configuration-form');
+    _buildForm();
+    configurationViewElement.append(_projectConfigurationForm);
+  }
+
+  void _buildForm() {
+    _projectConfigurationForm
+      ..append(
+        _multipleFormGroup('Project Languages:',
+          {'English': {'send': FormGroupTypes.CHECKBOX, 'receive': FormGroupTypes.CHECKBOX },
+            'Somali': {'send': FormGroupTypes.CHECKBOX, 'receive': FormGroupTypes.CHECKBOX }})
+      )
+      ..append(
+        _singleFormGroup('Automated translations enabled', FormGroupTypes.CHECKBOX)
+      )
+      ..append(
+        _singleFormGroup('Coda dataset regex', FormGroupTypes.TEXT)
+      )
+      ..append(
+        _singleFormGroup('Rapidpro token', FormGroupTypes.TEXT)
+      )
+      ..append(
+        _singleFormGroup('Project start date', FormGroupTypes.DATE)
+      )
+      ..append(
+        _multipleFormGroup('User Configuration:',
+          {'person1@africasvoices.org:':
+            {'can see messages': FormGroupTypes.CHECKBOX,
+              'can perform translations': FormGroupTypes.CHECKBOX,
+              'can send messages': FormGroupTypes.CHECKBOX,
+              'can send custom messages': FormGroupTypes.CHECKBOX,
+              'can approve actions': FormGroupTypes.CHECKBOX,
+              'can configure the project': FormGroupTypes.CHECKBOX
+            },
+          'person2@africasvoices.org:':
+            {'can see messages': FormGroupTypes.CHECKBOX,
+              'can perform translations': FormGroupTypes.CHECKBOX,
+              'can send messages': FormGroupTypes.CHECKBOX,
+              'can send custom messages': FormGroupTypes.CHECKBOX,
+              'can approve actions': FormGroupTypes.CHECKBOX,
+              'can configure the project': FormGroupTypes.CHECKBOX
+            },
+          'person3@africasvoices.org:':
+            {'can see messages': FormGroupTypes.CHECKBOX,
+              'can perform translations': FormGroupTypes.CHECKBOX,
+              'can send messages': FormGroupTypes.CHECKBOX,
+              'can send custom messages': FormGroupTypes.CHECKBOX,
+              'can approve actions': FormGroupTypes.CHECKBOX,
+              'can configure the project': FormGroupTypes.CHECKBOX
+            },
+          'person4@africasvoices.org:':
+            {'can see messages': FormGroupTypes.CHECKBOX,
+              'can perform translations': FormGroupTypes.CHECKBOX,
+              'can send messages': FormGroupTypes.CHECKBOX,
+              'can send custom messages': FormGroupTypes.CHECKBOX,
+              'can approve actions': FormGroupTypes.CHECKBOX,
+              'can configure the project': FormGroupTypes.CHECKBOX
+            }
+          })
+      );
+  }
+
+  DivElement _singleFormGroup(String label, FormGroupTypes formGroupType) {
+    var formGroup = new DivElement()
+      ..classes.add('single-form-group');
+    var labelElement = new LabelElement()
+      ..classes.add('single-form-group__label')
+      ..text = label;
+    var formElement = new InputElement()
+      ..classes.add('single-form-group__input')
+      ..type = formGroupType.toString().split('.').last;
+    print('$label: ${formGroupType.toString()}');
+    if (formGroupType == FormGroupTypes.CHECKBOX) {
+      formGroup
+      ..append(formElement)
+      ..append(labelElement);
+    } else {
+      formElement.classes.add('single-form-group__input--is-text');
+      formGroup
+      ..append(labelElement)
+      ..append(formElement);
+    }
+    return formGroup;
+  }
+
+  DivElement _multipleFormGroup(String groupLabel, Map<String, Map<String, FormGroupTypes>> groupElements) {
+    var formGroup = new DivElement()
+      ..classes.add('multi-form-group');
+    var formGroupLabel = new LabelElement()
+      ..classes.add('multi-form-group__label')
+      ..text = groupLabel;
+    formGroup.append(formGroupLabel);
+    groupElements.forEach((label, elementGroups) {
+      var formElementGroups = new DivElement()
+        ..classes.add('multi-form-group-elements');
+      var elementGroupLabel = new LabelElement()
+        ..classes.add('multi-form-group-elements__label')
+        ..text = label;
+      formElementGroups.append(elementGroupLabel);
+      elementGroups.forEach((label, formGroupType) {
+        var formElementGroup = _singleFormGroup(label, formGroupType)
+          ..classes.add('single-form-group--in-multi');
+        formElementGroups.append(formElementGroup);
+      });
+      formGroup.append(formElementGroups);
+    });
+    return formGroup;
+  }
+}
+
 class ActivePackagesViewPartial {
   DivElement packageElement;
   HeadingElement _packageName;
@@ -231,7 +359,7 @@ class ActivePackagesViewPartial {
     _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
-      ..href = '#/configuration';
+      ..href = '#/batch-replies-configuration';
     _packageActionsContainer.append(_dashboardAction);
     _packageActionsContainer.append(_conversationsAction);
     _packageActionsContainer.append(_configureAction);
@@ -272,13 +400,13 @@ class AvailablePackagesViewPartial {
   }
 }
 
-class ConfigurationView {
+class BatchRepliesConfigurationView {
   DivElement configurationViewElement;
   DivElement _tagsContainer;
   ConfigurationViewTagListPartial tagList;
   ConfigurationViewTagResponsesPartial tagResponses;
 
-  ConfigurationView() {
+  BatchRepliesConfigurationView() {
     configurationViewElement = new DivElement()
       ..classes.add('configure-package');
     _tagsContainer = new DivElement()
@@ -288,9 +416,38 @@ class ConfigurationView {
 
     _tagsContainer.append(tagList.tagListElement);
     _tagsContainer.append(tagResponses.tagResponsesElement);
-    configurationViewElement.append(HeadingElement.h1()
+    configurationViewElement.append(HeadingElement.h2()
       ..classes.add('configure-package__title')
-      ..text = "Configure Package");
+      ..text = "Batch replies (Week 12) package");
+    configurationViewElement.append(HeadingElement.h3()
+      ..classes.add('configure-package__sub-title')
+      ..text = "Configure");
+    configurationViewElement.append(_tagsContainer);
+  }
+}
+
+class EscalatesConfigurationView {
+  DivElement configurationViewElement;
+  DivElement _tagsContainer;
+  ConfigurationViewTagListPartial tagList;
+  ConfigurationViewTagResponsesPartial tagResponses;
+
+  EscalatesConfigurationView() {
+    configurationViewElement = new DivElement()
+      ..classes.add('configure-package');
+    _tagsContainer = new DivElement()
+      ..classes.add('configure-package__tags');
+    tagList = new ConfigurationViewTagListPartial();
+    tagResponses = new ConfigurationViewTagResponsesPartial();
+
+    _tagsContainer.append(tagList.tagListElement);
+    _tagsContainer.append(tagResponses.tagResponsesElement);
+    configurationViewElement.append(HeadingElement.h2()
+      ..classes.add('configure-package__title')
+      ..text = "Escalates package");
+    configurationViewElement.append(HeadingElement.h3()
+      ..classes.add('configure-package__sub-title')
+      ..text = "Configure");
     configurationViewElement.append(_tagsContainer);
   }
 }
