@@ -108,12 +108,12 @@ void command(UIAction action, Data actionData) {
       var selectedTag = configurationTagData.keys.toList().first;
       populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
       break;
-    case UIAction.loadBatchRepliesConfiguration:
+    case UIAction.loadBatchRepliesPackageConfiguration:
       fetchConfigurationData();
       var selectedTag = configurationTagData.keys.toList().first;
       populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
       break;
-    case UIAction.loadEscalatesConfiguration:
+    case UIAction.loadEscalatesPackageConfiguration:
       fetchConfigurationData(); //TODO For now fetch from the same tag data. Escalates to use a new set of tags
       var selectedTag = configurationTagData.keys.toList().first;
       populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
@@ -135,6 +135,10 @@ void command(UIAction action, Data actionData) {
       addConfigurationResponseEntries(data.parentTag, data.language, data.text, configurationTagData);
       break;
   }
+}
+
+void loadAuthView() {
+  view.contentView.renderView(view.contentView.authMainView.authElement);
 }
 
 void loadDashboardView() {
@@ -163,12 +167,12 @@ void loadDashboardView() {
 
 void loadBatchRepliesConfigurationView() {
   view.contentView.renderView(view.contentView.batchRepliesConfigurationView.configurationViewElement);
-  command(UIAction.loadBatchRepliesConfiguration, null);
+  command(UIAction.loadBatchRepliesPackageConfiguration, null);
 }
 
 void loadEscalatesConfigurationView() {
   view.contentView.renderView(view.contentView.escalatesConfigurationView.configurationViewElement);
-  command(UIAction.loadEscalatesConfiguration, null);
+  command(UIAction.loadEscalatesPackageConfiguration, null);
 }
 
 void fetchConfigurationData() {
