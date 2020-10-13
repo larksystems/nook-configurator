@@ -151,3 +151,8 @@ Map<String, Map<String, List<String>>> get configurationData =>
     ]
   }
   };
+
+class User {
+  String userName;
+  String userEmail;
+}
