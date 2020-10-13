@@ -14,6 +14,7 @@ Router router;
 enum UIAction {
   userSignedIn,
   loadBatchRepliesConfiguration,
+  loadEscalatesConfiguration,
   configurationTagSelected,
   addConfigurationTag,
   editConfigurationTagResponse,
@@ -55,6 +56,7 @@ void setupRoutes() {
   router = new Router()
     ..addHandler('#/dashboard', loadDashboardView)
     ..addHandler('#/batch-replies-configuration', loadBatchRepliesConfigurationView)
+    ..addHandler('#/escalates-configuration', loadEscalatesConfigurationView)
     ..listen();
 }
 
@@ -67,6 +69,11 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.loadBatchRepliesConfiguration:
       fetchConfigurationData();
+      var selectedTag = configurationTagData.keys.toList().first;
+      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
+      break;
+    case UIAction.loadEscalatesConfiguration:
+      fetchConfigurationData(); //TODO For now fetch from the same tag data. Escalates to use a new set of tags
       var selectedTag = configurationTagData.keys.toList().first;
       populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationTagData[selectedTag]);
       break;
@@ -113,9 +120,14 @@ void loadDashboardView() {
   view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
 }
 
-loadBatchRepliesConfigurationView() {
+void loadBatchRepliesConfigurationView() {
   view.contentView.renderView(view.contentView.batchRepliesConfigurationView.configurationViewElement);
   command(UIAction.loadBatchRepliesConfiguration, null);
+}
+
+void loadEscalatesConfigurationView () {
+  view.contentView.renderView(view.contentView.escalatesConfigurationView.configurationViewElement);
+  command(UIAction.loadEscalatesConfiguration, null);
 }
 
 void fetchConfigurationData() {
@@ -133,6 +145,9 @@ Map<String, bool> getTagList(String selectedTag, Map<String, Map<String, List<St
 void populateConfigurationView(String selectedTag, Map<String, bool> tagList, Map<String, List<String>> tagResponses) {
   view.contentView.batchRepliesConfigurationView.tagList.renderTagList(tagList);
   view.contentView.batchRepliesConfigurationView.tagResponses.renderResponses(selectedTag, tagResponses);
+
+  view.contentView.escalatesConfigurationView.tagList.renderTagList(tagList);
+  view.contentView.escalatesConfigurationView.tagResponses.renderResponses(selectedTag, tagResponses);
 }
 
 void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, Map<String, List<String>>> tagData) {

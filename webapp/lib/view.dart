@@ -45,11 +45,13 @@ class ContentView {
   DivElement contentViewElement;
   DashboardView dashboardView;
   BatchRepliesConfigurationView batchRepliesConfigurationView;
+  EscalatesConfigurationView escalatesConfigurationView;
 
   ContentView() {
     contentViewElement = new DivElement()..classes.add('content');
     dashboardView = new DashboardView();
-    batchRepliesConfigurationView= new BatchRepliesConfigurationView();
+    batchRepliesConfigurationView = new BatchRepliesConfigurationView();
+    escalatesConfigurationView = new EscalatesConfigurationView();
   }
 
   void renderView(DivElement view) {
@@ -198,6 +200,32 @@ class BatchRepliesConfigurationView {
     configurationViewElement.append(HeadingElement.h2()
       ..classes.add('configure-package__title')
       ..text = "Batch replies (Week 12) package");
+    configurationViewElement.append(HeadingElement.h3()
+      ..classes.add('configure-package__sub-title')
+      ..text = "Configure");
+    configurationViewElement.append(_tagsContainer);
+  }
+}
+
+class EscalatesConfigurationView {
+  DivElement configurationViewElement;
+  DivElement _tagsContainer;
+  ConfigurationViewTagListPartial tagList;
+  ConfigurationViewTagResponsesPartial tagResponses;
+
+  EscalatesConfigurationView() {
+    configurationViewElement = new DivElement()
+      ..classes.add('configure-package');
+    _tagsContainer = new DivElement()
+      ..classes.add('configure-package__tags');
+    tagList = new ConfigurationViewTagListPartial();
+    tagResponses = new ConfigurationViewTagResponsesPartial();
+
+    _tagsContainer.append(tagList.tagListElement);
+    _tagsContainer.append(tagResponses.tagResponsesElement);
+    configurationViewElement.append(HeadingElement.h2()
+      ..classes.add('configure-package__title')
+      ..text = "Escalates package");
     configurationViewElement.append(HeadingElement.h3()
       ..classes.add('configure-package__sub-title')
       ..text = "Configure");
