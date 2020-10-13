@@ -13,8 +13,8 @@ Router router;
 
 enum UIAction {
   userSignedIn,
-  loadBatchRepliesConfiguration,
-  loadEscalatesConfiguration,
+  loadBatchRepliesPackageConfiguration,
+  loadEscalatesPackageConfiguration,
   configurationTagSelected,
   addConfigurationTag,
   editConfigurationTagResponse,
