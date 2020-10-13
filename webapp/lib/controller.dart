@@ -74,6 +74,7 @@ void setupRoutes() {
     ..addHandler('#/auth', loadAuthView)
     ..addHandler('#/dashboard', loadDashboardView)
     ..addHandler('#/configuration', loadConfigurationView)
+    ..addHandler('#/project-configuration', loadProjectConfigurationView)
     ..listen();
 }
 
@@ -307,6 +308,10 @@ void loadDashboardView() {
 loadConfigurationView() {
   view.contentView.renderView(view.contentView.configurationView.configurationViewElement);
   command(UIAction.loadProjectConfiguration, null);
+}
+
+loadProjectConfigurationView() {
+  view.contentView.renderView(view.contentView.projectConfigurationView.configurationViewElement);
 }
 
 void fetchConfigurationData() {

@@ -160,3 +160,7 @@
 .add-button:hover {
     cursor: pointer;
 }
+
+.project-configuration {
+    width: 80%;
+}
