@@ -104,14 +104,16 @@ class ContentView {
   DivElement contentViewElement;
   AuthMainView authMainView;
   DashboardView dashboardView;
-  ConfigurationView configurationView;
+  BatchRepliesConfigurationView batchRepliesConfigurationView;
+  EscalatesConfigurationView escalatesConfigurationView;
   ProjectConfigurationView projectConfigurationView;
 
   ContentView() {
     contentViewElement = new DivElement()..classes.add('content');
     authMainView = new AuthMainView();
     dashboardView = new DashboardView();
-    configurationView = new ConfigurationView();
+    batchRepliesConfigurationView = new BatchRepliesConfigurationView();
+    escalatesConfigurationView = new EscalatesConfigurationView();
     projectConfigurationView = new ProjectConfigurationView();
   }
 
@@ -357,7 +359,7 @@ class ActivePackagesViewPartial {
     _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
-      ..href = '#/configuration';
+      ..href = '#/batch-replies-configuration';
     _packageActionsContainer.append(_dashboardAction);
     _packageActionsContainer.append(_conversationsAction);
     _packageActionsContainer.append(_configureAction);
@@ -398,13 +400,13 @@ class AvailablePackagesViewPartial {
   }
 }
 
-class ConfigurationView {
+class BatchRepliesConfigurationView {
   DivElement configurationViewElement;
   DivElement _tagsContainer;
   ConfigurationViewTagListPartial tagList;
   ConfigurationViewTagResponsesPartial tagResponses;
 
-  ConfigurationView() {
+  BatchRepliesConfigurationView() {
     configurationViewElement = new DivElement()
       ..classes.add('configure-package');
     _tagsContainer = new DivElement()
@@ -414,9 +416,38 @@ class ConfigurationView {
 
     _tagsContainer.append(tagList.tagListElement);
     _tagsContainer.append(tagResponses.tagResponsesElement);
-    configurationViewElement.append(HeadingElement.h1()
+    configurationViewElement.append(HeadingElement.h2()
       ..classes.add('configure-package__title')
-      ..text = "Configure Package");
+      ..text = "Batch replies (Week 12) package");
+    configurationViewElement.append(HeadingElement.h3()
+      ..classes.add('configure-package__sub-title')
+      ..text = "Configure");
+    configurationViewElement.append(_tagsContainer);
+  }
+}
+
+class EscalatesConfigurationView {
+  DivElement configurationViewElement;
+  DivElement _tagsContainer;
+  ConfigurationViewTagListPartial tagList;
+  ConfigurationViewTagResponsesPartial tagResponses;
+
+  EscalatesConfigurationView() {
+    configurationViewElement = new DivElement()
+      ..classes.add('configure-package');
+    _tagsContainer = new DivElement()
+      ..classes.add('configure-package__tags');
+    tagList = new ConfigurationViewTagListPartial();
+    tagResponses = new ConfigurationViewTagResponsesPartial();
+
+    _tagsContainer.append(tagList.tagListElement);
+    _tagsContainer.append(tagResponses.tagResponsesElement);
+    configurationViewElement.append(HeadingElement.h2()
+      ..classes.add('configure-package__title')
+      ..text = "Escalates package");
+    configurationViewElement.append(HeadingElement.h3()
+      ..classes.add('configure-package__sub-title')
+      ..text = "Configure");
     configurationViewElement.append(_tagsContainer);
   }
 }
