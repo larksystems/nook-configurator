@@ -72,7 +72,7 @@ void initUI() {
 
 void setupRoutes() {
   router = new Router()
-    ..addHandler(new Route('#/auth', loadAuthView, checkAuthenticated: false), isAuthRoute: true)
+    ..addHandler(new Route('#/auth', loadAuthView), isAuthRoute: true)
     ..addHandler(new Route('#/dashboard', loadDashboardView))
     ..addHandler(new Route('#/batch-replies-configuration', loadBatchRepliesConfigurationView))
     ..addHandler(new Route('#/escalates-configuration', loadEscalatesConfigurationView))

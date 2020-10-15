@@ -3,10 +3,9 @@ import 'controller.dart' as controller;
 
 class Route {
   String path;
-  bool checkAuthenticated;
   Function handler;
 
-  Route(this.path, this.handler, {this.checkAuthenticated = true});
+  Route(this.path, this.handler);
 }
 
 class Router {
