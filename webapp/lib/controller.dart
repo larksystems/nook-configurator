@@ -66,7 +66,7 @@ void init() async {
 }
 
 void initUI() {
-  router.routeTo('#/dashboard');
+  router.routeTo('#/dashboard'); //TODO This is just temporary initialization becuase we don't have a complete app
   view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
 }
 
