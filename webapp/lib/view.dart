@@ -350,11 +350,11 @@ class ActivePackagesViewPartial {
     _dashboardAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Dashboard'
-      ..href = '#/dashboard';
+      ..href = '#';
     _conversationsAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Conversations'
-      ..href = '#/conversations';
+      ..href = '#';
     _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
