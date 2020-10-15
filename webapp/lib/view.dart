@@ -294,7 +294,6 @@ class ProjectConfigurationView {
     var formElement = new InputElement()
       ..classes.add('single-form-group__input')
       ..type = formGroupType.toString().split('.').last;
-    print('$label: ${formGroupType.toString()}');
     if (formGroupType == FormGroupTypes.CHECKBOX) {
       formGroup
       ..append(formElement)
