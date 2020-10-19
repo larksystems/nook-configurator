@@ -1,172 +1,188 @@
-.configure-package {
-    display: grid;
+.configure-package-view {
+  display: grid;
+  grid-template-columns: 20% auto;
+  background-color: #f9f9f9;
 }
 
-.configure-package__title {
-    align-self: center;
+.configure-package-sidebar {
+  border-right: 1px solid #ddd;
 }
 
-.configure-package__sub-title {
-    align-self: center;
+.configure-package-sidebar__title {
+  display: block;
+  padding: 10px;
+  border-bottom: 2px solid #ddd;
+  font-size: 1.4em;
+  font-weight: 400;
+  color: #868383;
 }
 
-.configure-package__tags {
-    display: grid;
-    grid-template-columns: 30% auto;
+.selected-active-package-list {
+  padding-left: 0px;
+  margin-top: 0px;
 }
 
-.tags-list {
-    border-color: #ddd;
-    border-style: solid;
-    border-bottom-style: none;
-    border-radius: .5rem;
-    border-width: 1px;
-    padding: 0px;
+.selected-active-package-list__item {
+  display: grid;
+  grid-template-columns: 30px auto;
+  border-bottom: 1px solid #ddd;
+  padding: 15px 10px;
 }
 
-.tag-list__tag-item {
-    list-style-type: none;
-    border-color: #ddd;
-    border-bottom-style: solid;
-    border-width: 1px;
-    padding: 10px;
+.selected-active-package-list__item:hover {
+  cursor: pointer;
+  background-color: #ddd;
 }
 
-.tag-list__tag-item--active {
-    background-color: #b5b3b3;
+.selected-active-package-list__item-state {
+  width: 18px;
+  height: 18px;
 }
 
-.tag-list__tag-item-drop-target {
-    background-color: #b5b3b3;
+.selected-active-package-list__item-text {
+  list-style-type: none;
+  font-size: 1.2em;
 }
 
-.tag-list__tag-item:hover {
-    cursor: pointer;
-    background-color: #b5b3b3;
+.configure-package-content {
+  display: grid;
 }
 
-.tag-responses {
-    display: grid;
-    grid-template-rows: 40px auto;
-    border-color: #ddd;
-    border-style: solid;
-    border-radius: .5rem;
-    border-width: 1px;
-    margin-top: 14px;
-    margin-left: 20px;
+.configure-package-tags {
+  display: grid;
+  grid-template-columns: 60% 40%;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
 }
 
-.tag-responses__header {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    text-align: center;
+.configure-package-charts {
 }
 
-.tag-responses__header-title {
-    height: 17px;
+.configure-package-charts__chart {
+  width: 400px;
 }
 
-.tag-responses__content {
-    overflow-y: scroll;
+.configure-package-actions {
 }
 
-.tag-responses__item-row {
-    display: grid;
-    grid-template-columns: 20px repeat(auto-fill, minmax(300px, 1fr));
-    grid-gap: 5px;
-    padding-right: 10px;
+.configure-package-actions__action {
+  margin-left: 60px;
+  color: #6ea9ac;
+  text-decoration: none;
 }
 
-.tag-responses__item {
-    overflow-y: scroll;
-    border: 1px solid #ddd;
-    border-radius: .5rem;
-    padding: 2px;
-    min-height: 70px;
+.conversation-tags {
 }
 
-.tag-responses__item:focus {
-    outline-color: #ddd;
+.conversation-tags__text {
 }
 
-.tag-responses__item-drag-handle {
-    background-color: #ddd;
-    width: 12px;
-    height: 60px;
-    margin-left: 3px;
-    align-self: center;
+.conversation-tags__text--center {
+  margin-left: 85px;
 }
 
-.tag-responses__item-drag-handle:hover {
-    cursor: grab;
+.conversation-tags__title {
 }
 
-.tag-responses__item-drag-handle--dragging {
-    cursor: grabbing;
+.conversation-tags__sub-title {
+  margin-left: 10px;
 }
 
-.tag-responses__item {
-    overflow-y: scroll;
-    min-width: 340px;
-    min-height: 64px;
-    border: 1px solid #ddd;
-    border-radius: .5rem;
-    padding: 2px;
+.conversation-tags__row {
+  padding-bottom: 20px;
 }
 
-.tag-responses__item:focus {
-    outline-color: #ddd;
+.tags {
+  margin-left: 30px;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
-.add-tag-modal {
-    width: 275px;
-    position: absolute;
-    margin: -35px 0px 0px 45px;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: .5rem;
-    background-color: #efefef;
+.tags__tag {
+  align-self: flex-start;
+  line-height: 16px;
+  border: 2px dotted #cacaca;
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin: 5px 10px 0px 0px;
+  white-space: nowrap;
 }
 
-.add-tag-modal__heading {
-    margin: 0px 0px 6px 6px;
+.button-add-tag {
+  align-self: flex-start;
+  margin-top: 5px;
 }
 
-.add-tag-modal__dropdown {
-    border-radius: .5rem;
-    width: 100%;
+.add-tag-dropdown {
+  align-self: flex-start;
+  background-color: #f9f9f9;
+  padding: 0px;
+  border: 1px solid #ddd;
+  margin-left: 10px;
+  margin-top: 5px;
+  min-width: 80px;
 }
 
-.add-tag-modal__close-button {
-    position: absolute;
-    border: none;
-    outline: none;
-    bottom: 52px;
-    right: -4px;
-    background: none;
-    font-size: .8rem;
+.add-tag-dropdown__item {
+  list-style-type: none;
+  border-bottom: 1px solid #ddd;
 }
 
-.add-tag-modal__close-button:hover {
-    cursor: pointer;
+.add-tag-dropdown__item:hover {
+  cursor: pointer;
 }
 
-.add-button {
-    margin: 5px;
-    background-color: #a7a4a4;
-    border: none;
-    border-radius: 100%;
-    outline: none;
-    height: 30px;
-    width: 30px;
-    font-size: 1.1rem;
-    font-weight: bold;
+.conversation-charts {
+  display: grid;
+  grid-template-rows: 90% auto;
 }
 
-.add-button:hover {
-    cursor: pointer;
+.configure-package-responses{
+  display: grid;
+  grid-template-rows: auto auto;
+  border-bottom: 1px solid #ddd;
+  padding: 20px;
 }
 
-.project-configuration {
-    width: 80%;
+.configure-package-responses-headers {
+  display: flex;
+  justify-content: space-between;
+  padding-right: 185px;
+}
+
+.conversation-responses {}
+
+.conversation-response {
+  display: grid;
+  grid-template-columns: 35% 35% auto;
+  grid-gap: 10px;
+  padding-left: 20px;
+}
+
+.conversation-response__language {
+  overflow-y: scroll;
+  border: 1px solid #ddd;
+  border-radius: .5rem;
+  padding: 2px;
+  min-height: 70px;
+}
+
+.conversation-response__reviewed {
+  display: flex;
+  justify-content: space-evenly;
+  align-self: center;
+  flex-wrap: nowrap;
+}
+
+.conversation-response__reviewed-state {}
+
+.conversation-response__reviewed-description {
+  margin-top: 0px;
+}
+
+.configure-package-labels {
+  display: grid;
+  padding-left: 20px;
+  margin-bottom: 100px;
 }
