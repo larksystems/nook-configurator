@@ -1,5 +1,6 @@
-import 'dart:convert';
 import 'dart:html';
+
+import 'model.dart' as model;
 
 import 'logger.dart';
 import 'controller.dart' as controller;
@@ -100,8 +101,8 @@ class AuthHeaderViewPartial {
   }
 }
 
-class BaseView {
-  DivElement get renderElement => new DivElement();
+abstract class BaseView {
+  DivElement get renderElement;
 }
 
 class ContentView {
@@ -117,7 +118,7 @@ class ContentView {
   }
 }
 
-class AuthMainView extends BaseView{
+class AuthMainView extends BaseView {
   DivElement authElement;
   ButtonElement _signInButton;
 
@@ -151,7 +152,7 @@ class AuthMainView extends BaseView{
   DivElement get renderElement => authElement;
 }
 
-class DashboardView extends BaseView{
+class DashboardView extends BaseView {
   List<ActivePackagesViewPartial> activePackages;
   List<AvailablePackagesViewPartial> availablepackages;
 
@@ -187,7 +188,7 @@ class DashboardView extends BaseView{
     dashboardViewElement.append(activePackagesContainer);
     dashboardViewElement.append(availablePackagesContainer);
   }
-  @override
+
   DivElement get renderElement => dashboardViewElement;
 
   void renderActivePackages() {
@@ -215,7 +216,7 @@ class ActivePackagesViewPartial {
   AnchorElement _conversationsAction;
   AnchorElement _configureAction;
 
-  ActivePackagesViewPartial(String packageName) {
+  ActivePackagesViewPartial(String packageName, String conversationsLink, String configurationLink) {
     packageElement = new DivElement()
       ..classes.add('active-packages__package');
     _packageName = new HeadingElement.h4()
@@ -229,11 +230,11 @@ class ActivePackagesViewPartial {
     _conversationsAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Conversations'
-      ..href = '#/conversations';
+      ..href = conversationsLink;
     _configureAction = new AnchorElement()
       ..classes.add('active-packages__package-action')
       ..text = 'Configure'
-      ..href = '#/batch-replies-configuration';
+      ..href = configurationLink;
     _packageActionsContainer.append(_dashboardAction);
     _packageActionsContainer.append(_conversationsAction);
     _packageActionsContainer.append(_configureAction);
@@ -274,14 +275,13 @@ class AvailablePackagesViewPartial {
   }
 }
 
-class BatchRepliesConfigurationView extends PackageConfiguratorView {}
-
 class EscalatesConfigurationView extends PackageConfiguratorView {}
 
 class PackageConfiguratorView extends BaseView {
   DivElement packageConfiguratorViewElement;
   DivElement _packageConfiguratorSidebar;
   DivElement _packageConfiguratorContent;
+
   PackageConfiguratorView() {
     packageConfiguratorViewElement = new DivElement()
       ..classes.add('configure-package-view');
@@ -290,12 +290,10 @@ class PackageConfiguratorView extends BaseView {
     _packageConfiguratorContent = new DivElement()
       ..classes.add('configure-package-content');
     _buildSidebarPartial();
-    _buildContentPartial();
     packageConfiguratorViewElement.append(_packageConfiguratorSidebar);
     packageConfiguratorViewElement.append(_packageConfiguratorContent);
   }
 
-  @override
   DivElement get renderElement => packageConfiguratorViewElement;
 
   void _buildSidebarPartial() {
@@ -329,8 +327,56 @@ class PackageConfiguratorView extends BaseView {
 
     _packageConfiguratorSidebar.append(packageList);
   }
+}
 
-  DivElement _buildContentPartial() {
+class BatchRepliesConfigurationView extends PackageConfiguratorView {
+  DivElement hasAllTagsContainer;
+  DivElement containsLastInTurnTagsContainer;
+  DivElement hasNoneTagsContainer;
+  DivElement suggestedRepliesContainer;
+  DivElement addsTagsContainer;
+  BatchRepliesConfigurationView(model.Configuration data) : super() {
+    _buildContentPartial(data);
+  }
+
+  void _buildContentPartial(model.Configuration data) {
+    hasAllTagsContainer = new DivElement()
+      ..classes.add('tags');
+    for (var tag in data.hasAllTags) {
+      hasAllTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+    }
+    hasAllTagsContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-tag')
+        ..text = '+'
+        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
+    );
+
+    containsLastInTurnTagsContainer = new DivElement()
+      ..classes.add('tags');
+    for (var tag in data.containsLastInTurnTags) {
+      containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+    }
+    containsLastInTurnTagsContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-tag')
+        ..text = '+'
+        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
+    );
+
+    hasNoneTagsContainer = new DivElement()
+      ..classes.add('tags');
+    for (var tag in data.hasNoneTags) {
+      hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+    }
+    hasNoneTagsContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-tag')
+        ..text = '+'
+        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
+    );
+
+
     _packageConfiguratorContent.append(
       new DivElement()
         ..classes.add('configure-package-tags')
@@ -350,16 +396,7 @@ class PackageConfiguratorView extends BaseView {
                     ..classes.add('conversation-tags__sub-title')
                     ..text = 'Conversations has tags'
                 )
-                ..append(
-                  new DivElement()
-                    ..classes.add('tags')
-                    ..append(
-                      new ButtonElement()
-                        ..classes.add('button-add-tag')
-                        ..text = '+'
-                        ..onClick.listen(_addTagDropdown)
-                    )
-                )
+                ..append(hasAllTagsContainer)
                 ..append(
                   new ParagraphElement()
                     ..classes.add('conversation-tags__text--center')
@@ -370,26 +407,7 @@ class PackageConfiguratorView extends BaseView {
                     ..classes.add('conversation-tags__sub-title')
                     ..text = 'Last in turn contains ...'
                 )
-                ..append(
-                  new DivElement()
-                    ..classes.add('tags')
-                    ..append(
-                      new ParagraphElement()
-                        ..classes.add('tags__tag')
-                        ..text = 'Denial'
-                    )
-                    ..append(
-                      new ParagraphElement()
-                        ..classes.add('tags__tag')
-                        ..text = 'Rumour'
-                    )
-                    ..append(
-                      new ButtonElement()
-                        ..classes.add('button-add-tag')
-                        ..text = '+'
-                        ..onClick.listen(_addTagDropdown)
-                    )
-                )
+                ..append(containsLastInTurnTagsContainer)
             )
             ..append(
               new DivElement()
@@ -404,26 +422,7 @@ class PackageConfiguratorView extends BaseView {
                     ..classes.add('conversation-tags__sub-title')
                     ..text = 'Conversation has tags'
                 )
-                ..append(
-                  new DivElement()
-                    ..classes.add('tags')
-                    ..append(
-                      new ParagraphElement()
-                        ..classes.add('tags__tag')
-                        ..text = 'escalate'
-                    )
-                    ..append(
-                      new ParagraphElement()
-                        ..classes.add('tags__tag')
-                        ..text = 'stop'
-                    )
-                    ..append(
-                      new ButtonElement()
-                        ..classes.add('button-add-tag')
-                        ..text = '+'
-                        ..onClick.listen(_addTagDropdown)
-                    )
-                )
+                ..append(hasNoneTagsContainer)
             )
         )
         ..append(
@@ -454,8 +453,44 @@ class PackageConfiguratorView extends BaseView {
                     ..text = 'Explore'
                 )
             )
-      )
+        )
     );
+
+    suggestedRepliesContainer = new DivElement()
+      ..classes.add('conversation-responses');
+    for (var suggestedResponse in data.suggestedReplies) {
+      suggestedRepliesContainer.append(
+        new DivElement()
+          ..classes.add('conversation-response')
+          ..append(
+            new ParagraphElement()
+              ..classes.add('conversation-response__language')
+              ..text = suggestedResponse['messages'][0]
+              ..contentEditable = 'true'
+          )
+          ..append(
+            new ParagraphElement()
+              ..classes.add('conversation-response__language')
+              ..text = suggestedResponse['messages'][1]
+              ..contentEditable = 'true'
+          )
+          ..append(
+            DivElement()
+              ..classes.add('conversation-response__reviewed')
+              ..append(
+                new CheckboxInputElement()
+                    ..classes.add('conversation-response__reviewed-state')
+                    ..checked = suggestedResponse['reviewed']
+              )
+              ..append(
+                new ParagraphElement()
+                ..classes.add('conversation-response__reviewed-description')
+                ..text = '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}'
+              )
+          )
+      );
+    }
+
     _packageConfiguratorContent.append(
       new DivElement()
         ..classes.add('configure-package-responses')
@@ -470,71 +505,23 @@ class PackageConfiguratorView extends BaseView {
               new ParagraphElement()
                 ..text = '3rd Party reviews'
             )
+        )
+        ..append(suggestedRepliesContainer)
+    );
 
-        )
-        ..append(
-          new DivElement()
-            ..classes.add('conversation-responses')
-            ..append(
-              new DivElement()
-                ..classes.add('conversation-response')
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-response__language')
-                    ..text = 'Greetings to you dear listener! Thanks for the beautiful way you are sharing your thoughts with us'
-                    ..contentEditable = 'true'
-                )
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-response__language')
-                    ..text = 'Saalan, quruz badan nage guddoon dhagaystaha sharafta leh, waad ku mahadsantahay sida quruxda badana ee aad noola wadageyso fikradahaada'
-                    ..contentEditable = 'true'
-                )
-                ..append(
-                  DivElement()
-                    ..classes.add('conversation-response__reviewed')
-                    ..append(
-                      new CheckboxInputElement()
-                          ..classes.add('conversation-response__reviewed-state')
-                          ..checked = true
-                    )
-                    ..append(
-                      new ParagraphElement()
-                      ..classes.add('conversation-response__reviewed-description')
-                      ..text = 'nancy@whatworks.co.ke, 2020-10-10'
-                    )
-                )
-            )
-            ..append(
-              new DivElement()
-                ..classes.add('conversation-response')
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-response__language')
-                    ..text = 'Thanks, we hear you and appreciate. We think it is really important to tell you what we know from trusted sources'
-                    ..contentEditable = 'true'
-                )
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-response__language')
-                    ..text = 'Mahadsanid, waan ku maqalnaa waanan kuu mahadnaqaynaa. Waxaa muhiim ah inaan kula wadaagno waxaa aan ognahay oo ka yimid ilo lagu kalsoon yahay'
-                    ..contentEditable = 'true'
-                )
-                ..append(
-                  DivElement()
-                    ..classes.add('conversation-response__reviewed')
-                    ..append(
-                      new CheckboxInputElement()
-                        ..classes.add('conversation-response__reviewed-state')
-                    )
-                    ..append(
-                      new ParagraphElement()
-                        ..classes.add('conversation-response__reviewed-description')
-                        ..text = 'another@example.org, 2020-10-20'
-                    )
-                )
-            )
-        )
+
+    addsTagsContainer = new DivElement()
+      ..classes.add('tags');
+    for (var tag in data.addsTags) {
+      var tagView = new TagView(tag, tag, TagStyle.Normal);
+      tagView.editable = true;
+      addsTagsContainer.append(tagView.renderElement);
+    }
+    addsTagsContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-tag')
+        ..text = '+'
+        ..onClick.listen((event) => _createNewTag(event))
     );
     _packageConfiguratorContent.append(
       new DivElement()
@@ -544,74 +531,89 @@ class PackageConfiguratorView extends BaseView {
             ..classes.add('conversation-tags__title')
             ..text = 'What new labels would like to tag the message with?'
         )
-        ..append(
-          new DivElement()
-            ..classes.add('tags')
-            ..append(
-              new ParagraphElement()
-                ..classes.add('tags__tag')
-                ..text = 'Organic conversation appreciation'
-            )
-            ..append(
-              new ParagraphElement()
-                ..classes.add('tags__tag')
-                ..text = 'Organic conversation hostility'
-            )
-            ..append(
-              new ParagraphElement()
-                ..classes.add('tags__tag')
-                ..text = 'RP Substance appreciation'
-            )
-            ..append(
-              new ParagraphElement()
-                ..classes.add('tags__tag')
-                ..text = 'RP Substance hostility'
-            )
-            ..append(
-              new ButtonElement()
-                ..classes.add('button-add-tag')
-                ..text = '+'
-                ..onClick.listen(_addTagDropdown)
-            )
-        )
+        ..append(addsTagsContainer)
     );
   }
 
-  void _addTagDropdown(MouseEvent event) {
+  void _addTagDropdown(MouseEvent event, List<String> tags) {
     var tagsList = (event.target as Element).parent;
     if (tagsList.children.last.classes.contains('add-tag-dropdown')) tagsList.lastChild.remove();
 
-    tagsList.append(
-      new Element.ul()
-        ..classes.add('add-tag-dropdown')
-        ..append(
-          new Element.li()
-            ..classes.add('add-tag-dropdown__item')
-            ..text = 'Tag 1'
-            ..onClick.listen((event) => _addTag((event.target as Element).text, tagsList))
-        )
-        ..append(
-          new Element.li()
-            ..classes.add('add-tag-dropdown__item')
-            ..text = 'Tag 2'
-            ..onClick.listen((event) => _addTag((event.target as Element).text, tagsList))
-        )
-        ..append(
-          new Element.li()
-            ..classes.add('add-tag-dropdown__item')
-            ..text = 'Tag 3'
-            ..onClick.listen((event) => _addTag((event.target as Element).text, tagsList))
-        )
-    );
+    var tagListDropdown = new Element.ul()
+      ..classes.add('add-tag-dropdown');
+    tagsList.append(tagListDropdown);
+    for (var tag in tags) {
+      tagListDropdown.append(
+        new Element.li()
+          ..classes.add('add-tag-dropdown__item')
+          ..text = tag
+          ..onClick.listen((event) => _addTag((event.target as Element).text, tagsList))
+      );
+    }
+  }
+
+  void _createNewTag(MouseEvent event) {
+    var tagsList = (event.target as Element).parent;
+    var newTagView = new TagView('', 'id-123', TagStyle.Normal);
+    tagsList.children.last.insertAdjacentElement('beforebegin', newTagView.renderElement);
+    newTagView.editable = true;
+    newTagView.focus();
   }
 
   void _addTag(String tag, Element tagList) {
+    // TODO: call controller.command()
     tagList.lastChild.remove();
-    tagList.children.last.insertAdjacentElement('beforebegin',
-      new ParagraphElement()
-        ..classes.add('tags__tag')
-        ..text = '$tag'
-    );
+    tagList.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
+  }
+}
+
+enum TagStyle {
+  Normal,
+  Important,
+}
+
+class TagView extends BaseView {
+  DivElement tag;
+  SpanElement _tagText;
+  SpanElement _removeButton;
+
+  TagView(String text, String tagId, TagStyle tagStyle) {
+    tag = new DivElement()
+      ..classes.add('tag')
+      ..dataset['id'] = tagId;
+    switch (tagStyle) {
+      case TagStyle.Important:
+        tag.classes.add('tag--important');
+        break;
+      default:
+        break;
+    }
+
+    _tagText = new SpanElement()
+      ..classes.add('tag__name')
+      ..text = text
+      ..title = text;
+    tag.append(_tagText);
+
+    _removeButton = new SpanElement()
+      ..classes.add('tag__remove-btn')
+      ..text = 'x'
+      ..onClick.listen((event) {
+        tag.remove();
+        // TODO: call controller.command()
+      });
+
+    tag.append(_removeButton);
+  }
+
+  DivElement get renderElement => tag;
+
+  // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
+  // then the cursor jumps over the x. Needs investigating and fixing.
+  void set editable(bool value) => _tagText.contentEditable = '$value';
+
+  void focus() {
+    _tagText.focus();
   }
 }
 
@@ -634,7 +636,6 @@ class ProjectConfigurationView extends BaseView{
     configurationViewElement.append(_projectConfigurationForm);
   }
 
-  @override
   DivElement get renderElement => configurationViewElement;
 
   void _buildForm() {
