@@ -99,6 +99,10 @@
   flex-wrap: wrap;
 }
 
+.tags__actions {
+  position: relative;
+}
+
 .tag {
   align-self: flex-start;
   line-height: 18px;
@@ -126,21 +130,27 @@
 .button-add-tag {
   align-self: flex-start;
   margin-top: 5px;
+  position: relative;
 }
 
 .add-tag-dropdown {
   align-self: flex-start;
   background-color: #f9f9f9;
+  position: absolute;
+  top: 0px;
+  left: 16px;
   padding: 0px;
   border: 1px solid #ddd;
   margin-left: 10px;
   margin-top: 5px;
-  min-width: 80px;
+  min-width: 180px;
+  z-index: 1;
 }
 
 .add-tag-dropdown__item {
   list-style-type: none;
   border-bottom: 1px solid #ddd;
+  padding: 2px 4px;
 }
 
 .add-tag-dropdown__item:hover {

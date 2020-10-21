@@ -292,6 +292,9 @@ class PackageConfiguratorView extends BaseView {
     _buildSidebarPartial();
     packageConfiguratorViewElement.append(_packageConfiguratorSidebar);
     packageConfiguratorViewElement.append(_packageConfiguratorContent);
+    packageConfiguratorViewElement.onClick.listen((_) {
+      document.querySelectorAll('.add-tag-dropdown').forEach((dropdown) => dropdown.remove());
+    });
   }
 
   DivElement get renderElement => packageConfiguratorViewElement;
@@ -345,36 +348,21 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     for (var tag in data.hasAllTags) {
       hasAllTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
     }
-    hasAllTagsContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-tag')
-        ..text = '+'
-        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
-    );
+    hasAllTagsContainer.append(_addTagAction(model.tags));
 
     containsLastInTurnTagsContainer = new DivElement()
       ..classes.add('tags');
     for (var tag in data.containsLastInTurnTags) {
       containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
     }
-    containsLastInTurnTagsContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-tag')
-        ..text = '+'
-        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
-    );
+    containsLastInTurnTagsContainer.append(_addTagAction(model.tags));
 
     hasNoneTagsContainer = new DivElement()
       ..classes.add('tags');
     for (var tag in data.hasNoneTags) {
       hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
     }
-    hasNoneTagsContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-tag')
-        ..text = '+'
-        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
-    );
+    hasNoneTagsContainer.append(_addTagAction(model.tags));
 
 
     _packageConfiguratorContent.append(
@@ -535,13 +523,27 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     );
   }
 
-  void _addTagDropdown(MouseEvent event, List<String> tags) {
-    var tagsList = (event.target as Element).parent;
-    if (tagsList.children.last.classes.contains('add-tag-dropdown')) tagsList.lastChild.remove();
+  SpanElement _addTagAction(List<String> tags) {
+    return new SpanElement()
+      ..classes.add('tags__actions')
+      ..append(
+        new ButtonElement()
+          ..classes.add('button-add-tag')
+          ..text = '+'
+          ..onClick.listen((event) {
+            _addTagDropdown(event, model.tags);
+            event.stopPropagation();
+          })
+      );
+  }
 
+  void _addTagDropdown(MouseEvent event, List<String> tags) {
+    var tagActions = (event.target as Element).parent;
+    var tagsList = tagActions.parent;
+    document.querySelectorAll('.add-tag-dropdown').forEach((dropdown) => dropdown.remove());
     var tagListDropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
-    tagsList.append(tagListDropdown);
+    tagActions.append(tagListDropdown);
     for (var tag in tags) {
       tagListDropdown.append(
         new Element.li()
@@ -562,7 +564,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
 
   void _addTag(String tag, Element tagList) {
     // TODO: call controller.command()
-    tagList.lastChild.remove();
+    tagList.lastChild.lastChild.remove();
     tagList.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
   }
 }
