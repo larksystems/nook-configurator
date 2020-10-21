@@ -99,14 +99,28 @@
   flex-wrap: wrap;
 }
 
-.tags__tag {
+.tag {
   align-self: flex-start;
-  line-height: 16px;
+  line-height: 18px;
   border: 2px dotted #cacaca;
   border-radius: 3px;
-  padding: 1px 4px;
   margin: 5px 10px 0px 0px;
   white-space: nowrap;
+}
+
+.tag__name {
+  padding: 1px 4px;
+
+}
+
+.tag__remove-btn {
+  padding: 1px 4px;
+  border-left: 2px dotted #cacaca;
+  cursor: pointer;
+}
+
+.tag__remove-btn:hover {
+  background-color: #efefef;
 }
 
 .button-add-tag {

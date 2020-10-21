@@ -146,9 +146,9 @@ void loadDashboardView() {
   var dashboardView = new view.DashboardView();
   dashboardView.activePackages.addAll(
     [
-      new view.ActivePackagesViewPartial('Urgent conversations'),
-      new view.ActivePackagesViewPartial('Open conversations'),
-      new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
+      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/escalates-configuration'),
+      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#'),
+      new view.ActivePackagesViewPartial('Batch replies (Week 12)', '', '#/batch-replies-configuration'),
     ]);
   dashboardView.availablepackages.addAll(
     [
@@ -168,7 +168,7 @@ void loadDashboardView() {
 }
 
 void loadBatchRepliesConfigurationView() {
-  view.contentView.renderView(new view.BatchRepliesConfigurationView());
+  view.contentView.renderView(new view.BatchRepliesConfigurationView(model.changeCommsPackage));
   command(UIAction.loadBatchRepliesPackageConfiguration, null);
 }
 
