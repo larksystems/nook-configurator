@@ -139,17 +139,18 @@ void command(UIAction action, Data actionData) {
 }
 
 void loadAuthView() {
-  view.contentView.renderView(view.contentView.authMainView.authElement);
+  view.contentView.renderView(new view.AuthMainView());
 }
 
 void loadDashboardView() {
-  view.contentView.dashboardView.activePackages.addAll(
+  var dashboardView = new view.DashboardView();
+  dashboardView.activePackages.addAll(
     [
       new view.ActivePackagesViewPartial('Urgent conversations'),
       new view.ActivePackagesViewPartial('Open conversations'),
       new view.ActivePackagesViewPartial('Batch replies (Week 12)'),
     ]);
-  view.contentView.dashboardView.availablepackages.addAll(
+  dashboardView.availablepackages.addAll(
     [
       new view.AvailablePackagesViewPartial('Quick Poll',
         'Ask a question with fixed answers',
@@ -161,23 +162,23 @@ void loadDashboardView() {
         'Send set of people a once off message',
         ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
     ]);
-  view.contentView.dashboardView.renderActivePackages();
-  view.contentView.dashboardView.renderAvailablePackages();
-  view.contentView.renderView(view.contentView.dashboardView.dashboardViewElement);
+  dashboardView.renderActivePackages();
+  dashboardView.renderAvailablePackages();
+  view.contentView.renderView(dashboardView);
 }
 
 void loadBatchRepliesConfigurationView() {
-  view.contentView.renderView(view.contentView.batchRepliesConfigurationView.configurationViewElement);
+  view.contentView.renderView(new view.BatchRepliesConfigurationView());
   command(UIAction.loadBatchRepliesPackageConfiguration, null);
 }
 
 void loadEscalatesConfigurationView() {
-  view.contentView.renderView(view.contentView.escalatesConfigurationView.configurationViewElement);
+  view.contentView.renderView(new view.EscalatesConfigurationView());
   command(UIAction.loadEscalatesPackageConfiguration, null);
 }
 
 loadProjectConfigurationView() {
-  view.contentView.renderView(view.contentView.projectConfigurationView.configurationViewElement);
+  view.contentView.renderView(new view.ProjectConfigurationView());
 }
 
 void fetchConfigurationData() {
@@ -193,11 +194,11 @@ Map<String, bool> getTagList(String selectedTag, Map<String, List<List<String>>>
 }
 
 void populateConfigurationView(String selectedTag, Map<String, bool> tagList, List<String> responseLanguages, List<List<String>> tagResponses) {
-  view.contentView.batchRepliesConfigurationView.tagList.renderTagList(tagList);
-  view.contentView.batchRepliesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
+  // view.contentView.batchRepliesConfigurationView.tagList.renderTagList(tagList);
+  // view.contentView.batchRepliesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
 
-  view.contentView.escalatesConfigurationView.tagList.renderTagList(tagList);
-  view.contentView.escalatesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
+  // view.contentView.escalatesConfigurationView.tagList.renderTagList(tagList);
+  // view.contentView.escalatesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
 }
 
 void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, List<List<String>>> tagData) {
