@@ -194,7 +194,7 @@
 
 .conversation-response__reviewed {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   align-self: center;
   flex-wrap: nowrap;
 }

@@ -347,7 +347,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
       ..classes.add('tags');
     for (var tag in data.hasAllTags) {
       hasAllTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-      model.tags.removeWhere((tg) => tg == tag);
+      model.tags.removeWhere((tg) => tg == tag); // TODO: call controller.command()
     }
     hasAllTagsContainer.append(_addTagAction(model.tags));
 
@@ -355,7 +355,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
       ..classes.add('tags');
     for (var tag in data.containsLastInTurnTags) {
       containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-      model.tags.removeWhere((tg) => tg == tag);
+      model.tags.removeWhere((tg) => tg == tag); // TODO: call controller.command()
     }
     containsLastInTurnTagsContainer.append(_addTagAction(model.tags));
 
@@ -363,7 +363,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
       ..classes.add('tags');
     for (var tag in data.hasNoneTags) {
       hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-      model.tags.removeWhere((tg) => tg == tag);
+      model.tags.removeWhere((tg) => tg == tag); // TODO: call controller.command()
     }
     hasNoneTagsContainer.append(_addTagAction(model.tags));
 
@@ -472,6 +472,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
                 new CheckboxInputElement()
                     ..classes.add('conversation-response__reviewed-state')
                     ..checked = suggestedResponse['reviewed']
+                    ..onClick.listen((event) => _reviewSuggestedReplies(event))
               )
               ..append(
                 new ParagraphElement()
@@ -577,6 +578,20 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     tagList.lastChild.lastChild.remove();
     tagList.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
     model.tags.removeWhere((tg) => tg == tag);
+  }
+
+  void _reviewSuggestedReplies(MouseEvent event) {
+    // TODO: call controller.command()
+    var reviewCheckbox = (event.target as CheckboxInputElement);
+    var reviewDescription = reviewCheckbox.nextElementSibling;
+    if (reviewCheckbox.checked) {
+      var reviewedBy = controller.signedInUser.userEmail;
+      var now = DateTime.now().toLocal();
+      var reviewedDate = '${now.year}-${now.month}-${now.day}';
+      reviewDescription.text = '${reviewedBy}, ${reviewedDate}';
+    } else {
+      reviewDescription.text = ',';
+    }
   }
 }
 
