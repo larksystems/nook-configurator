@@ -606,7 +606,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
       var reviewedDate = '${now.year}-${now.month}-${now.day}';
       reviewDescription.text = '${reviewedBy}, ${reviewedDate}';
     } else {
-      reviewDescription.text = ',';
+      reviewDescription.text = '';
     }
   }
 }
