@@ -450,38 +450,15 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     suggestedRepliesContainer = new DivElement()
       ..classes.add('conversation-responses');
     for (var suggestedResponse in data.suggestedReplies) {
-      suggestedRepliesContainer.append(
-        new DivElement()
-          ..classes.add('conversation-response')
-          ..append(
-            new ParagraphElement()
-              ..classes.add('conversation-response__language')
-              ..text = suggestedResponse['messages'][0]
-              ..contentEditable = 'true'
-          )
-          ..append(
-            new ParagraphElement()
-              ..classes.add('conversation-response__language')
-              ..text = suggestedResponse['messages'][1]
-              ..contentEditable = 'true'
-          )
-          ..append(
-            DivElement()
-              ..classes.add('conversation-response__reviewed')
-              ..append(
-                new CheckboxInputElement()
-                    ..classes.add('conversation-response__reviewed-state')
-                    ..checked = suggestedResponse['reviewed']
-                    ..onClick.listen((event) => _reviewSuggestedReplies(event))
-              )
-              ..append(
-                new ParagraphElement()
-                ..classes.add('conversation-response__reviewed-description')
-                ..text = '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}'
-              )
-          )
-      );
+      suggestedRepliesContainer.append(_addSuggestedResponseEntry(suggestedResponse));
     }
+
+    suggestedRepliesContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-conversation-responses')
+        ..text = '+'
+        ..onClick.listen((event) => (event.target as Element).insertAdjacentElement('beforebegin', _addSuggestedResponseEntry()))
+    );
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -578,6 +555,44 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     tagList.lastChild.lastChild.remove();
     tagList.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
     model.tags.removeWhere((tg) => tg == tag);
+  }
+
+  DivElement _addSuggestedResponseEntry([Map suggestedResponse]) {
+    return new DivElement()
+      ..classes.add('conversation-response')
+      ..append(
+        new ButtonElement()
+          ..classes.add('button-remove-conversation-responses')
+          ..text = 'x'
+          ..onClick.listen((event) => (event.target as Element).parent.remove()) // TODO: call controller.command
+      )
+      ..append(
+        new ParagraphElement()
+          ..classes.add('conversation-response__language')
+          ..text = suggestedResponse != null ? suggestedResponse['messages'][0] : ''
+          ..contentEditable = 'true'
+      )
+      ..append(
+        new ParagraphElement()
+          ..classes.add('conversation-response__language')
+          ..text = suggestedResponse != null ? suggestedResponse['messages'][1] : ''
+          ..contentEditable = 'true'
+      )
+      ..append(
+        DivElement()
+          ..classes.add('conversation-response__reviewed')
+          ..append(
+            new CheckboxInputElement()
+                ..classes.add('conversation-response__reviewed-state')
+                ..checked = suggestedResponse != null ? suggestedResponse['reviewed'] : false
+                ..onClick.listen((event) => _reviewSuggestedReplies(event))
+          )
+          ..append(
+            new ParagraphElement()
+            ..classes.add('conversation-response__reviewed-description')
+            ..text = suggestedResponse != null ? '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}' : ','
+          )
+      );
   }
 
   void _reviewSuggestedReplies(MouseEvent event) {

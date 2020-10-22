@@ -133,6 +133,10 @@
   position: relative;
 }
 
+.button-add-tag:hover {
+  cursor: pointer;
+}
+
 .add-tag-dropdown {
   align-self: flex-start;
   background-color: #f9f9f9;
@@ -179,7 +183,7 @@
 
 .conversation-response {
   display: grid;
-  grid-template-columns: 35% 35% auto;
+  grid-template-columns: 2% 35% 35% auto;
   grid-gap: 10px;
   padding-left: 20px;
 }
@@ -201,8 +205,33 @@
 
 .conversation-response__reviewed-state {}
 
+.conversation-response__reviewed-state:hover {
+  cursor: pointer;
+}
+
 .conversation-response__reviewed-description {
   margin-top: 0px;
+}
+
+.button-remove-conversation-responses {
+  height: 22px;
+  width: 20px;
+  align-self: center;
+  border: none;
+  background-color: #c0c1c1;
+  border-radius: .5rem;
+}
+
+.button-remove-conversation-responses:hover {
+  cursor: pointer;
+}
+
+.button-add-conversation-responses {
+  margin-left: 20px;
+}
+
+.button-add-conversation-responses:hover {
+  cursor:pointer;
 }
 
 .configure-package-labels {
