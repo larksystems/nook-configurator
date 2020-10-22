@@ -555,7 +555,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     // TODO: call controller.command()
     tagList.lastChild.lastChild.remove();
     tagList.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
-    model.tags.removeWhere((tg) => tg == tag);
+    model.tags.removeWhere((t) => t == tag);
   }
 
   DivElement _addSuggestedResponseEntry([Map suggestedResponse]) {
