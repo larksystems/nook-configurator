@@ -363,7 +363,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
       ..classes.add('tags');
     for (var tag in data.hasNoneTags) {
       hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-      model.tags.removeWhere((tg) => tg == tag); // TODO: call controller.command()
+      model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
     }
     hasNoneTagsContainer.append(_addTagAction(model.tags));
 
