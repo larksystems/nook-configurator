@@ -525,7 +525,8 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     var tagListDropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
     tagActions.append(tagListDropdown);
-    for (var tag in tags) {
+    var tagsToShow = tags.isEmpty ? ['--None--'] : tags;
+    for (var tag in tagsToShow) {
       tagListDropdown.append(
         new Element.li()
           ..classes.add('add-tag-dropdown__item')
