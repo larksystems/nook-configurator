@@ -591,7 +591,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
           ..append(
             new ParagraphElement()
             ..classes.add('conversation-response__reviewed-description')
-            ..text = suggestedResponse != null ? '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}' : ','
+            ..text = suggestedResponse != null ? '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}' : ''
           )
       );
   }
