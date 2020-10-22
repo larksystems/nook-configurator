@@ -531,14 +531,9 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
         new Element.li()
           ..classes.add('add-tag-dropdown__item')
           ..text = tag
-          ..onClick.listen((event) => _addTag((event.target as Element).text, tagsList))
-      );
-    }
-    if (tagListDropdown.children.isEmpty) {
-      tagListDropdown.append(
-        new Element.li()
-          ..classes.add('add-tag-dropdown__item')
-          ..text = '--None--'
+          ..onClick.listen((event) {
+            if (tag != '--None--') _addTag((event.target as Element).text, tagsList);
+          })
       );
     }
   }
