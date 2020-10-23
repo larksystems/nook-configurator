@@ -292,9 +292,6 @@ class PackageConfiguratorView extends BaseView {
     _buildSidebarPartial();
     packageConfiguratorViewElement.append(_packageConfiguratorSidebar);
     packageConfiguratorViewElement.append(_packageConfiguratorContent);
-    packageConfiguratorViewElement.onClick.listen((_) {
-      document.querySelectorAll('.add-tag-dropdown').forEach((dropdown) => dropdown.remove());
-    });
   }
 
   DivElement get renderElement => packageConfiguratorViewElement;
@@ -512,19 +509,19 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
           ..classes.add('button-add-tag')
           ..text = '+'
           ..onClick.listen((event) {
-            _addTagDropdown(event, model.tags);
+            var tagActions = (event.target as Element).parent;
+            var tagList = tagActions.parent;
+            _addTagDropdown(tagActions, tagList, model.tags);
             event.stopPropagation();
           })
       );
   }
 
-  void _addTagDropdown(MouseEvent event, List<String> tags) {
-    var tagActions = (event.target as Element).parent;
-    var tagsList = tagActions.parent;
+  void _addTagDropdown(Element tagActionsContainer, Element tagListContainer, List<String> tags) {
     document.querySelectorAll('.add-tag-dropdown').forEach((dropdown) => dropdown.remove());
     var tagListDropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
-    tagActions.append(tagListDropdown);
+    tagActionsContainer.append(tagListDropdown);
     var tagsToShow = tags.isEmpty ? ['--None--'] : tags;
     for (var tag in tagsToShow) {
       tagListDropdown.append(
@@ -532,10 +529,16 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
           ..classes.add('add-tag-dropdown__item')
           ..text = tag
           ..onClick.listen((event) {
-            if (tag != '--None--') _addTag((event.target as Element).text, tagsList);
+            if (tag != '--None--') _addTag((event.target as Element).text, tagListContainer);
           })
       );
     }
+    var documentOnClickSubscription;
+    documentOnClickSubscription = document.onClick.listen((event) {
+      event.stopPropagation();
+      tagListDropdown.remove();
+     documentOnClickSubscription.cancel();
+    });
   }
 
   void _createNewTag(MouseEvent event) {
@@ -546,10 +549,9 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     newTagView.focus();
   }
 
-  void _addTag(String tag, Element tagList) {
+  void _addTag(String tag, Element tagListContainer) {
     // TODO: call controller.command()
-    tagList.lastChild.lastChild.remove();
-    tagList.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
+    tagListContainer.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
     model.tags.removeWhere((t) => t == tag);
   }
 
