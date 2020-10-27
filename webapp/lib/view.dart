@@ -344,37 +344,25 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
       ..classes.add('tags');
     for (var tag in data.hasAllTags) {
       hasAllTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+      model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
     }
-    hasAllTagsContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-tag')
-        ..text = '+'
-        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
-    );
+    hasAllTagsContainer.append(_addTagAction(model.tags));
 
     containsLastInTurnTagsContainer = new DivElement()
       ..classes.add('tags');
     for (var tag in data.containsLastInTurnTags) {
       containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+      model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
     }
-    containsLastInTurnTagsContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-tag')
-        ..text = '+'
-        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
-    );
+    containsLastInTurnTagsContainer.append(_addTagAction(model.tags));
 
     hasNoneTagsContainer = new DivElement()
       ..classes.add('tags');
     for (var tag in data.hasNoneTags) {
       hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+      model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
     }
-    hasNoneTagsContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-tag')
-        ..text = '+'
-        ..onClick.listen((event) => _addTagDropdown(event, model.tags))
-    );
+    hasNoneTagsContainer.append(_addTagAction(model.tags));
 
 
     _packageConfiguratorContent.append(
@@ -459,37 +447,15 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     suggestedRepliesContainer = new DivElement()
       ..classes.add('conversation-responses');
     for (var suggestedResponse in data.suggestedReplies) {
-      suggestedRepliesContainer.append(
-        new DivElement()
-          ..classes.add('conversation-response')
-          ..append(
-            new ParagraphElement()
-              ..classes.add('conversation-response__language')
-              ..text = suggestedResponse['messages'][0]
-              ..contentEditable = 'true'
-          )
-          ..append(
-            new ParagraphElement()
-              ..classes.add('conversation-response__language')
-              ..text = suggestedResponse['messages'][1]
-              ..contentEditable = 'true'
-          )
-          ..append(
-            DivElement()
-              ..classes.add('conversation-response__reviewed')
-              ..append(
-                new CheckboxInputElement()
-                    ..classes.add('conversation-response__reviewed-state')
-                    ..checked = suggestedResponse['reviewed']
-              )
-              ..append(
-                new ParagraphElement()
-                ..classes.add('conversation-response__reviewed-description')
-                ..text = '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}'
-              )
-          )
-      );
+      suggestedRepliesContainer.append(_addSuggestedResponseEntry(suggestedResponse));
     }
+
+    suggestedRepliesContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-conversation-responses')
+        ..text = '+'
+        ..onClick.listen((event) => (event.target as Element).insertAdjacentElement('beforebegin', _addSuggestedResponseEntry()))
+    );
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -535,21 +501,44 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     );
   }
 
-  void _addTagDropdown(MouseEvent event, List<String> tags) {
-    var tagsList = (event.target as Element).parent;
-    if (tagsList.children.last.classes.contains('add-tag-dropdown')) tagsList.lastChild.remove();
+  SpanElement _addTagAction(List<String> tags) {
+    return new SpanElement()
+      ..classes.add('tags__actions')
+      ..append(
+        new ButtonElement()
+          ..classes.add('button-add-tag')
+          ..text = '+'
+          ..onClick.listen((event) {
+            var tagActions = (event.target as Element).parent;
+            var tagList = tagActions.parent;
+            _addTagDropdown(tagActions, tagList, model.tags);
+            event.stopPropagation();
+          })
+      );
+  }
 
+  void _addTagDropdown(Element tagActionsContainer, Element tagListContainer, List<String> tags) {
+    document.querySelectorAll('.add-tag-dropdown').forEach((dropdown) => dropdown.remove());
     var tagListDropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
-    tagsList.append(tagListDropdown);
-    for (var tag in tags) {
+    tagActionsContainer.append(tagListDropdown);
+    var tagsToShow = tags.isEmpty ? ['--None--'] : tags;
+    for (var tag in tagsToShow) {
       tagListDropdown.append(
         new Element.li()
           ..classes.add('add-tag-dropdown__item')
           ..text = tag
-          ..onClick.listen((event) => _addTag((event.target as Element).text, tagsList))
+          ..onClick.listen((event) {
+            if (tag != '--None--') _addTag((event.target as Element).text, tagListContainer);
+          })
       );
     }
+    var documentOnClickSubscription;
+    documentOnClickSubscription = document.onClick.listen((event) {
+      event.stopPropagation();
+      tagListDropdown.remove();
+     documentOnClickSubscription.cancel();
+    });
   }
 
   void _createNewTag(MouseEvent event) {
@@ -560,10 +549,62 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     newTagView.focus();
   }
 
-  void _addTag(String tag, Element tagList) {
+  void _addTag(String tag, Element tagListContainer) {
     // TODO: call controller.command()
-    tagList.lastChild.remove();
-    tagList.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
+    tagListContainer.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
+    model.tags.removeWhere((t) => t == tag);
+  }
+
+  DivElement _addSuggestedResponseEntry([Map suggestedResponse]) {
+    return new DivElement()
+      ..classes.add('conversation-response')
+      ..append(
+        new ButtonElement()
+          ..classes.add('button-remove-conversation-responses')
+          ..text = 'x'
+          ..onClick.listen((event) => (event.target as Element).parent.remove()) // TODO: call controller.command
+      )
+      ..append(
+        new ParagraphElement()
+          ..classes.add('conversation-response__language')
+          ..text = suggestedResponse != null ? suggestedResponse['messages'][0] : ''
+          ..contentEditable = 'true'
+      )
+      ..append(
+        new ParagraphElement()
+          ..classes.add('conversation-response__language')
+          ..text = suggestedResponse != null ? suggestedResponse['messages'][1] : ''
+          ..contentEditable = 'true'
+      )
+      ..append(
+        DivElement()
+          ..classes.add('conversation-response__reviewed')
+          ..append(
+            new CheckboxInputElement()
+                ..classes.add('conversation-response__reviewed-state')
+                ..checked = suggestedResponse != null ? suggestedResponse['reviewed'] : false
+                ..onClick.listen((event) => _reviewSuggestedReplies(event))
+          )
+          ..append(
+            new ParagraphElement()
+            ..classes.add('conversation-response__reviewed-description')
+            ..text = suggestedResponse != null ? '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}' : ''
+          )
+      );
+  }
+
+  void _reviewSuggestedReplies(MouseEvent event) {
+    // TODO: call controller.command()
+    var reviewCheckbox = (event.target as CheckboxInputElement);
+    var reviewDescription = reviewCheckbox.nextElementSibling;
+    if (reviewCheckbox.checked) {
+      var reviewedBy = controller.signedInUser.userEmail;
+      var now = DateTime.now().toLocal();
+      var reviewedDate = '${now.year}-${now.month}-${now.day}';
+      reviewDescription.text = '${reviewedBy}, ${reviewedDate}';
+    } else {
+      reviewDescription.text = '';
+    }
   }
 }
 
