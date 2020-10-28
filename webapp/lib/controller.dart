@@ -19,10 +19,8 @@ enum UIAction {
   loadProjectConfiguration,
   loadBatchRepliesPackageConfiguration,
   loadEscalatesPackageConfiguration,
-  configurationTagSelected,
-  addConfigurationTag,
-  editConfigurationTagResponse,
-  addConfigurationResponseEntries
+  updateBatchRepliesPackageTags,
+  updateBatchRepliesPackageResponses
 }
 
 class Data {}
@@ -39,18 +37,24 @@ class UserData extends Data {
   }
 }
 
-class ConfigurationTagData extends Data {
-  String selectedTag;
-  String tagToAdd;
-  ConfigurationTagData({this.selectedTag, this.tagToAdd});
+enum TagType {
+  HAS_ALL_TAGS,
+  CONTAINS_LAST_IN_TURN_TAGS,
+  HAS_NONE_TAGS,
+  ADDS_TAGS
+}
+class BatchRepliesPackageTagData extends Data {
+  List<String> tags;
+  List<String> hasAllTags;
+  List<String> containsLastInTurnTags;
+  List<String> hasNoneTags;
+  List<String> addsTags;
+  BatchRepliesPackageTagData({this.tags, this.hasAllTags, this.containsLastInTurnTags, this.hasNoneTags, this.addsTags});
 }
 
-class ConfigurationResponseData extends Data {
-  String parentTag;
-  String language;
-  String text;
-  int index;
-  ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
+class BatchRepliesPackageResponseData extends Data {
+  List<Map> messages;
+  BatchRepliesPackageResponseData([this.messages]);
 }
 
 Map<String, List<List<String>>> configurationTagData;
@@ -66,7 +70,7 @@ void init() async {
 }
 
 void initUI() {
-  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
+  window.location.hash = '#/batch-replies-configuration'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
   view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
 }
@@ -104,36 +108,22 @@ void command(UIAction action, Data actionData) {
     case UIAction.signOutButtonClicked:
       platform.signOut();
       break;
+    case UIAction.updateBatchRepliesPackageTags:
+      BatchRepliesPackageTagData data = actionData;
+      updateBatchRepliesPackageTags(data);
+      break;
+    case UIAction.updateBatchRepliesPackageResponses:
+      BatchRepliesPackageResponseData data = actionData;
+      updateBatchRepliesPackageResponses(data);
+      break;
     case UIAction.loadProjectConfiguration:
-      fetchConfigurationData();
-      var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
+      // TODO: Handle this case.
       break;
     case UIAction.loadBatchRepliesPackageConfiguration:
-      fetchConfigurationData();
-      var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
+      // TODO: Handle this case.
       break;
     case UIAction.loadEscalatesPackageConfiguration:
-      fetchConfigurationData(); //TODO For now fetch from the same tag data. Escalates to use a new set of tags
-      var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
-      break;
-    case UIAction.configurationTagSelected:
-      ConfigurationTagData data = actionData;
-      populateConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[data.selectedTag]);
-      break;
-    case UIAction.addConfigurationTag:
-      ConfigurationTagData data = actionData;
-      addNewConfigurationTag(data.tagToAdd, configurationResponseLanguages, additionalConfigurationTags, configurationTagData);
-      break;
-    case UIAction.editConfigurationTagResponse:
-      ConfigurationResponseData data = actionData;
-      updateEditedConfigurationTagResponse(data.parentTag, data.index, configurationResponseLanguages.indexOf(data.language), data.text, configurationTagData[data.parentTag]);
-      break;
-    case UIAction.addConfigurationResponseEntries:
-      ConfigurationResponseData data = actionData;
-      addConfigurationResponseEntries(data.parentTag, configurationResponseLanguages.indexOf(data.language), data.text, configurationResponseLanguages, configurationTagData);
+      // TODO: Handle this case.
       break;
   }
 }
@@ -168,60 +158,43 @@ void loadDashboardView() {
 }
 
 void loadBatchRepliesConfigurationView() {
-  view.contentView.renderView(new view.BatchRepliesConfigurationView(model.changeCommsPackage));
-  command(UIAction.loadBatchRepliesPackageConfiguration, null);
+  view.contentView.renderView(new view.BatchRepliesConfigurationView(model.changeCommsPackage, model.tags));
 }
 
 void loadEscalatesConfigurationView() {
   view.contentView.renderView(new view.EscalatesConfigurationView());
-  command(UIAction.loadEscalatesPackageConfiguration, null);
 }
 
 loadProjectConfigurationView() {
   view.contentView.renderView(new view.ProjectConfigurationView());
 }
 
-void fetchConfigurationData() {
-  configurationTagData = model.configurationData;
-  additionalConfigurationTags = model.configurationTags;
-  configurationResponseLanguages = model.configurationReponseLanguageData;
+void updateBatchRepliesPackageTags(BatchRepliesPackageTagData tagData) {
+  model.tags = tagData.tags;
+  model.changeCommsPackage
+    ..hasAllTags = tagData.hasAllTags
+    ..containsLastInTurnTags = tagData.containsLastInTurnTags
+    ..hasNoneTags = tagData.hasNoneTags
+    ..addsTags = tagData.addsTags;
+  loadBatchRepliesConfigurationView();
 }
 
-Map<String, bool> getTagList(String selectedTag, Map<String, List<List<String>>> tagData) {
-  return new Map.fromIterable(tagData.keys.toList(),
-    key: (tag) => tag,
-    value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
-}
-
-void populateConfigurationView(String selectedTag, Map<String, bool> tagList, List<String> responseLanguages, List<List<String>> tagResponses) {
-  // view.contentView.batchRepliesConfigurationView.tagList.renderTagList(tagList);
-  // view.contentView.batchRepliesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
-
-  // view.contentView.escalatesConfigurationView.tagList.renderTagList(tagList);
-  // view.contentView.escalatesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
-}
-
-void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, List<List<String>>> tagData) {
-  tagData[tagToAdd] = [configurationResponseLanguages.map((e) => '').toList()];
-  additionalTags.remove(tagToAdd);
-  populateConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), availableLanguages, tagData[tagToAdd]);
-}
-
-void updateEditedConfigurationTagResponse(String parentTag, int textIndex, int languageIndex, String text, List<List<String>> tagResponses) {
-  tagResponses[textIndex][languageIndex] = text;
-}
-
-void addConfigurationResponseEntries(String parentTag, int languageIndex, String text, List<String> responseLanguages, Map<String, List<List<String>>> tagData) {
-  if (languageIndex != null && text != null) {
-    var pos = tagData[parentTag].indexWhere((x)=> x.contains(''));
-    if (pos > -1) {
-      tagData[parentTag][pos][languageIndex] = text;
-    } else {
-      tagData[parentTag].add(configurationResponseLanguages.map((e) => '').toList());
-      tagData[parentTag].last[languageIndex]= text;
-    }
+void updateBatchRepliesPackageResponses(BatchRepliesPackageResponseData responseData) {
+  if (responseData == null) {
+    model.messages.add(
+      {
+        "messages":
+          [
+            "",
+            "",
+          ],
+        "reviewed": false,
+        "reviewed-by": "",
+        "reviewed-date": ""
+      }
+    );
   } else {
-    tagData[parentTag].add(['', '']);
+    model.messages = responseData.messages;
   }
-  populateConfigurationView(parentTag, getTagList(parentTag, tagData), responseLanguages,  tagData[parentTag]);
+  loadBatchRepliesConfigurationView();
 }
