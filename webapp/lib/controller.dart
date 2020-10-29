@@ -66,7 +66,7 @@ void init() async {
 }
 
 void initUI() {
-  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
+  window.location.hash = '#/batch-replies-configuration'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
   view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
 }
@@ -168,8 +168,15 @@ void loadDashboardView() {
 }
 
 void loadBatchRepliesConfigurationView() {
-  view.contentView.renderView(new view.BatchRepliesConfigurationView(model.changeCommsPackage));
-  command(UIAction.loadBatchRepliesPackageConfiguration, null);
+  var batchRepliesConfigurationView = new view.BatchRepliesConfigurationView();
+  view.contentView.renderView(batchRepliesConfigurationView);
+  batchRepliesConfigurationView.addTagsFilter(model.changeCommsPackage.containsLastInTurnTags, removeTags);
+  //command(UIAction.loadBatchRepliesPackageConfiguration, null);
+}
+
+void removeTags (String tag) {
+  model.changeCommsPackage.containsLastInTurnTags.removeWhere((t) => t == tag);
+  loadBatchRepliesConfigurationView();
 }
 
 void loadEscalatesConfigurationView() {

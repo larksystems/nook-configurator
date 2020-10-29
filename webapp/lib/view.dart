@@ -335,33 +335,38 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
   DivElement hasNoneTagsContainer;
   DivElement suggestedRepliesContainer;
   DivElement addsTagsContainer;
-  BatchRepliesConfigurationView(model.Configuration data) : super() {
-    _buildContentPartial(data);
+  BatchRepliesConfigurationView() : super() {
+    _buildContentPartial();
   }
 
-  void _buildContentPartial(model.Configuration data) {
+  void addTagsFilter(List<String> tags, Function removeAction) {
+    containsLastInTurnTagsContainer.children.clear();
+    tags.forEach((tag) => containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal, removeAction).renderElement));
+  }
+
+  void _buildContentPartial() {
     hasAllTagsContainer = new DivElement()
       ..classes.add('tags');
-    for (var tag in data.hasAllTags) {
-      hasAllTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-      model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
-    }
+    // for (var tag in data.hasAllTags) {
+    //   hasAllTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+    //   model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
+    // }
     hasAllTagsContainer.append(_addTagAction(model.tags));
 
     containsLastInTurnTagsContainer = new DivElement()
       ..classes.add('tags');
-    for (var tag in data.containsLastInTurnTags) {
-      containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-      model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
-    }
+    // for (var tag in data.containsLastInTurnTags) {
+    //   containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+    //   model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
+    // }
     containsLastInTurnTagsContainer.append(_addTagAction(model.tags));
 
     hasNoneTagsContainer = new DivElement()
       ..classes.add('tags');
-    for (var tag in data.hasNoneTags) {
-      hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-      model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
-    }
+    // for (var tag in data.hasNoneTags) {
+    //   hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
+    //   model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
+    // }
     hasNoneTagsContainer.append(_addTagAction(model.tags));
 
 
@@ -446,9 +451,9 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
 
     suggestedRepliesContainer = new DivElement()
       ..classes.add('conversation-responses');
-    for (var suggestedResponse in data.suggestedReplies) {
-      suggestedRepliesContainer.append(_addSuggestedResponseEntry(suggestedResponse));
-    }
+    // for (var suggestedResponse in data.suggestedReplies) {
+    //   suggestedRepliesContainer.append(_addSuggestedResponseEntry(suggestedResponse));
+    // }
 
     suggestedRepliesContainer.append(
       new ButtonElement()
@@ -478,11 +483,11 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
 
     addsTagsContainer = new DivElement()
       ..classes.add('tags');
-    for (var tag in data.addsTags) {
-      var tagView = new TagView(tag, tag, TagStyle.Normal);
-      tagView.editable = true;
-      addsTagsContainer.append(tagView.renderElement);
-    }
+    // for (var tag in data.addsTags) {
+    //   var tagView = new TagView(tag, tag, TagStyle.Normal);
+    //   tagView.editable = true;
+    //   addsTagsContainer.append(tagView.renderElement);
+    // }
     addsTagsContainer.append(
       new ButtonElement()
         ..classes.add('button-add-tag')
@@ -543,7 +548,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
 
   void _createNewTag(MouseEvent event) {
     var tagsList = (event.target as Element).parent;
-    var newTagView = new TagView('', 'id-123', TagStyle.Normal);
+    var newTagView = new TagView('', 'id-123', TagStyle.Normal, null);
     tagsList.children.last.insertAdjacentElement('beforebegin', newTagView.renderElement);
     newTagView.editable = true;
     newTagView.focus();
@@ -551,7 +556,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
 
   void _addTag(String tag, Element tagListContainer) {
     // TODO: call controller.command()
-    tagListContainer.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal).renderElement);
+    tagListContainer.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal, null).renderElement);
     model.tags.removeWhere((t) => t == tag);
   }
 
@@ -617,8 +622,9 @@ class TagView extends BaseView {
   DivElement tag;
   SpanElement _tagText;
   SpanElement _removeButton;
+  Function removeAction;
 
-  TagView(String text, String tagId, TagStyle tagStyle) {
+  TagView(String text, String tagId, TagStyle tagStyle, this.removeAction) {
     tag = new DivElement()
       ..classes.add('tag')
       ..dataset['id'] = tagId;
@@ -639,10 +645,7 @@ class TagView extends BaseView {
     _removeButton = new SpanElement()
       ..classes.add('tag__remove-btn')
       ..text = 'x'
-      ..onClick.listen((event) {
-        tag.remove();
-        // TODO: call controller.command()
-      });
+      ..onClick.listen((_) => removeAction(text));
 
     tag.append(_removeButton);
   }
