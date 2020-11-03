@@ -438,7 +438,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     );
 
     suggestedRepliesContainer =
-      new ResponseView(data.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
+      new ResponseListView(data.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -533,7 +533,7 @@ class TagListView extends BaseView {
   }
 }
 
-class TagView {
+class TagView extends BaseView{
   DivElement _tagElement;
   Function onTagChangedCallback;
 
@@ -587,14 +587,30 @@ class TagView {
   }
 }
 
-class ResponseView extends BaseView {
+class ResponseView {
+  Element _responseElement;
+  Function(int, int, String) onUpdateResponseCallback;
+
+  ResponseView(int rowIndex, int colIndex, String response, this.onUpdateResponseCallback) {
+    _responseElement = new ParagraphElement()
+          ..classes.add('conversation-response__language')
+          ..text = response != null ? response : ''
+          ..contentEditable = 'true'
+          ..dataset['index'] = '$colIndex'
+          ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text));
+  }
+
+  Element get renderElement => _responseElement;
+}
+
+class ResponseListView extends BaseView {
   DivElement _responsesContainer;
   Function onAddNewResponseCallback;
   Function(int, int, String) onUpdateResponseCallback;
   Function(int, bool) onReviewResponseCallback;
   Function(int) onRemoveResponseCallback;
 
-  ResponseView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
+  ResponseListView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
     _responsesContainer = new DivElement()
       ..classes.add('conversation-responses');
     for (int i = 0; i < suggestedReplies.length; i++) {
@@ -608,6 +624,8 @@ class ResponseView extends BaseView {
     );
   }
 
+  DivElement get renderElement => _responsesContainer;
+
   DivElement _createResponseEntry(int rowIndex, [Map response]) {
     var responseEntry = new DivElement()
       ..classes.add('conversation-response')
@@ -619,14 +637,7 @@ class ResponseView extends BaseView {
           ..onClick.listen((_) => onRemoveResponseCallback(rowIndex))
       );
     for (int i = 0; i < response['messages'].length; i++) {
-      responseEntry.append(
-        new ParagraphElement()
-          ..classes.add('conversation-response__language')
-          ..text = response != null ? response['messages'][i] : ''
-          ..contentEditable = 'true'
-          ..dataset['index'] = '$i'
-          ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, i, (event.target as Element).text))
-      );
+      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], onUpdateResponseCallback).renderElement);
     }
     responseEntry.append(
       DivElement()
@@ -645,8 +656,6 @@ class ResponseView extends BaseView {
     );
     return responseEntry;
   }
-
-  DivElement get renderElement => _responsesContainer;
 }
 
 enum FormGroupTypes {
