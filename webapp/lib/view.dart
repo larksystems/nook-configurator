@@ -340,9 +340,23 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
   }
 
   void _buildContentPartial(model.Configuration data) {
-    hasAllTagsContainer = new TagView(data.hasAllTags, data.tags, controller.hasAllTagsChanged).renderElement;
-    containsLastInTurnTagsContainer = new TagView(data.containsLastInTurnTags, data.tags, controller.containsLastInTurnTagsChanged).renderElement;
-    hasNoneTagsContainer = new TagView(data.hasNoneTags, data.tags, controller.hasNoneTagsChanged).renderElement;
+    List<TagView> hasAllTags = [];
+    data.hasAllTags.forEach((tag, tagStyle) {
+      hasAllTags.add(new TagView(tag, tagStyle, controller.hasAllTagsChanged));
+    });
+    hasAllTagsContainer = new TagListView(hasAllTags, data.tags, controller.hasAllTagsChanged).renderElement;
+
+    List<TagView> containsLastInTurnTags = [];
+    data.containsLastInTurnTags.forEach((tag, tagStyle) {
+      containsLastInTurnTags.add(new TagView(tag, tagStyle, controller.containsLastInTurnTagsChanged));
+    });
+    containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, data.tags, controller.containsLastInTurnTagsChanged).renderElement;
+
+    List<TagView> hasNoneTags = [];
+    data.hasNoneTags.forEach((tag, tagStyle) {
+      hasNoneTags.add(new TagView(tag, tagStyle, controller.hasNoneTagsChanged));
+    });
+    hasNoneTagsContainer = new TagListView(hasNoneTags, data.tags, controller.hasNoneTagsChanged).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -444,7 +458,11 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
         ..append(suggestedRepliesContainer)
     );
 
-    addsTagsContainer = new TagView(data.addsTags, data.tags, controller.addsTagsChanged, true).renderElement;
+    List<TagView> addsTags = [];
+    data.addsTags.forEach((tag, tagStyle) {
+      addsTags.add(new TagView(tag, tagStyle, controller.addsTagsChanged, true));
+    });
+    addsTagsContainer = new TagListView(addsTags, data.tags, controller.addsTagsChanged, true).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -459,17 +477,15 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
   }
 }
 
-class TagView extends BaseView {
+class TagListView extends BaseView {
+  List<TagView> tagElements;
   DivElement _tagsContainer;
   SpanElement _tagsActionContainer;
-  Function(String, model.TagStyle) onTagChangedCallback;
+  Function onTagChangedCallback;
 
-  TagView(Map<String, model.TagStyle> tagData, Map<String, model.TagStyle> tags, this.onTagChangedCallback, [bool isEditableTag = false]) {
+  TagListView(this.tagElements, Map<String, model.TagStyle> tagList, this.onTagChangedCallback, [bool tagsEditable = false]) {
     _tagsContainer = new DivElement()
       ..classes.add('tags');
-    tagData.forEach((tag, tagStyle) {
-      _tagsContainer.append(_createTag(tag, tagStyle, isEditableTag));
-    });
     _tagsActionContainer = new SpanElement()
       ..classes.add('tags__actions')
       ..append(
@@ -477,18 +493,55 @@ class TagView extends BaseView {
           ..classes.add('button-add-tag')
           ..text = '+'
           ..onClick.listen((event) {
-            if (isEditableTag) {
-              _tagsActionContainer.insertAdjacentElement('beforebegin', _createTag('', model.TagStyle.Normal, true));
+            if (tagsEditable) {
+              _tagsActionContainer.insertAdjacentElement('beforebegin', new TagView('', model.TagStyle.Normal, onTagChangedCallback, tagsEditable).renderElement);
             } else {
-              _addTagDropdown(tags, onTagChangedCallback);
+              _addTagDropdown(tagList, onTagChangedCallback);
             }
             event.stopPropagation();
           })
       );
     _tagsContainer.append(_tagsActionContainer);
+    tagElements.forEach((tag) {
+      _tagsActionContainer.insertAdjacentElement('beforebegin', tag.renderElement);
+    });
   }
 
   DivElement get renderElement => _tagsContainer;
+
+  void _addTagDropdown(Map<String, model.TagStyle> tags, Function(String, model.TagStyle) onTagChangedCallback) {
+    var tagListDropdown = new Element.ul()
+      ..classes.add('add-tag-dropdown');
+    var tagsToShow = tags.isEmpty ? ['--None--'] : tags.keys;
+    for (var tag in tagsToShow) {
+      tagListDropdown.append(
+        new Element.li()
+          ..classes.add('add-tag-dropdown__item')
+          ..text = tag
+          ..onClick.listen((event) {
+            if (tag != '--None--') onTagChangedCallback(tag, tags[tag]);
+          })
+      );
+    }
+    _tagsActionContainer.append(tagListDropdown);
+    var documentOnClickSubscription;
+    documentOnClickSubscription = document.onClick.listen((event) {
+      event.stopPropagation();
+      tagListDropdown.remove();
+     documentOnClickSubscription.cancel();
+    });
+  }
+}
+
+class TagView {
+  DivElement _tagElement;
+  Function onTagChangedCallback;
+
+  TagView(String tag, model.TagStyle tagStyle, this.onTagChangedCallback, [bool isEditableTag = false]) {
+    _tagElement = _createTag(tag, tagStyle, isEditableTag);
+  }
+
+  DivElement get renderElement => _tagElement;
 
   DivElement _createTag(String tag, model.TagStyle tagStyle, bool isEditableTag) {
     var tagElement = new DivElement()
@@ -514,40 +567,23 @@ class TagView extends BaseView {
         new SpanElement()
           ..classes.add('tag__remove-btn')
           ..text = 'x'
-          ..onClick.listen((_) => onTagChangedCallback(tag, tagStyle))
+          ..onClick.listen((_) {
+            if (isEditableTag) {
+              onTagChangedCallback(tag, tag, tagStyle);
+            } else {
+              onTagChangedCallback(tag, tagStyle);
+            }
+          })
       );
 
     if (isEditableTag) {
       tagText.contentEditable = 'true';
       tagText.focus(); // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
                       // then the cursor jumps over the x. Needs investigating and fixing.
-      tagText.onBlur.listen((event) => onTagChangedCallback((event.target as Element).text, tagStyle));
+      tagText.onBlur.listen((event) => onTagChangedCallback((event.target as Element).text, tag, tagStyle));
     }
 
     return tagElement;
-  }
-
-  void _addTagDropdown(Map<String, model.TagStyle> tags, Function(String, model.TagStyle) onTagChangedCallback) {
-    var tagListDropdown = new Element.ul()
-      ..classes.add('add-tag-dropdown');
-    var tagsToShow = tags.isEmpty ? ['--None--'] : tags.keys;
-    for (var tag in tagsToShow) {
-      tagListDropdown.append(
-        new Element.li()
-          ..classes.add('add-tag-dropdown__item')
-          ..text = tag
-          ..onClick.listen((event) {
-            if (tag != '--None--') onTagChangedCallback(tag, tags[tag]);
-          })
-      );
-    }
-    _tagsActionContainer.append(tagListDropdown);
-    var documentOnClickSubscription;
-    documentOnClickSubscription = document.onClick.listen((event) {
-      event.stopPropagation();
-      tagListDropdown.remove();
-     documentOnClickSubscription.cancel();
-    });
   }
 }
 

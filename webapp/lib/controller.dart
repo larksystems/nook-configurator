@@ -59,7 +59,7 @@ void init() async {
 }
 
 void initUI() {
-  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
+  window.location.hash = '#/batch-replies-configuration'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
   view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
 }
@@ -167,11 +167,24 @@ void hasNoneTagsChanged (String tag, model.TagStyle tagStyle) {
   loadBatchRepliesConfigurationView();
 }
 
-void addsTagsChanged (String tag, model.TagStyle tagStyle) {
-  if (model.changeCommsPackage.addsTags.containsKey(tag)) {
-    model.changeCommsPackage.addsTags.remove(tag);
+void addsTagsChanged (String updatedTag, String originalTag, model.TagStyle tagStyle) {
+  if (model.changeCommsPackage.addsTags.containsKey(originalTag)) {
+    if (updatedTag != originalTag) {
+      var addsTagsKeys = model.changeCommsPackage.addsTags.keys.toList();
+      var addsTagsTagValues= model.changeCommsPackage.addsTags.values.toList();
+      var originalIndex = addsTagsKeys.indexOf(originalTag);
+      addsTagsKeys.removeAt(originalIndex);
+      addsTagsKeys.insert(originalIndex, updatedTag);
+      Map<String, model.TagStyle> updatedAddsTags = {};
+      for (int i = 0; i < addsTagsKeys.length; i++) {
+        updatedAddsTags[addsTagsKeys[i]] = addsTagsTagValues[i];
+      }
+      model.changeCommsPackage.addsTags = updatedAddsTags;
+    } else {
+      model.changeCommsPackage.addsTags.remove(originalTag);
+    }
   } else {
-    model.changeCommsPackage.addsTags.addAll({tag: tagStyle});
+    model.changeCommsPackage.addsTags.addAll({updatedTag: tagStyle});
   }
   loadBatchRepliesConfigurationView();
 }
