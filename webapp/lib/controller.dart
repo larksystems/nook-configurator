@@ -16,13 +16,6 @@ enum UIAction {
   userSignedOut,
   signInButtonClicked,
   signOutButtonClicked,
-  loadProjectConfiguration,
-  loadBatchRepliesPackageConfiguration,
-  loadEscalatesPackageConfiguration,
-  configurationTagSelected,
-  addConfigurationTag,
-  editConfigurationTagResponse,
-  addConfigurationResponseEntries
 }
 
 class Data {}
@@ -104,37 +97,6 @@ void command(UIAction action, Data actionData) {
     case UIAction.signOutButtonClicked:
       platform.signOut();
       break;
-    case UIAction.loadProjectConfiguration:
-      fetchConfigurationData();
-      var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
-      break;
-    case UIAction.loadBatchRepliesPackageConfiguration:
-      fetchConfigurationData();
-      var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
-      break;
-    case UIAction.loadEscalatesPackageConfiguration:
-      fetchConfigurationData(); //TODO For now fetch from the same tag data. Escalates to use a new set of tags
-      var selectedTag = configurationTagData.keys.toList().first;
-      populateConfigurationView(selectedTag, getTagList(selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[selectedTag]);
-      break;
-    case UIAction.configurationTagSelected:
-      ConfigurationTagData data = actionData;
-      populateConfigurationView(data.selectedTag, getTagList(data.selectedTag, configurationTagData), configurationResponseLanguages, configurationTagData[data.selectedTag]);
-      break;
-    case UIAction.addConfigurationTag:
-      ConfigurationTagData data = actionData;
-      addNewConfigurationTag(data.tagToAdd, configurationResponseLanguages, additionalConfigurationTags, configurationTagData);
-      break;
-    case UIAction.editConfigurationTagResponse:
-      ConfigurationResponseData data = actionData;
-      updateEditedConfigurationTagResponse(data.parentTag, data.index, configurationResponseLanguages.indexOf(data.language), data.text, configurationTagData[data.parentTag]);
-      break;
-    case UIAction.addConfigurationResponseEntries:
-      ConfigurationResponseData data = actionData;
-      addConfigurationResponseEntries(data.parentTag, configurationResponseLanguages.indexOf(data.language), data.text, configurationResponseLanguages, configurationTagData);
-      break;
   }
 }
 
@@ -168,67 +130,90 @@ void loadDashboardView() {
 }
 
 void loadBatchRepliesConfigurationView() {
-  var batchRepliesConfigurationView = new view.BatchRepliesConfigurationView();
-  view.contentView.renderView(batchRepliesConfigurationView);
-  batchRepliesConfigurationView.addTagsFilter(model.changeCommsPackage.containsLastInTurnTags, removeTags);
-  //command(UIAction.loadBatchRepliesPackageConfiguration, null);
-}
-
-void removeTags (String tag) {
-  model.changeCommsPackage.containsLastInTurnTags.removeWhere((t) => t == tag);
-  loadBatchRepliesConfigurationView();
+  view.contentView.renderView(new view.BatchRepliesConfigurationView(model.changeCommsPackage));
 }
 
 void loadEscalatesConfigurationView() {
   view.contentView.renderView(new view.EscalatesConfigurationView());
-  command(UIAction.loadEscalatesPackageConfiguration, null);
 }
 
 loadProjectConfigurationView() {
   view.contentView.renderView(new view.ProjectConfigurationView());
 }
 
-void fetchConfigurationData() {
-  configurationTagData = model.configurationData;
-  additionalConfigurationTags = model.configurationTags;
-  configurationResponseLanguages = model.configurationReponseLanguageData;
-}
-
-Map<String, bool> getTagList(String selectedTag, Map<String, List<List<String>>> tagData) {
-  return new Map.fromIterable(tagData.keys.toList(),
-    key: (tag) => tag,
-    value: (tag) => selectedTag != null && selectedTag == tag ? true : false);
-}
-
-void populateConfigurationView(String selectedTag, Map<String, bool> tagList, List<String> responseLanguages, List<List<String>> tagResponses) {
-  // view.contentView.batchRepliesConfigurationView.tagList.renderTagList(tagList);
-  // view.contentView.batchRepliesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
-
-  // view.contentView.escalatesConfigurationView.tagList.renderTagList(tagList);
-  // view.contentView.escalatesConfigurationView.tagResponses.renderResponses(selectedTag, responseLanguages, tagResponses);
-}
-
-void addNewConfigurationTag(String tagToAdd, List<String> availableLanguages, Set<String> additionalTags, Map<String, List<List<String>>> tagData) {
-  tagData[tagToAdd] = [configurationResponseLanguages.map((e) => '').toList()];
-  additionalTags.remove(tagToAdd);
-  populateConfigurationView(tagToAdd, getTagList(tagToAdd, tagData), availableLanguages, tagData[tagToAdd]);
-}
-
-void updateEditedConfigurationTagResponse(String parentTag, int textIndex, int languageIndex, String text, List<List<String>> tagResponses) {
-  tagResponses[textIndex][languageIndex] = text;
-}
-
-void addConfigurationResponseEntries(String parentTag, int languageIndex, String text, List<String> responseLanguages, Map<String, List<List<String>>> tagData) {
-  if (languageIndex != null && text != null) {
-    var pos = tagData[parentTag].indexWhere((x)=> x.contains(''));
-    if (pos > -1) {
-      tagData[parentTag][pos][languageIndex] = text;
-    } else {
-      tagData[parentTag].add(configurationResponseLanguages.map((e) => '').toList());
-      tagData[parentTag].last[languageIndex]= text;
-    }
+// Tag Operations
+void _updateTag(Map<String, model.TagStyle> tagType, String tag, model.TagStyle tagStyle) {
+  if (tagType.containsKey(tag)) {
+    tagType.remove(tag);
+    model.changeCommsPackage.tags.addAll({tag : tagStyle});
   } else {
-    tagData[parentTag].add(['', '']);
+    tagType.addAll({tag: tagStyle});
+    model.changeCommsPackage.tags.remove(tag);
   }
-  populateConfigurationView(parentTag, getTagList(parentTag, tagData), responseLanguages,  tagData[parentTag]);
+}
+
+void hasAllTagsChanged (String tag, model.TagStyle tagStyle) {
+  _updateTag(model.changeCommsPackage.hasAllTags, tag, tagStyle);
+  loadBatchRepliesConfigurationView();
+}
+
+void containsLastInTurnTagsChanged (String tag, model.TagStyle tagStyle) {
+   _updateTag(model.changeCommsPackage.containsLastInTurnTags, tag, tagStyle);
+  loadBatchRepliesConfigurationView();
+}
+
+void hasNoneTagsChanged (String tag, model.TagStyle tagStyle) {
+   _updateTag(model.changeCommsPackage.hasNoneTags, tag, tagStyle);
+  loadBatchRepliesConfigurationView();
+}
+
+void addsTagsChanged (String tag, model.TagStyle tagStyle) {
+  if (model.changeCommsPackage.addsTags.containsKey(tag)) {
+    model.changeCommsPackage.addsTags.remove(tag);
+  } else {
+    model.changeCommsPackage.addsTags.addAll({tag: tagStyle});
+  }
+  loadBatchRepliesConfigurationView();
+}
+
+// Suggested Replies operations
+void addNewResponse() {
+  model.changeCommsPackage.suggestedReplies.add(
+    {
+      "messages":
+        [
+          "",
+          "",
+        ],
+      "reviewed": false,
+      "reviewed-by": "",
+      "reviewed-date": ""
+    },
+  );
+  loadBatchRepliesConfigurationView();
+}
+
+void updateResponse(int rowIndex, int colIndex, String response) {
+  model.changeCommsPackage.suggestedReplies[rowIndex]['messages'][colIndex] = response;
+  loadBatchRepliesConfigurationView();
+}
+
+void reviewResponse(int rowIndex, bool reviewed) {
+  if (reviewed) {
+    var now = DateTime.now().toLocal();
+    var reviewedDate = '${now.year}-${now.month}-${now.day}';
+    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed'] = true;
+    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
+    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
+  } else {
+    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed'] = false;
+    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-by'] = '';
+    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-date'] = '';
+  }
+  loadBatchRepliesConfigurationView();
+}
+
+void removeResponse(int rowIndex) {
+  model.changeCommsPackage.suggestedReplies.removeAt(rowIndex);
+  loadBatchRepliesConfigurationView();
 }

@@ -335,40 +335,14 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
   DivElement hasNoneTagsContainer;
   DivElement suggestedRepliesContainer;
   DivElement addsTagsContainer;
-  BatchRepliesConfigurationView() : super() {
-    _buildContentPartial();
+  BatchRepliesConfigurationView(model.Configuration data) : super() {
+    _buildContentPartial(data);
   }
 
-  void addTagsFilter(List<String> tags, Function removeAction) {
-    containsLastInTurnTagsContainer.children.clear();
-    tags.forEach((tag) => containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal, removeAction).renderElement));
-  }
-
-  void _buildContentPartial() {
-    hasAllTagsContainer = new DivElement()
-      ..classes.add('tags');
-    // for (var tag in data.hasAllTags) {
-    //   hasAllTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-    //   model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
-    // }
-    hasAllTagsContainer.append(_addTagAction(model.tags));
-
-    containsLastInTurnTagsContainer = new DivElement()
-      ..classes.add('tags');
-    // for (var tag in data.containsLastInTurnTags) {
-    //   containsLastInTurnTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-    //   model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
-    // }
-    containsLastInTurnTagsContainer.append(_addTagAction(model.tags));
-
-    hasNoneTagsContainer = new DivElement()
-      ..classes.add('tags');
-    // for (var tag in data.hasNoneTags) {
-    //   hasNoneTagsContainer.append(new TagView(tag, tag, TagStyle.Normal).renderElement);
-    //   model.tags.removeWhere((t) => t == tag); // TODO: call controller.command()
-    // }
-    hasNoneTagsContainer.append(_addTagAction(model.tags));
-
+  void _buildContentPartial(model.Configuration data) {
+    hasAllTagsContainer = new TagView(data.hasAllTags, data.tags, controller.hasAllTagsChanged).renderElement;
+    containsLastInTurnTagsContainer = new TagView(data.containsLastInTurnTags, data.tags, controller.containsLastInTurnTagsChanged).renderElement;
+    hasNoneTagsContainer = new TagView(data.hasNoneTags, data.tags, controller.hasNoneTagsChanged).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -449,18 +423,8 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
         )
     );
 
-    suggestedRepliesContainer = new DivElement()
-      ..classes.add('conversation-responses');
-    // for (var suggestedResponse in data.suggestedReplies) {
-    //   suggestedRepliesContainer.append(_addSuggestedResponseEntry(suggestedResponse));
-    // }
-
-    suggestedRepliesContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-conversation-responses')
-        ..text = '+'
-        ..onClick.listen((event) => (event.target as Element).insertAdjacentElement('beforebegin', _addSuggestedResponseEntry()))
-    );
+    suggestedRepliesContainer =
+      new ResponseView(data.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -480,20 +444,8 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
         ..append(suggestedRepliesContainer)
     );
 
+    addsTagsContainer = new TagView(data.addsTags, data.tags, controller.addsTagsChanged, true).renderElement;
 
-    addsTagsContainer = new DivElement()
-      ..classes.add('tags');
-    // for (var tag in data.addsTags) {
-    //   var tagView = new TagView(tag, tag, TagStyle.Normal);
-    //   tagView.editable = true;
-    //   addsTagsContainer.append(tagView.renderElement);
-    // }
-    addsTagsContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-tag')
-        ..text = '+'
-        ..onClick.listen((event) => _createNewTag(event))
-    );
     _packageConfiguratorContent.append(
       new DivElement()
         ..classes.add('configure-package-labels')
@@ -505,39 +457,91 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
         ..append(addsTagsContainer)
     );
   }
+}
 
-  SpanElement _addTagAction(List<String> tags) {
-    return new SpanElement()
+class TagView extends BaseView {
+  DivElement _tagsContainer;
+  SpanElement _tagsActionContainer;
+  Function(String, model.TagStyle) onTagChangedCallback;
+
+  TagView(Map<String, model.TagStyle> tagData, Map<String, model.TagStyle> tags, this.onTagChangedCallback, [bool isEditableTag = false]) {
+    _tagsContainer = new DivElement()
+      ..classes.add('tags');
+    tagData.forEach((tag, tagStyle) {
+      _tagsContainer.append(_createTag(tag, tagStyle, isEditableTag));
+    });
+    _tagsActionContainer = new SpanElement()
       ..classes.add('tags__actions')
       ..append(
         new ButtonElement()
           ..classes.add('button-add-tag')
           ..text = '+'
           ..onClick.listen((event) {
-            var tagActions = (event.target as Element).parent;
-            var tagList = tagActions.parent;
-            _addTagDropdown(tagActions, tagList, model.tags);
+            if (isEditableTag) {
+              _tagsActionContainer.insertAdjacentElement('beforebegin', _createTag('', model.TagStyle.Normal, true));
+            } else {
+              _addTagDropdown(tags, onTagChangedCallback);
+            }
             event.stopPropagation();
           })
       );
+    _tagsContainer.append(_tagsActionContainer);
   }
 
-  void _addTagDropdown(Element tagActionsContainer, Element tagListContainer, List<String> tags) {
-    document.querySelectorAll('.add-tag-dropdown').forEach((dropdown) => dropdown.remove());
+  DivElement get renderElement => _tagsContainer;
+
+  DivElement _createTag(String tag, model.TagStyle tagStyle, bool isEditableTag) {
+    var tagElement = new DivElement()
+      ..classes.add('tag')
+      ..dataset['id'] = tag.isEmpty ? 'id-123' : tag;
+
+    switch (tagStyle) {
+      case model.TagStyle.Important:
+        tagElement.classes.add('tag--important');
+        break;
+      default:
+        break;
+    }
+
+    var tagText = new SpanElement()
+      ..classes.add('tag__name')
+      ..text = tag
+      ..title = tag;
+
+    tagElement
+      ..append(tagText)
+      ..append(
+        new SpanElement()
+          ..classes.add('tag__remove-btn')
+          ..text = 'x'
+          ..onClick.listen((_) => onTagChangedCallback(tag, tagStyle))
+      );
+
+    if (isEditableTag) {
+      tagText.contentEditable = 'true';
+      tagText.focus(); // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
+                      // then the cursor jumps over the x. Needs investigating and fixing.
+      tagText.onBlur.listen((event) => onTagChangedCallback((event.target as Element).text, tagStyle));
+    }
+
+    return tagElement;
+  }
+
+  void _addTagDropdown(Map<String, model.TagStyle> tags, Function(String, model.TagStyle) onTagChangedCallback) {
     var tagListDropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
-    tagActionsContainer.append(tagListDropdown);
-    var tagsToShow = tags.isEmpty ? ['--None--'] : tags;
+    var tagsToShow = tags.isEmpty ? ['--None--'] : tags.keys;
     for (var tag in tagsToShow) {
       tagListDropdown.append(
         new Element.li()
           ..classes.add('add-tag-dropdown__item')
           ..text = tag
           ..onClick.listen((event) {
-            if (tag != '--None--') _addTag((event.target as Element).text, tagListContainer);
+            if (tag != '--None--') onTagChangedCallback(tag, tags[tag]);
           })
       );
     }
+    _tagsActionContainer.append(tagListDropdown);
     var documentOnClickSubscription;
     documentOnClickSubscription = document.onClick.listen((event) {
       event.stopPropagation();
@@ -545,120 +549,68 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
      documentOnClickSubscription.cancel();
     });
   }
+}
 
-  void _createNewTag(MouseEvent event) {
-    var tagsList = (event.target as Element).parent;
-    var newTagView = new TagView('', 'id-123', TagStyle.Normal, null);
-    tagsList.children.last.insertAdjacentElement('beforebegin', newTagView.renderElement);
-    newTagView.editable = true;
-    newTagView.focus();
+class ResponseView extends BaseView {
+  DivElement _responsesContainer;
+  Function onAddNewResponseCallback;
+  Function(int, int, String) onUpdateResponseCallback;
+  Function(int, bool) onReviewResponseCallback;
+  Function(int) onRemoveResponseCallback;
+
+  ResponseView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
+    _responsesContainer = new DivElement()
+      ..classes.add('conversation-responses');
+    for (int i = 0; i < suggestedReplies.length; i++) {
+      _responsesContainer.append(_createResponseEntry(i, suggestedReplies[i]));
+    }
+    _responsesContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-conversation-responses')
+        ..text = '+'
+        ..onClick.listen((event) => onAddNewResponseCallback())
+    );
   }
 
-  void _addTag(String tag, Element tagListContainer) {
-    // TODO: call controller.command()
-    tagListContainer.children.last.insertAdjacentElement('beforebegin', new TagView(tag, tag, TagStyle.Normal, null).renderElement);
-    model.tags.removeWhere((t) => t == tag);
-  }
-
-  DivElement _addSuggestedResponseEntry([Map suggestedResponse]) {
-    return new DivElement()
+  DivElement _createResponseEntry(int rowIndex, [Map response]) {
+    var responseEntry = new DivElement()
       ..classes.add('conversation-response')
+      ..dataset['index'] = '$rowIndex'
       ..append(
         new ButtonElement()
           ..classes.add('button-remove-conversation-responses')
           ..text = 'x'
-          ..onClick.listen((event) => (event.target as Element).parent.remove()) // TODO: call controller.command
-      )
-      ..append(
-        new ParagraphElement()
-          ..classes.add('conversation-response__language')
-          ..text = suggestedResponse != null ? suggestedResponse['messages'][0] : ''
-          ..contentEditable = 'true'
-      )
-      ..append(
-        new ParagraphElement()
-          ..classes.add('conversation-response__language')
-          ..text = suggestedResponse != null ? suggestedResponse['messages'][1] : ''
-          ..contentEditable = 'true'
-      )
-      ..append(
-        DivElement()
-          ..classes.add('conversation-response__reviewed')
-          ..append(
-            new CheckboxInputElement()
-                ..classes.add('conversation-response__reviewed-state')
-                ..checked = suggestedResponse != null ? suggestedResponse['reviewed'] : false
-                ..onClick.listen((event) => _reviewSuggestedReplies(event))
-          )
-          ..append(
-            new ParagraphElement()
-            ..classes.add('conversation-response__reviewed-description')
-            ..text = suggestedResponse != null ? '${suggestedResponse['reviewed-by']}, ${suggestedResponse['reviewed-date']}' : ''
-          )
+          ..onClick.listen((_) => onRemoveResponseCallback(rowIndex))
       );
-  }
-
-  void _reviewSuggestedReplies(MouseEvent event) {
-    // TODO: call controller.command()
-    var reviewCheckbox = (event.target as CheckboxInputElement);
-    var reviewDescription = reviewCheckbox.nextElementSibling;
-    if (reviewCheckbox.checked) {
-      var reviewedBy = controller.signedInUser.userEmail;
-      var now = DateTime.now().toLocal();
-      var reviewedDate = '${now.year}-${now.month}-${now.day}';
-      reviewDescription.text = '${reviewedBy}, ${reviewedDate}';
-    } else {
-      reviewDescription.text = '';
+    for (int i = 0; i < response['messages'].length; i++) {
+      responseEntry.append(
+        new ParagraphElement()
+          ..classes.add('conversation-response__language')
+          ..text = response != null ? response['messages'][i] : ''
+          ..contentEditable = 'true'
+          ..dataset['index'] = '$i'
+          ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, i, (event.target as Element).text))
+      );
     }
-  }
-}
-
-enum TagStyle {
-  Normal,
-  Important,
-}
-
-class TagView extends BaseView {
-  DivElement tag;
-  SpanElement _tagText;
-  SpanElement _removeButton;
-  Function removeAction;
-
-  TagView(String text, String tagId, TagStyle tagStyle, this.removeAction) {
-    tag = new DivElement()
-      ..classes.add('tag')
-      ..dataset['id'] = tagId;
-    switch (tagStyle) {
-      case TagStyle.Important:
-        tag.classes.add('tag--important');
-        break;
-      default:
-        break;
-    }
-
-    _tagText = new SpanElement()
-      ..classes.add('tag__name')
-      ..text = text
-      ..title = text;
-    tag.append(_tagText);
-
-    _removeButton = new SpanElement()
-      ..classes.add('tag__remove-btn')
-      ..text = 'x'
-      ..onClick.listen((_) => removeAction(text));
-
-    tag.append(_removeButton);
+    responseEntry.append(
+      DivElement()
+        ..classes.add('conversation-response__reviewed')
+        ..append(
+          new CheckboxInputElement()
+              ..classes.add('conversation-response__reviewed-state')
+              ..checked = response != null ? response['reviewed'] : false
+              ..onClick.listen((event) => onReviewResponseCallback(rowIndex, (event.target as CheckboxInputElement).checked))
+        )
+        ..append(
+          new ParagraphElement()
+            ..classes.add('conversation-response__reviewed-description')
+            ..text = response != null ? '${response['reviewed-by']}, ${response['reviewed-date']}' : ''
+        )
+    );
+    return responseEntry;
   }
 
-  DivElement get renderElement => tag;
-
-  // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
-  // then the cursor jumps over the x. Needs investigating and fixing.
-  void set editable(bool value) => _tagText.contentEditable = '$value';
-
-  void focus() {
-    _tagText.focus();
-  }
+  DivElement get renderElement => _responsesContainer;
 }
 
 enum FormGroupTypes {
