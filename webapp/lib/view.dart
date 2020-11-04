@@ -509,7 +509,7 @@ class TagListView extends BaseView {
 
   DivElement get renderElement => _tagsContainer;
 
-  void _addTagDropdown(Map<String, model.TagStyle> tags, Function(String, model.TagStyle) onTagChangedCallback) {
+  void _addTagDropdown(Map<String, model.TagStyle> tags, Function onTagChangedCallback) {
     var tagListDropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
     var tagsToShow = tags.isEmpty ? ['--None--'] : tags.keys;
@@ -520,7 +520,7 @@ class TagListView extends BaseView {
           ..text = tag
           ..onClick.listen((event) {
             if (tag == '--None--') return;
-            onTagChangedCallback(tag, tags[tag]);
+            onTagChangedCallback(tag, tags[tag], controller.TagOperation.ADD);
           })
       );
     }
@@ -570,10 +570,10 @@ class TagView extends BaseView {
           ..text = 'x'
           ..onClick.listen((_) {
             if (isEditableTag) {
-              onTagChangedCallback(tag, tag, tagStyle);
-            } else {
-              onTagChangedCallback(tag, tagStyle);
+              onTagChangedCallback(tag, tag, tagStyle, controller.TagOperation.REMOVE);
+              return;
             }
+            onTagChangedCallback(tag, tagStyle, controller.TagOperation.REMOVE);
           })
       );
 
@@ -581,7 +581,7 @@ class TagView extends BaseView {
       tagText.contentEditable = 'true';
       tagText.focus(); // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
                       // then the cursor jumps over the x. Needs investigating and fixing.
-      tagText.onBlur.listen((event) => onTagChangedCallback((event.target as Element).text, tag, tagStyle));
+      tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagStyle, controller.TagOperation.UPDATE));
     }
 
     return tagElement;

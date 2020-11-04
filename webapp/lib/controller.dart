@@ -59,7 +59,7 @@ void init() async {
 }
 
 void initUI() {
-  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
+  window.location.hash = '#/batch-replies-configuration'; //TODO This is just temporary initialization becuase we don't have a complete app
   router.routeTo(window.location.hash);
   view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
 }
@@ -142,49 +142,93 @@ loadProjectConfigurationView() {
 }
 
 // Tag Operations
-void _updateTag(Map<String, model.TagStyle> tagType, String tag, model.TagStyle tagStyle) {
-  if (tagType.containsKey(tag)) {
-    tagType.remove(tag);
-    model.changeCommsPackage.availableTags.addAll({tag : tagStyle});
-  } else {
-    tagType.addAll({tag: tagStyle});
-    model.changeCommsPackage.availableTags.remove(tag);
+enum TagOperation {
+  ADD,
+  UPDATE,
+  REMOVE
+}
+
+void _addTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagType, [bool isEditable = false]) {
+  tagType.addAll({tag: tagStyle});
+  if (!isEditable) model.changeCommsPackage.availableTags.remove(tag);
+}
+
+Map<String, model.TagStyle> _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyle> tagType) {
+  if (originalTag == updatedTag) return tagType;
+  var tagKeys = tagType.keys.toList();
+  var tagValues= tagType.values.toList();
+  var originalIndex = tagKeys.indexOf(originalTag);
+  if (originalIndex < 0) {
+    tagType[updatedTag] = model.TagStyle.Normal;
+    return tagType;
   }
+  tagKeys.removeAt(originalIndex);
+  tagKeys.insert(originalIndex, updatedTag);
+  Map<String, model.TagStyle> updatedAddsTags = {};
+  for (int i = 0; i < tagKeys.length; i++) {
+    updatedAddsTags[tagKeys[i]] = tagValues[i];
+  }
+  return updatedAddsTags;
 }
 
-void hasAllTagsChanged(String tag, model.TagStyle tagStyle) {
-  _updateTag(model.changeCommsPackage.hasAllTags, tag, tagStyle);
+void _removeTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagType, [bool isEditable = false]) {
+  tagType.remove(tag);
+  if (!isEditable) model.changeCommsPackage.availableTags.addAll({tag : tagStyle});
+}
+
+void hasAllTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+  switch(tagOperation) {
+    case TagOperation.ADD:
+      _addTag(tag, tagStyle, model.changeCommsPackage.hasAllTags);
+      break;
+    case TagOperation.UPDATE:
+      break;
+    case TagOperation.REMOVE:
+      _removeTag(tag, tagStyle, model.changeCommsPackage.hasAllTags);
+      break;
+  }
   loadBatchRepliesConfigurationView();
 }
 
-void containsLastInTurnTagsChanged(String tag, model.TagStyle tagStyle) {
-   _updateTag(model.changeCommsPackage.containsLastInTurnTags, tag, tagStyle);
+void containsLastInTurnTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+   switch(tagOperation) {
+    case TagOperation.ADD:
+      _addTag(tag, tagStyle, model.changeCommsPackage.containsLastInTurnTags);
+      break;
+    case TagOperation.UPDATE:
+      break;
+    case TagOperation.REMOVE:
+      _removeTag(tag, tagStyle, model.changeCommsPackage.containsLastInTurnTags);
+      break;
+  }
   loadBatchRepliesConfigurationView();
 }
 
-void hasNoneTagsChanged(String tag, model.TagStyle tagStyle) {
-   _updateTag(model.changeCommsPackage.hasNoneTags, tag, tagStyle);
+void hasNoneTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+   switch(tagOperation) {
+    case TagOperation.ADD:
+      _addTag(tag, tagStyle, model.changeCommsPackage.hasNoneTags);
+      break;
+    case TagOperation.UPDATE:
+      break;
+    case TagOperation.REMOVE:
+      _removeTag(tag, tagStyle, model.changeCommsPackage.hasNoneTags);
+      break;
+  }
   loadBatchRepliesConfigurationView();
 }
 
-void addsTagsChanged(String updatedTag, String originalTag, model.TagStyle tagStyle) {
-  if (model.changeCommsPackage.addsTags.containsKey(originalTag)) {
-    if (updatedTag != originalTag) {
-      var addsTagsKeys = model.changeCommsPackage.addsTags.keys.toList();
-      var addsTagsTagValues= model.changeCommsPackage.addsTags.values.toList();
-      var originalIndex = addsTagsKeys.indexOf(originalTag);
-      addsTagsKeys.removeAt(originalIndex);
-      addsTagsKeys.insert(originalIndex, updatedTag);
-      Map<String, model.TagStyle> updatedAddsTags = {};
-      for (int i = 0; i < addsTagsKeys.length; i++) {
-        updatedAddsTags[addsTagsKeys[i]] = addsTagsTagValues[i];
-      }
-      model.changeCommsPackage.addsTags = updatedAddsTags;
-    } else {
-      model.changeCommsPackage.addsTags.remove(originalTag);
-    }
-  } else {
-    model.changeCommsPackage.addsTags.addAll({updatedTag: tagStyle});
+void addsTagsChanged(String originalTag, String updatedTag, model.TagStyle tagStyle, TagOperation tagOperation) {
+  switch(tagOperation) {
+    case TagOperation.ADD:
+      _addTag(updatedTag, tagStyle, model.changeCommsPackage.addsTags, true);
+      break;
+    case TagOperation.UPDATE:
+      model.changeCommsPackage.addsTags = _updateTag(originalTag, updatedTag, model.changeCommsPackage.addsTags);
+      break;
+    case TagOperation.REMOVE:
+      _removeTag(originalTag, tagStyle, model.changeCommsPackage.addsTags, true);
+      break;
   }
   loadBatchRepliesConfigurationView();
 }
