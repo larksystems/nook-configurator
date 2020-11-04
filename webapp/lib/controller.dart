@@ -162,7 +162,7 @@ void containsLastInTurnTagsChanged(String tag, model.TagStyle tagStyle) {
   loadBatchRepliesConfigurationView();
 }
 
-void hasNoneTagsChanged (String tag, model.TagStyle tagStyle) {
+void hasNoneTagsChanged(String tag, model.TagStyle tagStyle) {
    _updateTag(model.changeCommsPackage.hasNoneTags, tag, tagStyle);
   loadBatchRepliesConfigurationView();
 }
