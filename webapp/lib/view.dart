@@ -1,5 +1,6 @@
-import 'dart:convert';
 import 'dart:html';
+
+import 'model.dart' as model;
 
 import 'logger.dart';
 import 'controller.dart' as controller;
@@ -100,30 +101,24 @@ class AuthHeaderViewPartial {
   }
 }
 
+abstract class BaseView {
+  DivElement get renderElement;
+}
+
 class ContentView {
   DivElement contentViewElement;
-  AuthMainView authMainView;
-  DashboardView dashboardView;
-  BatchRepliesConfigurationView batchRepliesConfigurationView;
-  EscalatesConfigurationView escalatesConfigurationView;
-  ProjectConfigurationView projectConfigurationView;
 
   ContentView() {
     contentViewElement = new DivElement()..classes.add('content');
-    authMainView = new AuthMainView();
-    dashboardView = new DashboardView();
-    batchRepliesConfigurationView = new BatchRepliesConfigurationView();
-    escalatesConfigurationView = new EscalatesConfigurationView();
-    projectConfigurationView = new ProjectConfigurationView();
   }
 
-  void renderView(DivElement view) {
+  void renderView(BaseView view) {
     contentViewElement.children.clear();
-    contentViewElement.append(view);
+    contentViewElement.append(view.renderElement);
   }
 }
 
-class AuthMainView {
+class AuthMainView extends BaseView {
   DivElement authElement;
   ButtonElement _signInButton;
 
@@ -153,9 +148,11 @@ class AuthMainView {
       ..onClick.listen((_) => controller.command(controller.UIAction.signInButtonClicked, null));
     authElement.append(_signInButton);
   }
+
+  DivElement get renderElement => authElement;
 }
 
-class DashboardView {
+class DashboardView extends BaseView {
   List<ActivePackagesViewPartial> activePackages;
   List<AvailablePackagesViewPartial> availablepackages;
 
@@ -192,6 +189,8 @@ class DashboardView {
     dashboardViewElement.append(availablePackagesContainer);
   }
 
+  DivElement get renderElement => dashboardViewElement;
+
   void renderActivePackages() {
     activePackagesContainer.children.clear();
     activePackagesContainer.append(new HeadingElement.h1()..text = "Active packages");
@@ -209,13 +208,470 @@ class DashboardView {
   }
 }
 
+class ActivePackagesViewPartial {
+  DivElement packageElement;
+  HeadingElement _packageName;
+  DivElement _packageActionsContainer;
+  AnchorElement _dashboardAction;
+  AnchorElement _conversationsAction;
+  AnchorElement _configureAction;
+
+  ActivePackagesViewPartial(String packageName, String conversationsLink, String configurationLink) {
+    packageElement = new DivElement()
+      ..classes.add('active-packages__package');
+    _packageName = new HeadingElement.h4()
+      ..text = '$packageName (Active)';
+    _packageActionsContainer = new DivElement()
+      ..classes.add('active-packages__package-actions');
+    _dashboardAction = new AnchorElement()
+      ..classes.add('active-packages__package-action')
+      ..text = 'Dashboard'
+      ..href = '#/dashboard';
+    _conversationsAction = new AnchorElement()
+      ..classes.add('active-packages__package-action')
+      ..text = 'Conversations'
+      ..href = conversationsLink;
+    _configureAction = new AnchorElement()
+      ..classes.add('active-packages__package-action')
+      ..text = 'Configure'
+      ..href = configurationLink;
+    _packageActionsContainer.append(_dashboardAction);
+    _packageActionsContainer.append(_conversationsAction);
+    _packageActionsContainer.append(_configureAction);
+    packageElement.append(_packageName);
+    packageElement.append(_packageActionsContainer);
+  }
+}
+
+class AvailablePackagesViewPartial {
+  DivElement packageElement;
+  DivElement _addPackageLinkContainer;
+  AnchorElement _addPackageLink;
+  DivElement _descriptionContaner;
+  HeadingElement _descriptionTitle;
+  DivElement _descriptionDetails;
+
+  AvailablePackagesViewPartial(String packageName, String descriptionTitle, List<String> descriptionDetails) {
+    packageElement = new DivElement()
+      ..classes.add('available-packages__package');
+    _addPackageLinkContainer = new DivElement()
+      ..classes.add('available-packages__add-package');
+    _addPackageLink = new AnchorElement()
+      ..classes.add('available-packages__add-package-link')
+      ..text = packageName
+      ..href = '#';
+    _descriptionContaner = new DivElement()
+      ..classes.add('available-packages__package-description');
+    _descriptionTitle = new HeadingElement.h4()
+      ..text = descriptionTitle;
+    _descriptionDetails = new DivElement();
+    descriptionDetails.forEach((detail) => _descriptionDetails.append(new ParagraphElement()..text = detail));
+
+    _addPackageLinkContainer.append(_addPackageLink);
+    _descriptionContaner.append(_descriptionTitle);
+    _descriptionContaner.append(_descriptionDetails);
+    packageElement.append(_addPackageLinkContainer);
+    packageElement.append(_descriptionContaner);
+  }
+}
+
+class EscalatesConfigurationView extends PackageConfiguratorView {}
+
+class PackageConfiguratorView extends BaseView {
+  DivElement packageConfiguratorViewElement;
+  DivElement _packageConfiguratorSidebar;
+  DivElement _packageConfiguratorContent;
+
+  PackageConfiguratorView() {
+    packageConfiguratorViewElement = new DivElement()
+      ..classes.add('configure-package-view');
+    _packageConfiguratorSidebar = new DivElement()
+      ..classes.add('configure-package-sidebar');
+    _packageConfiguratorContent = new DivElement()
+      ..classes.add('configure-package-content');
+    _buildSidebarPartial();
+    packageConfiguratorViewElement.append(_packageConfiguratorSidebar);
+    packageConfiguratorViewElement.append(_packageConfiguratorContent);
+  }
+
+  DivElement get renderElement => packageConfiguratorViewElement;
+
+  void _buildSidebarPartial() {
+    Map<String, bool> activePackages = {'Escalates': true, 'Change Communications': false};
+
+    _packageConfiguratorSidebar.append(
+      new SpanElement()
+        ..text = 'Active Packages'
+        ..classes.add('configure-package-sidebar__title')
+    );
+
+    var packageList = new Element.ul()
+      ..classes.add('selected-active-package-list');
+
+    activePackages.forEach((packageName, selected) {
+      packageList.append(
+        new DivElement()
+          ..classes.add('selected-active-package-list__item')
+          ..append(
+            new CheckboxInputElement()
+              ..classes.add('selected-active-package-list__item-state')
+              ..checked = selected
+          )
+          ..append(
+            new Element.li()
+              ..classes.add('selected-active-package-list__item-text')
+              ..text = packageName
+          )
+      );
+    });
+
+    _packageConfiguratorSidebar.append(packageList);
+  }
+}
+
+class BatchRepliesConfigurationView extends PackageConfiguratorView {
+  DivElement hasAllTagsContainer;
+  DivElement containsLastInTurnTagsContainer;
+  DivElement hasNoneTagsContainer;
+  DivElement suggestedRepliesContainer;
+  DivElement addsTagsContainer;
+  BatchRepliesConfigurationView(model.Configuration data) : super() {
+    _buildContentPartial(data);
+  }
+
+  void _buildContentPartial(model.Configuration data) {
+    List<TagView> hasAllTags = [];
+    data.hasAllTags.forEach((tag, tagStyle) {
+      hasAllTags.add(new TagView(tag, tagStyle, controller.hasAllTagsChanged));
+    });
+    hasAllTagsContainer = new TagListView(hasAllTags, data.availableTags, controller.hasAllTagsChanged).renderElement;
+
+    List<TagView> containsLastInTurnTags = [];
+    data.containsLastInTurnTags.forEach((tag, tagStyle) {
+      containsLastInTurnTags.add(new TagView(tag, tagStyle, controller.containsLastInTurnTagsChanged));
+    });
+    containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, data.availableTags, controller.containsLastInTurnTagsChanged).renderElement;
+
+    List<TagView> hasNoneTags = [];
+    data.hasNoneTags.forEach((tag, tagStyle) {
+      hasNoneTags.add(new TagView(tag, tagStyle, controller.hasNoneTagsChanged));
+    });
+    hasNoneTagsContainer = new TagListView(hasNoneTags, data.availableTags, controller.hasNoneTagsChanged).renderElement;
+
+    _packageConfiguratorContent.append(
+      new DivElement()
+        ..classes.add('configure-package-tags')
+        ..append(
+          new DivElement()
+            ..classes.add('conversation-tags')
+            ..append(
+              new DivElement()
+                ..classes.add('conversation-tags__row')
+                ..append(
+                  new ParagraphElement()
+                    ..classes.add('conversation-tags__title')
+                    ..text = 'Who do you want to talk to'
+                )
+                ..append(
+                  new ParagraphElement()
+                    ..classes.add('conversation-tags__sub-title')
+                    ..text = 'Conversations has tags'
+                )
+                ..append(hasAllTagsContainer)
+                ..append(
+                  new ParagraphElement()
+                    ..classes.add('conversation-tags__text--center')
+                    ..text = 'and'
+                )
+                ..append(
+                  new ParagraphElement()
+                    ..classes.add('conversation-tags__sub-title')
+                    ..text = 'Last in turn contains ...'
+                )
+                ..append(containsLastInTurnTagsContainer)
+            )
+            ..append(
+              new DivElement()
+                ..classes.add('conversation-tags__row')
+                ..append(
+                  new ParagraphElement()
+                    ..classes.add('conversation-tags__title')
+                    ..text = 'Who do you NOT want to talk to?'
+                )
+                ..append(
+                  new ParagraphElement()
+                    ..classes.add('conversation-tags__sub-title')
+                    ..text = 'Conversation has tags'
+                )
+                ..append(hasNoneTagsContainer)
+            )
+        )
+        ..append(
+          new DivElement()
+            ..classes.add('conversation-charts')
+            ..append(
+              new DivElement()
+                ..classes.add('configure-package-charts')
+                ..append(
+                   new ImageElement()
+                    ..classes.add('configure-package-charts__chart')
+                    ..src = 'assets/sample-chart.png'
+                )
+            )
+            ..append(
+              new DivElement()
+                ..classes.add('configure-package-actions')
+                ..append(
+                  new AnchorElement()
+                    ..classes.add('configure-package-actions__action')
+                    ..href = '#'
+                    ..text = 'Go to Conversations'
+                )
+                ..append(
+                  new AnchorElement()
+                    ..classes.add('configure-package-actions__action')
+                    ..href = '#'
+                    ..text = 'Explore'
+                )
+            )
+        )
+    );
+
+    suggestedRepliesContainer =
+      new ResponseListView(data.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
+
+    _packageConfiguratorContent.append(
+      new DivElement()
+        ..classes.add('configure-package-responses')
+        ..append(
+          new DivElement()
+            ..classes.add('configure-package-responses-headers')
+            ..append(
+              new ParagraphElement()
+                ..text = 'What do you want to say?'
+            )
+            ..append(
+              new ParagraphElement()
+                ..text = '3rd Party reviews'
+            )
+        )
+        ..append(suggestedRepliesContainer)
+    );
+
+    List<TagView> addsTags = [];
+    data.addsTags.forEach((tag, tagStyle) {
+      addsTags.add(new TagView(tag, tagStyle, controller.addsTagsChanged, true));
+    });
+    addsTagsContainer = new TagListView(addsTags, data.availableTags, controller.addsTagsChanged, true).renderElement;
+
+    _packageConfiguratorContent.append(
+      new DivElement()
+        ..classes.add('configure-package-labels')
+        ..append(
+          new ParagraphElement()
+            ..classes.add('conversation-tags__title')
+            ..text = 'What new labels would like to tag the message with?'
+        )
+        ..append(addsTagsContainer)
+    );
+  }
+}
+
+class TagListView extends BaseView {
+  List<TagView> tagElements;
+  DivElement _tagsContainer;
+  SpanElement _tagsActionContainer;
+  Function onTagChangedCallback;
+
+  TagListView(this.tagElements, Map<String, model.TagStyle> availableTags, this.onTagChangedCallback, [bool tagsEditable = false]) {
+    _tagsContainer = new DivElement()
+      ..classes.add('tags');
+    _tagsActionContainer = new SpanElement()
+      ..classes.add('tags__actions')
+      ..append(
+        new ButtonElement()
+          ..classes.add('button-add-tag')
+          ..text = '+'
+          ..onClick.listen((event) {
+            event.stopPropagation();
+            if (tagsEditable) {
+              var tagElement = new TagView('', model.TagStyle.Normal, onTagChangedCallback, tagsEditable);
+              _tagsActionContainer.insertAdjacentElement('beforebegin', tagElement.renderElement);
+              tagElement.focus();
+              return;
+            }
+            _addTagDropdown(availableTags, onTagChangedCallback);
+          })
+      );
+    _tagsContainer.append(_tagsActionContainer);
+    tagElements.forEach((tag) {
+      _tagsActionContainer.insertAdjacentElement('beforebegin', tag.renderElement);
+    });
+  }
+
+  DivElement get renderElement => _tagsContainer;
+
+  void _addTagDropdown(Map<String, model.TagStyle> tags, Function onTagChangedCallback) {
+    var tagListDropdown = new Element.ul()
+      ..classes.add('add-tag-dropdown');
+    var tagsToShow = tags.isEmpty ? ['--None--'] : tags.keys;
+    for (var tag in tagsToShow) {
+      tagListDropdown.append(
+        new Element.li()
+          ..classes.add('add-tag-dropdown__item')
+          ..text = tag
+          ..onClick.listen((event) {
+            if (tag == '--None--') return;
+            onTagChangedCallback(tag, tags[tag], controller.TagOperation.ADD);
+          })
+      );
+    }
+    _tagsActionContainer.append(tagListDropdown);
+    var documentOnClickSubscription;
+    documentOnClickSubscription = document.onClick.listen((event) {
+      event.stopPropagation();
+      tagListDropdown.remove();
+     documentOnClickSubscription.cancel();
+    });
+  }
+}
+
+class TagView extends BaseView {
+  DivElement _tagElement;
+  SpanElement _tagText;
+  Function onTagChangedCallback;
+
+  TagView(String tag, model.TagStyle tagStyle, this.onTagChangedCallback, [bool isEditableTag = false]) {
+    _tagElement = _createTag(tag, tagStyle, isEditableTag);
+  }
+
+  DivElement get renderElement => _tagElement;
+
+  DivElement _createTag(String tag, model.TagStyle tagStyle, bool isEditableTag) {
+    var tagElement = new DivElement()
+      ..classes.add('tag')
+      ..dataset['id'] = tag.isEmpty ? 'id-123' : tag;
+
+    switch (tagStyle) {
+      case model.TagStyle.Important:
+        tagElement.classes.add('tag--important');
+        break;
+      default:
+        break;
+    }
+
+    _tagText = new SpanElement()
+      ..classes.add('tag__name')
+      ..text = tag
+      ..title = tag;
+
+    tagElement
+      ..append(_tagText)
+      ..append(
+        new SpanElement()
+          ..classes.add('tag__remove-btn')
+          ..text = 'x'
+          ..onClick.listen((_) {
+            if (isEditableTag) {
+              onTagChangedCallback(tag, tag, tagStyle, controller.TagOperation.REMOVE);
+              return;
+            }
+            onTagChangedCallback(tag, tagStyle, controller.TagOperation.REMOVE);
+          })
+      );
+
+    if (isEditableTag) {
+      _tagText.contentEditable = 'true';
+      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagStyle, controller.TagOperation.UPDATE));
+    }
+
+    return tagElement;
+  }
+
+  void focus() {
+    _tagText.focus(); // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
+                      // then the cursor jumps over the x. Needs investigating and fixing.
+  }
+}
+
+class ResponseView {
+  Element _responseElement;
+  Function(int, int, String) onUpdateResponseCallback;
+
+  ResponseView(int rowIndex, int colIndex, String response, this.onUpdateResponseCallback) {
+    _responseElement = new ParagraphElement()
+          ..classes.add('conversation-response__language')
+          ..text = response != null ? response : ''
+          ..contentEditable = 'true'
+          ..dataset['index'] = '$colIndex'
+          ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text));
+  }
+
+  Element get renderElement => _responseElement;
+}
+
+class ResponseListView extends BaseView {
+  DivElement _responsesContainer;
+  Function onAddNewResponseCallback;
+  Function(int, int, String) onUpdateResponseCallback;
+  Function(int, bool) onReviewResponseCallback;
+  Function(int) onRemoveResponseCallback;
+
+  ResponseListView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
+    _responsesContainer = new DivElement()
+      ..classes.add('conversation-responses');
+    for (int i = 0; i < suggestedReplies.length; i++) {
+      _responsesContainer.append(_createResponseEntry(i, suggestedReplies[i]));
+    }
+    _responsesContainer.append(
+      new ButtonElement()
+        ..classes.add('button-add-conversation-responses')
+        ..text = '+'
+        ..onClick.listen((event) => onAddNewResponseCallback())
+    );
+  }
+
+  DivElement get renderElement => _responsesContainer;
+
+  DivElement _createResponseEntry(int rowIndex, [Map response]) {
+    var responseEntry = new DivElement()
+      ..classes.add('conversation-response')
+      ..dataset['index'] = '$rowIndex'
+      ..append(
+        new ButtonElement()
+          ..classes.add('button-remove-conversation-responses')
+          ..text = 'x'
+          ..onClick.listen((_) => onRemoveResponseCallback(rowIndex))
+      );
+    for (int i = 0; i < response['messages'].length; i++) {
+      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], onUpdateResponseCallback).renderElement);
+    }
+    responseEntry.append(
+      DivElement()
+        ..classes.add('conversation-response__reviewed')
+        ..append(
+          new CheckboxInputElement()
+              ..classes.add('conversation-response__reviewed-state')
+              ..checked = response != null ? response['reviewed'] : false
+              ..onClick.listen((event) => onReviewResponseCallback(rowIndex, (event.target as CheckboxInputElement).checked))
+        )
+        ..append(
+          new ParagraphElement()
+            ..classes.add('conversation-response__reviewed-description')
+            ..text = response != null ? '${response['reviewed-by']}, ${response['reviewed-date']}' : ''
+        )
+    );
+    return responseEntry;
+  }
+}
+
 enum FormGroupTypes {
   TEXT,
   CHECKBOX,
   DATE
 }
 
-class ProjectConfigurationView {
+class ProjectConfigurationView extends BaseView{
   DivElement configurationViewElement;
   FormElement _projectConfigurationForm;
 
@@ -227,6 +683,8 @@ class ProjectConfigurationView {
     _buildForm();
     configurationViewElement.append(_projectConfigurationForm);
   }
+
+  DivElement get renderElement => configurationViewElement;
 
   void _buildForm() {
     _projectConfigurationForm
@@ -329,282 +787,5 @@ class ProjectConfigurationView {
       formGroup.append(formElementGroups);
     });
     return formGroup;
-  }
-}
-
-class ActivePackagesViewPartial {
-  DivElement packageElement;
-  HeadingElement _packageName;
-  DivElement _packageActionsContainer;
-  AnchorElement _dashboardAction;
-  AnchorElement _conversationsAction;
-  AnchorElement _configureAction;
-
-  ActivePackagesViewPartial(String packageName) {
-    packageElement = new DivElement()
-      ..classes.add('active-packages__package');
-    _packageName = new HeadingElement.h4()
-      ..text = '$packageName (Active)';
-    _packageActionsContainer = new DivElement()
-      ..classes.add('active-packages__package-actions');
-    _dashboardAction = new AnchorElement()
-      ..classes.add('active-packages__package-action')
-      ..text = 'Dashboard'
-      ..href = '#';
-    _conversationsAction = new AnchorElement()
-      ..classes.add('active-packages__package-action')
-      ..text = 'Conversations'
-      ..href = '#';
-    _configureAction = new AnchorElement()
-      ..classes.add('active-packages__package-action')
-      ..text = 'Configure'
-      ..href = '#/batch-replies-configuration';
-    _packageActionsContainer.append(_dashboardAction);
-    _packageActionsContainer.append(_conversationsAction);
-    _packageActionsContainer.append(_configureAction);
-    packageElement.append(_packageName);
-    packageElement.append(_packageActionsContainer);
-  }
-}
-
-class AvailablePackagesViewPartial {
-  DivElement packageElement;
-  DivElement _addPackageLinkContainer;
-  AnchorElement _addPackageLink;
-  DivElement _descriptionContaner;
-  HeadingElement _descriptionTitle;
-  DivElement _descriptionDetails;
-
-  AvailablePackagesViewPartial(String packageName, String descriptionTitle, List<String> descriptionDetails) {
-    packageElement = new DivElement()
-      ..classes.add('available-packages__package');
-    _addPackageLinkContainer = new DivElement()
-      ..classes.add('available-packages__add-package');
-    _addPackageLink = new AnchorElement()
-      ..classes.add('available-packages__add-package-link')
-      ..text = packageName
-      ..href = '#';
-    _descriptionContaner = new DivElement()
-      ..classes.add('available-packages__package-description');
-    _descriptionTitle = new HeadingElement.h4()
-      ..text = descriptionTitle;
-    _descriptionDetails = new DivElement();
-    descriptionDetails.forEach((detail) => _descriptionDetails.append(new ParagraphElement()..text = detail));
-
-    _addPackageLinkContainer.append(_addPackageLink);
-    _descriptionContaner.append(_descriptionTitle);
-    _descriptionContaner.append(_descriptionDetails);
-    packageElement.append(_addPackageLinkContainer);
-    packageElement.append(_descriptionContaner);
-  }
-}
-
-class BatchRepliesConfigurationView {
-  DivElement configurationViewElement;
-  DivElement _tagsContainer;
-  ConfigurationViewTagListPartial tagList;
-  ConfigurationViewTagResponsesPartial tagResponses;
-
-  BatchRepliesConfigurationView() {
-    configurationViewElement = new DivElement()
-      ..classes.add('configure-package');
-    _tagsContainer = new DivElement()
-      ..classes.add('configure-package__tags');
-    tagList = new ConfigurationViewTagListPartial();
-    tagResponses = new ConfigurationViewTagResponsesPartial();
-
-    _tagsContainer.append(tagList.tagListElement);
-    _tagsContainer.append(tagResponses.tagResponsesElement);
-    configurationViewElement.append(HeadingElement.h2()
-      ..classes.add('configure-package__title')
-      ..text = "Batch replies (Week 12) package");
-    configurationViewElement.append(HeadingElement.h3()
-      ..classes.add('configure-package__sub-title')
-      ..text = "Configure");
-    configurationViewElement.append(_tagsContainer);
-  }
-}
-
-class EscalatesConfigurationView {
-  DivElement configurationViewElement;
-  DivElement _tagsContainer;
-  ConfigurationViewTagListPartial tagList;
-  ConfigurationViewTagResponsesPartial tagResponses;
-
-  EscalatesConfigurationView() {
-    configurationViewElement = new DivElement()
-      ..classes.add('configure-package');
-    _tagsContainer = new DivElement()
-      ..classes.add('configure-package__tags');
-    tagList = new ConfigurationViewTagListPartial();
-    tagResponses = new ConfigurationViewTagResponsesPartial();
-
-    _tagsContainer.append(tagList.tagListElement);
-    _tagsContainer.append(tagResponses.tagResponsesElement);
-    configurationViewElement.append(HeadingElement.h2()
-      ..classes.add('configure-package__title')
-      ..text = "Escalates package");
-    configurationViewElement.append(HeadingElement.h3()
-      ..classes.add('configure-package__sub-title')
-      ..text = "Configure");
-    configurationViewElement.append(_tagsContainer);
-  }
-}
-
-class ConfigurationViewTagListPartial {
-  Element tagListElement;
-
-  ConfigurationViewTagListPartial() {
-    tagListElement = new Element.ul()
-      ..classes.add('tags-list');
-  }
-
-  void renderTagList(Map<String, bool> tags) {
-    tagListElement.children.clear();
-    tags.forEach((tag, state) {
-      var tagItem = new Element.li()
-        ..classes.add('tag-list__tag-item')
-        ..text = tag;
-      tagItem.onClick.listen((event) {
-        var selectedTag = (event.target as Element);
-        controller.command(controller.UIAction.configurationTagSelected, new controller.ConfigurationTagData(selectedTag: selectedTag.text.trim()));
-      });
-      tagItem.onDragOver.listen((event) => event.preventDefault());
-      tagItem.onDragEnter.listen((event) {
-        event.preventDefault();
-        (event.target as Element).classes.add('tag-list__tag-item-drop-target');
-      });
-      tagItem.onDragLeave.listen((event) => (event.target as Element).classes.remove('tag-list__tag-item-drop-target'));
-      tagItem.onDrop.listen((event) {
-        event.preventDefault();
-        var dropTarget = (event.target as Element);
-        dropTarget.classes.remove('tag-list__tag-item-drop-target');
-        if (dropTarget.classes.contains('tag-list__tag-item')) {
-          var responseData = jsonDecode(event.dataTransfer.getData("Text"));
-          responseData.forEach((language, text) {
-            controller.command(controller.UIAction.addConfigurationResponseEntries,
-              new controller.ConfigurationResponseData(parentTag: dropTarget.text, language: language, text: text));
-          });
-        }
-      });
-      tagListElement.append(tagItem);
-    });
-    toggleTagsSelectedState(tags);
-    tagListElement.append(
-      new ButtonElement()
-        ..classes.add('add-button')
-        ..text = '+'
-        ..onClick.listen((event) => tagListElement.append(addTagDropDown(controller.additionalConfigurationTags.toList())))
-    );
-  }
-
-  DivElement addTagDropDown(List<String> tags) {
-    var addTagModal = new DivElement()
-      ..classes.add('add-tag-modal');
-    addTagModal.append(
-      HeadingElement.h6()
-        ..classes.add('add-tag-modal__heading')
-        ..text = 'Select new tag to add');
-    addTagModal.append(
-      new ButtonElement()
-        ..classes.add('add-tag-modal__close-button')
-        ..text = 'x'
-        ..onClick.listen((_) => addTagModal.remove()));
-    var tagOptions = new SelectElement()
-      ..classes.add('add-tag-modal__dropdown')
-      ..onChange.listen((event) {
-        var selectedOption = (event.currentTarget as SelectElement).value;
-        controller.command(controller.UIAction.addConfigurationTag, new controller.ConfigurationTagData(tagToAdd: selectedOption));
-        if(tagListElement.children.last is DivElement) tagListElement.children.removeLast();
-      });
-    tagOptions.add(new OptionElement()..text = '-', false);
-    tags.forEach((tag) {
-      var option = new OptionElement()
-        ..text = tag
-        ..value = tag;
-      tagOptions.add(option, false);
-    });
-    addTagModal.append(tagOptions);
-    return addTagModal;
-  }
-
-  void toggleTagsSelectedState(Map<String, bool> tags) {
-    tagListElement.children.forEach((tag) {
-      tag.classes.toggle('tag-list__tag-item--active', tags[tag.text]);
-    });
-  }
-}
-
-class ConfigurationViewTagResponsesPartial {
-  DivElement tagResponsesElement;
-  DivElement _tagResponsesHeader;
-  DivElement _tagResponsesBody;
-
-  ConfigurationViewTagResponsesPartial() {
-    tagResponsesElement = new DivElement()
-      ..classes.add('tag-responses');
-    _tagResponsesHeader = new DivElement()
-      ..classes.add('tag-responses__header');
-    _tagResponsesBody = new DivElement()
-      ..classes.add('tag-responses__content');
-  }
-
-  void renderResponses(String tag, List<String> responseLanguages, List<List<String>> responses) {
-    tagResponsesElement.children.clear();
-    _tagResponsesHeader.children.clear();
-    _tagResponsesBody.children.clear();
-    responseLanguages.forEach((lang) => _tagResponsesHeader.append(
-      new HeadingElement.h5()
-        ..classes.add('tag-responses__header-title')
-        ..text = lang
-    ));
-    for (int i = 0; i < responses.length; i++) {
-      var item = new DivElement()
-          ..classes.add('tag-responses__item-row')
-          ..append(
-            new DivElement()
-            ..draggable = true
-            ..classes.add('tag-responses__item-drag-handle')
-            ..onDragStart.listen((event) {
-              var handle = event.target as Element;
-              var parent = handle.parent;
-              handle.classes.add('tag-responses__item-drag-handle_dragging');
-              Map<String, String> payload = {};
-              for (int k = 1; k < parent.children.length; k++) {
-                payload[parent.children[k].attributes['language']] = parent.children[k].text;
-              }
-              event.dataTransfer.setData("Text", jsonEncode(payload));
-            })
-            ..onDragEnd.listen((event) => (event.target as Element).classes.remove('tag-responses__item-drag-handle_dragging'))
-          );
-      for (int j = 0; j < responses[i].length; j++) {
-        item.append(
-            new ParagraphElement()
-              ..classes.add('tag-responses__item')
-              ..attributes.addAll({'contenteditable': 'true', 'parent-tag': tag, 'language': responseLanguages[j] ,'index': '$i'})
-              ..text = responses[i][j]
-              ..draggable = true
-              ..onBlur.listen((event) {
-                var reponseElement = (event.currentTarget as Element);
-                var parentTag = reponseElement.attributes['parent-tag'];
-                var index = int.parse(reponseElement.attributes['index']);
-                var language = reponseElement.attributes['language'];
-                var text = reponseElement.text;
-                controller.command(controller.UIAction.editConfigurationTagResponse, new controller.ConfigurationResponseData(parentTag: parentTag, index: index, language: language, text: text));
-          }));
-        _tagResponsesBody.append(item);
-      }
-    }
-    tagResponsesElement.append(_tagResponsesHeader);
-    tagResponsesElement.append(_tagResponsesBody);
-    tagResponsesElement.append(
-      new ButtonElement()
-          ..classes.add('add-button')
-          ..text = '+'
-          ..onClick.listen((event) {
-            controller.command(controller.UIAction.addConfigurationResponseEntries, new controller.ConfigurationResponseData(parentTag: tag));
-            window.scrollTo(0, mainElement.scrollHeight);
-          })
-    );
   }
 }

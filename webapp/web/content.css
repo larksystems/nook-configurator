@@ -1,5 +1,6 @@
 .content {
     display: grid;
     width: 100vw;
-    margin: 40px 60px 20px 60px;
+    height: 100vh;
+    /* margin: 40px 60px 20px 60px; */
 }
