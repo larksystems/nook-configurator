@@ -167,7 +167,7 @@ void hasNoneTagsChanged(String tag, model.TagStyle tagStyle) {
   loadBatchRepliesConfigurationView();
 }
 
-void addsTagsChanged (String updatedTag, String originalTag, model.TagStyle tagStyle) {
+void addsTagsChanged(String updatedTag, String originalTag, model.TagStyle tagStyle) {
   if (model.changeCommsPackage.addsTags.containsKey(originalTag)) {
     if (updatedTag != originalTag) {
       var addsTagsKeys = model.changeCommsPackage.addsTags.keys.toList();
