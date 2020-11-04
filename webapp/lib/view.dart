@@ -493,12 +493,12 @@ class TagListView extends BaseView {
           ..classes.add('button-add-tag')
           ..text = '+'
           ..onClick.listen((event) {
+            event.stopPropagation();
             if (tagsEditable) {
               _tagsActionContainer.insertAdjacentElement('beforebegin', new TagView('', model.TagStyle.Normal, onTagChangedCallback, tagsEditable).renderElement);
-            } else {
-              _addTagDropdown(tagList, onTagChangedCallback);
+              return;
             }
-            event.stopPropagation();
+            _addTagDropdown(tagList, onTagChangedCallback);
           })
       );
     _tagsContainer.append(_tagsActionContainer);
