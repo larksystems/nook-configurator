@@ -519,7 +519,8 @@ class TagListView extends BaseView {
           ..classes.add('add-tag-dropdown__item')
           ..text = tag
           ..onClick.listen((event) {
-            if (tag != '--None--') onTagChangedCallback(tag, tags[tag]);
+            if (tag == '--None--') return;
+            onTagChangedCallback(tag, tags[tag]);
           })
       );
     }
