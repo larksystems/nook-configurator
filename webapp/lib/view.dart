@@ -344,19 +344,19 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     data.hasAllTags.forEach((tag, tagStyle) {
       hasAllTags.add(new TagView(tag, tagStyle, controller.hasAllTagsChanged));
     });
-    hasAllTagsContainer = new TagListView(hasAllTags, data.tags, controller.hasAllTagsChanged).renderElement;
+    hasAllTagsContainer = new TagListView(hasAllTags, data.availableTags, controller.hasAllTagsChanged).renderElement;
 
     List<TagView> containsLastInTurnTags = [];
     data.containsLastInTurnTags.forEach((tag, tagStyle) {
       containsLastInTurnTags.add(new TagView(tag, tagStyle, controller.containsLastInTurnTagsChanged));
     });
-    containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, data.tags, controller.containsLastInTurnTagsChanged).renderElement;
+    containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, data.availableTags, controller.containsLastInTurnTagsChanged).renderElement;
 
     List<TagView> hasNoneTags = [];
     data.hasNoneTags.forEach((tag, tagStyle) {
       hasNoneTags.add(new TagView(tag, tagStyle, controller.hasNoneTagsChanged));
     });
-    hasNoneTagsContainer = new TagListView(hasNoneTags, data.tags, controller.hasNoneTagsChanged).renderElement;
+    hasNoneTagsContainer = new TagListView(hasNoneTags, data.availableTags, controller.hasNoneTagsChanged).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -462,7 +462,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     data.addsTags.forEach((tag, tagStyle) {
       addsTags.add(new TagView(tag, tagStyle, controller.addsTagsChanged, true));
     });
-    addsTagsContainer = new TagListView(addsTags, data.tags, controller.addsTagsChanged, true).renderElement;
+    addsTagsContainer = new TagListView(addsTags, data.availableTags, controller.addsTagsChanged, true).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -483,7 +483,7 @@ class TagListView extends BaseView {
   SpanElement _tagsActionContainer;
   Function onTagChangedCallback;
 
-  TagListView(this.tagElements, Map<String, model.TagStyle> tagList, this.onTagChangedCallback, [bool tagsEditable = false]) {
+  TagListView(this.tagElements, Map<String, model.TagStyle> availableTags, this.onTagChangedCallback, [bool tagsEditable = false]) {
     _tagsContainer = new DivElement()
       ..classes.add('tags');
     _tagsActionContainer = new SpanElement()
@@ -498,7 +498,7 @@ class TagListView extends BaseView {
               _tagsActionContainer.insertAdjacentElement('beforebegin', new TagView('', model.TagStyle.Normal, onTagChangedCallback, tagsEditable).renderElement);
               return;
             }
-            _addTagDropdown(tagList, onTagChangedCallback);
+            _addTagDropdown(availableTags, onTagChangedCallback);
           })
       );
     _tagsContainer.append(_tagsActionContainer);

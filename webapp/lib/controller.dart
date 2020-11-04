@@ -145,10 +145,10 @@ loadProjectConfigurationView() {
 void _updateTag(Map<String, model.TagStyle> tagType, String tag, model.TagStyle tagStyle) {
   if (tagType.containsKey(tag)) {
     tagType.remove(tag);
-    model.changeCommsPackage.tags.addAll({tag : tagStyle});
+    model.changeCommsPackage.availableTags.addAll({tag : tagStyle});
   } else {
     tagType.addAll({tag: tagStyle});
-    model.changeCommsPackage.tags.remove(tag);
+    model.changeCommsPackage.availableTags.remove(tag);
   }
 }
 

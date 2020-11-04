@@ -35,7 +35,7 @@ List<Map> messages = [
 ];
 
 class Configuration {
-  Map<String, TagStyle> tags;
+  Map<String, TagStyle> availableTags;
   Map<String, TagStyle> hasAllTags;
   Map<String, TagStyle> containsLastInTurnTags;
   Map<String, TagStyle> hasNoneTags;
@@ -49,7 +49,7 @@ enum TagStyle {
 }
 
 Configuration changeCommsPackage = new Configuration()
-  ..tags = tags
+  ..availableTags = tags
   ..hasAllTags = {}
   ..containsLastInTurnTags = {'denial': TagStyle.Normal , 'rumour': TagStyle.Normal}
   ..hasNoneTags = {'escalate': TagStyle.Normal, 'STOP': TagStyle.Normal}
