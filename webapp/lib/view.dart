@@ -495,7 +495,9 @@ class TagListView extends BaseView {
           ..onClick.listen((event) {
             event.stopPropagation();
             if (tagsEditable) {
-              _tagsActionContainer.insertAdjacentElement('beforebegin', new TagView('', model.TagStyle.Normal, onTagChangedCallback, tagsEditable).renderElement);
+              var tagElement = new TagView('', model.TagStyle.Normal, onTagChangedCallback, tagsEditable);
+              _tagsActionContainer.insertAdjacentElement('beforebegin', tagElement.renderElement);
+              tagElement.focus();
               return;
             }
             _addTagDropdown(availableTags, onTagChangedCallback);
@@ -536,6 +538,7 @@ class TagListView extends BaseView {
 
 class TagView extends BaseView {
   DivElement _tagElement;
+  SpanElement _tagText;
   Function onTagChangedCallback;
 
   TagView(String tag, model.TagStyle tagStyle, this.onTagChangedCallback, [bool isEditableTag = false]) {
@@ -557,13 +560,13 @@ class TagView extends BaseView {
         break;
     }
 
-    var tagText = new SpanElement()
+    _tagText = new SpanElement()
       ..classes.add('tag__name')
       ..text = tag
       ..title = tag;
 
     tagElement
-      ..append(tagText)
+      ..append(_tagText)
       ..append(
         new SpanElement()
           ..classes.add('tag__remove-btn')
@@ -578,13 +581,16 @@ class TagView extends BaseView {
       );
 
     if (isEditableTag) {
-      tagText.contentEditable = 'true';
-      tagText.focus(); // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
-                      // then the cursor jumps over the x. Needs investigating and fixing.
-      tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagStyle, controller.TagOperation.UPDATE));
+      _tagText.contentEditable = 'true';
+      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagStyle, controller.TagOperation.UPDATE));
     }
 
     return tagElement;
+  }
+
+  void focus() {
+    _tagText.focus(); // HACK: this is looking a bit odd - if the user moves the cursor at the end of the text box
+                      // then the cursor jumps over the x. Needs investigating and fixing.
   }
 }
 
