@@ -157,7 +157,7 @@ void hasAllTagsChanged(String tag, model.TagStyle tagStyle) {
   loadBatchRepliesConfigurationView();
 }
 
-void containsLastInTurnTagsChanged (String tag, model.TagStyle tagStyle) {
+void containsLastInTurnTagsChanged(String tag, model.TagStyle tagStyle) {
    _updateTag(model.changeCommsPackage.containsLastInTurnTags, tag, tagStyle);
   loadBatchRepliesConfigurationView();
 }
