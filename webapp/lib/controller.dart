@@ -147,31 +147,32 @@ enum TagOperation {
   REMOVE
 }
 
-void _addTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagType, [bool isEditable = false]) {
-  tagType.addAll({tag: tagStyle});
+void _addTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
+  tagCollection.addAll({tag: tagStyle});
   if (!isEditable) model.changeCommsPackage.availableTags.remove(tag);
 }
 
-Map<String, model.TagStyle> _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyle> tagType) {
-  if (originalTag == updatedTag) return tagType;
-  var tagKeys = tagType.keys.toList();
-  var tagValues= tagType.values.toList();
+void _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyle> tagCollection) {
+  if (originalTag == updatedTag) return;
+  var tagKeys = tagCollection.keys.toList();
+  var tagValues= tagCollection.values.toList();
   var originalIndex = tagKeys.indexOf(originalTag);
   if (originalIndex < 0) {
-    tagType[updatedTag] = model.TagStyle.Normal;
-    return tagType;
+    _addTag(updatedTag, model.TagStyle.Normal, tagCollection);
+    return;
   }
   tagKeys.removeAt(originalIndex);
   tagKeys.insert(originalIndex, updatedTag);
-  Map<String, model.TagStyle> updatedAddsTags = {};
+  Map<String, model.TagStyle> updatedTagCollection = {};
   for (int i = 0; i < tagKeys.length; i++) {
-    updatedAddsTags[tagKeys[i]] = tagValues[i];
+    updatedTagCollection[tagKeys[i]] = tagValues[i];
   }
-  return updatedAddsTags;
+  tagCollection.clear();
+  tagCollection.addAll(updatedTagCollection);
 }
 
-void _removeTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagType, [bool isEditable = false]) {
-  tagType.remove(tag);
+void _removeTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
+  tagCollection.remove(tag);
   if (!isEditable) model.changeCommsPackage.availableTags.addAll({tag : tagStyle});
 }
 
@@ -223,7 +224,7 @@ void addsTagsChanged(String originalTag, String updatedTag, model.TagStyle tagSt
       _addTag(updatedTag, tagStyle, model.changeCommsPackage.addsTags, true);
       break;
     case TagOperation.UPDATE:
-      model.changeCommsPackage.addsTags = _updateTag(originalTag, updatedTag, model.changeCommsPackage.addsTags);
+      _updateTag(originalTag, updatedTag, model.changeCommsPackage.addsTags);
       break;
     case TagOperation.REMOVE:
       _removeTag(originalTag, tagStyle, model.changeCommsPackage.addsTags, true);
