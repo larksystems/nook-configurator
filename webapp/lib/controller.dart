@@ -152,7 +152,7 @@ void _updateTag(Map<String, model.TagStyle> tagType, String tag, model.TagStyle 
   }
 }
 
-void hasAllTagsChanged (String tag, model.TagStyle tagStyle) {
+void hasAllTagsChanged(String tag, model.TagStyle tagStyle) {
   _updateTag(model.changeCommsPackage.hasAllTags, tag, tagStyle);
   loadBatchRepliesConfigurationView();
 }
