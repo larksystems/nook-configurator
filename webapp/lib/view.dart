@@ -533,7 +533,7 @@ class TagListView extends BaseView {
   }
 }
 
-class TagView extends BaseView{
+class TagView extends BaseView {
   DivElement _tagElement;
   Function onTagChangedCallback;
 
