@@ -33,14 +33,17 @@ class Router {
 
   void _loadView(String path) {
     var targetRoute = _routes[path];
-    if (targetRoute != null) {
-      if (controller.signedInUser != null && targetRoute.path != _authRoute.path) {
-        targetRoute.handler();
-        window.location.hash = targetRoute.path;
-      } else if (controller.signedInUser == null) {
-        _authRoute.handler();
-        window.location.hash = targetRoute.path;
-      }
+    if (targetRoute == null) {
+      _defaultRoute.handler(); // this needs adding in the same was as we add _authRoute, should point to the dashboard page
+      window.location.hash = _defaultRoute.path;
+      return;
     }
+    if (controller.signedInUser == null) {
+      _authRoute.handler();
+      window.location.hash = targetRoute.path; // shouldn't this be _authRoute.path ?
+      return;
+    }
+    targetRoute.handler();
+    window.location.hash = targetRoute.path;
   }
 }
