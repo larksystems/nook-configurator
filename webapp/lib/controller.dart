@@ -59,18 +59,17 @@ void init() async {
 }
 
 void initUI() {
-  window.location.hash = '#/dashboard'; //TODO This is just temporary initialization becuase we don't have a complete app
-  router.routeTo(window.location.hash);
+  router.routeTo(window.location.hash); //TODO This is just temporary initialization becuase we don't have a complete app
   view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
 }
 
 void setupRoutes() {
   router = new Router()
-    ..addHandler('#/auth', loadAuthView)
-    ..addHandler('#/dashboard', loadDashboardView)
-    ..addHandler('#/batch-replies-configuration', loadBatchRepliesConfigurationView)
-    ..addHandler('#/escalates-configuration', loadEscalatesConfigurationView)
-    ..addHandler('#/project-configuration', loadProjectConfigurationView)
+    ..addAuthHandler(new Route('#/auth', loadAuthView))
+    ..addDefaultHandler(new Route('#/dashboard', loadDashboardView))
+    ..addHandler(new Route('#/batch-replies-configuration', loadBatchRepliesConfigurationView))
+    ..addHandler(new Route('#/escalates-configuration', loadEscalatesConfigurationView))
+    ..addHandler(new Route('#/project-configuration', loadProjectConfigurationView))
     ..listen();
 }
 
