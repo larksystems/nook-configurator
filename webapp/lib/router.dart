@@ -11,16 +11,24 @@ class Route {
 class Router {
   Map<String, Route> _routes;
   Route _authRoute;
+  Route _defaultRoute;
 
   Router() {
     _routes = {};
   }
 
-  void addHandler(Route route, {bool isAuthRoute = false}) {
+  void addAuthHandler(Route route) {
     _routes[route.path] = route;
-    if (isAuthRoute) {
-      _authRoute = route;
-    }
+    _authRoute = route;
+  }
+
+  void addDefaultHandler(Route route) {
+    _routes[route.path] = route;
+    _defaultRoute = route;
+  }
+
+  void addHandler(Route route) {
+    _routes[route.path] = route;
   }
 
   void listen() {
@@ -33,15 +41,14 @@ class Router {
 
   void _loadView(String path) {
     var targetRoute = _routes[path];
-    if (targetRoute == null) {
-      _defaultRoute.handler(); // this needs adding in the same was as we add _authRoute, should point to the dashboard page
-      window.location.hash = _defaultRoute.path;
-      return;
-    }
     if (controller.signedInUser == null) {
-      _authRoute.handler();
-      window.location.hash = targetRoute.path; // shouldn't this be _authRoute.path ?
-      return;
+      targetRoute = _authRoute;
+    }
+    if (controller.signedInUser != null && targetRoute == _authRoute) {
+      targetRoute = _defaultRoute;
+    }
+    if (targetRoute == null) {
+      targetRoute = _defaultRoute;
     }
     targetRoute.handler();
     window.location.hash = targetRoute.path;
