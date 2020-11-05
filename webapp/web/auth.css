@@ -16,6 +16,7 @@
 
 .auth-header__user-name {
     margin: 6px;
+    white-space: nowrap;
 }
 
 .auth-main {

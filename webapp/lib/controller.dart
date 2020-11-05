@@ -16,6 +16,10 @@ enum UIAction {
   userSignedOut,
   signInButtonClicked,
   signOutButtonClicked,
+  viewProject,
+  configureProject,
+  addProject,
+  addTeamMember,
 }
 
 class Data {}
@@ -31,26 +35,18 @@ class UserData extends Data {
     return "UserData($displayName, $email, $photoUrl)";
   }
 }
+class ProjectData extends Data {
+  String projectName;
+  List<String> projectMembers;
 
-class ConfigurationTagData extends Data {
-  String selectedTag;
-  String tagToAdd;
-  ConfigurationTagData({this.selectedTag, this.tagToAdd});
+  ProjectData(this.projectName, this.projectMembers);
 }
 
-class ConfigurationResponseData extends Data {
-  String parentTag;
-  String language;
-  String text;
-  int index;
-  ConfigurationResponseData({this.parentTag, this.index, this.language, this.text});
-}
-
-Map<String, List<List<String>>> configurationTagData;
-Set<String> additionalConfigurationTags;
 List<String> configurationResponseLanguages;
 
 model.User signedInUser;
+
+ProjectData project;
 
 void init() async {
   setupRoutes();
@@ -59,14 +55,17 @@ void init() async {
 }
 
 void initUI() {
-  router.routeTo(window.location.hash); //TODO This is just temporary initialization becuase we don't have a complete app
-  view.navView.projectTitle = 'COVID IMAQAL'; //TODO To be replaced by data from model
+  if (project == null) {
+    router.routeTo('#/project-selector');
+  }
+  router.routeTo(window.location.hash);
 }
 
 void setupRoutes() {
   router = new Router()
     ..addAuthHandler(new Route('#/auth', loadAuthView))
     ..addDefaultHandler(new Route('#/dashboard', loadDashboardView))
+    ..addHandler(new Route('#/project-selector', loadProjectSelectorView))
     ..addHandler(new Route('#/batch-replies-configuration', loadBatchRepliesConfigurationView))
     ..addHandler(new Route('#/escalates-configuration', loadEscalatesConfigurationView))
     ..addHandler(new Route('#/project-configuration', loadProjectConfigurationView))
@@ -96,6 +95,18 @@ void command(UIAction action, Data actionData) {
     case UIAction.signOutButtonClicked:
       platform.signOut();
       break;
+    case UIAction.viewProject:
+      project = actionData;
+      router.routeTo('#/dashboard');
+      break;
+    case UIAction.configureProject:
+      project = actionData;
+      router.routeTo('#/project-configuration');
+      break;
+    case UIAction.addProject:
+      break;
+    case UIAction.addTeamMember:
+      break;
   }
 }
 
@@ -103,7 +114,15 @@ void loadAuthView() {
   view.contentView.renderView(new view.AuthMainView());
 }
 
+void loadProjectSelectorView() {
+  view.navView.projectTitle = '';
+  view.navView.projectOrganizations = ["Africa's Voices"];
+  view.contentView.renderView(new view.ProjectSelectorView(model.projectData, model.teamMembers));
+}
+
 void loadDashboardView() {
+  view.navView.projectTitle = project?.projectName;
+  view.navView.projectOrganizations = [''];
   var dashboardView = new view.DashboardView();
   dashboardView.activePackages.addAll(
     [
@@ -137,6 +156,8 @@ void loadEscalatesConfigurationView() {
 }
 
 loadProjectConfigurationView() {
+  view.navView.projectTitle = project?.projectName;
+  view.navView.projectOrganizations = [''];
   view.contentView.renderView(new view.ProjectConfigurationView());
 }
 

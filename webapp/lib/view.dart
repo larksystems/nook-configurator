@@ -25,6 +25,7 @@ class NavView {
   DivElement navViewElement;
   DivElement _appLogos;
   DivElement _projectTitle;
+  DivElement _projectOrganizations;
   AuthHeaderViewPartial authHeaderViewPartial;
 
 
@@ -35,15 +36,23 @@ class NavView {
       ..classes.add('nav__app-logo')
       ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
     _projectTitle = new DivElement()
-      ..classes.add('nav__project-title');
+      ..classes.add('nav-project-details__title');
+    _projectOrganizations = new DivElement()
+      ..classes.add('nav-project-details__organization');
+    var projectDetails = new DivElement()
+      ..classes.add('nav-project-details')
+      ..append(_projectTitle)
+      ..append(_projectOrganizations);
     authHeaderViewPartial = new AuthHeaderViewPartial();
 
     navViewElement.append(_appLogos);
-    navViewElement.append(_projectTitle);
+    navViewElement.append(projectDetails);
     navViewElement.append(authHeaderViewPartial.authElement);
   }
 
   void set projectTitle(String projectName) => _projectTitle.text = projectName;
+
+  void set projectOrganizations(List<String> organizations) => _projectOrganizations.text = organizations?.first;
 }
 
 class AuthHeaderViewPartial {
@@ -150,6 +159,119 @@ class AuthMainView extends BaseView {
   }
 
   DivElement get renderElement => authElement;
+}
+
+class ProjectSelectorView extends BaseView {
+  DivElement projectListViewElement;
+
+  ProjectSelectorView (Map<String, List<String>> projectData, Map<String, String> teamMembers) {
+    projectListViewElement = new DivElement()
+      ..classes.add('project-list-view');
+    projectListViewElement.append(
+      new HeadingElement.h2()
+        ..classes.add('list-view-title')
+        ..text = 'Projects'
+    );
+    projectListViewElement.append(_createProjectList(projectData));
+    projectListViewElement.append(
+      new HeadingElement.h2()
+        ..classes.add('list-view-title')
+        ..text = 'Team members'
+    );
+    projectListViewElement.append(_createTeamList(teamMembers));
+  }
+
+  DivElement get renderElement => projectListViewElement;
+
+  DivElement _createProjectList(Map<String, List<String>> projectData) {
+    var projectList = new DivElement()
+      ..classes.add('list-view');
+    projectData.forEach((project, members) {
+      var membersList = members.length <= 2 ?
+        members.take(2).join(', ') : '${members.take(2).join(", ")} & ${members.length - 2} others';
+      var projectListItem = new DivElement()
+        ..classes.add('list-view-item')
+        ..append(
+          new SpanElement()
+            ..classes.add('list-view-item__details')
+            ..innerHtml = '$project&emsp;$membersList'
+        )
+        ..append(
+          new SpanElement()
+            ..classes.add('list-view-item__actions')
+            ..append(
+              new AnchorElement()
+                ..classes.add('list-view-item__action-link')
+                ..text = 'View'
+                ..onClick.listen((_) =>
+                    controller.command(controller.UIAction.viewProject, new controller.ProjectData(project, members)))
+            )
+            ..append(
+              new AnchorElement()
+                ..classes.add('list-view-item__action-link')
+                ..text = 'Configure'
+                ..onClick.listen((_) =>
+                    controller.command(controller.UIAction.configureProject, new controller.ProjectData(project, members)))
+            )
+        );
+      projectList.append(projectListItem);
+    });
+    projectList.append(
+      new DivElement()
+        ..classes.addAll(['list-view-item', 'list-view-item--dotted'])
+        ..append(
+          SpanElement()
+            ..classes.add('add-item')
+            ..append(
+              new ParagraphElement()
+                ..classes.add('add-item__icon')
+                ..text = '+'
+            )
+            ..append(
+              new ParagraphElement()
+                ..classes.add('add-item__text')
+                ..text = 'New Project'
+            )
+        )
+        ..onClick.listen((_) => controller.command(controller.UIAction.addProject, null))
+    );
+    return projectList;
+  }
+
+  DivElement _createTeamList(Map<String, String> teamMembers) {
+    var teamList = new DivElement()
+      ..classes.add('list-view');
+    teamMembers.forEach((name, email) {
+      var teamListItem = new DivElement()
+        ..classes.add('list-view-item')
+        ..append(
+          new SpanElement()
+            ..classes.add('list-view-item__details')
+            ..innerHtml = '$name&emsp;$email'
+        );
+      teamList.append(teamListItem);
+    });
+    teamList.append(
+      new DivElement()
+        ..classes.addAll(['list-view-item', 'list-view-item--dotted'])
+        ..append(
+          SpanElement()
+            ..classes.add('add-item')
+            ..append(
+              new ParagraphElement()
+                ..classes.add('add-item__icon')
+                ..text = '+'
+            )
+            ..append(
+              new ParagraphElement()
+                ..classes.add('add-item__text')
+                ..text = 'New team member'
+            )
+        )
+        ..onClick.listen((_) => controller.command(controller.UIAction.addTeamMember, null))
+    );
+    return teamList;
+  }
 }
 
 class DashboardView extends BaseView {
