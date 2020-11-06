@@ -113,7 +113,7 @@ void loadAuthView() {
 
 void loadProjectSelectorView() {
   view.navView.projectTitle = '';
-  view.navView.projectOrganizations = ["Africa's Voices"];
+  view.navView.projectOrganizations = model.projectOrganizations;
   view.contentView.renderView(new view.ProjectSelectorView(model.projectData, model.teamMembers));
 }
 
