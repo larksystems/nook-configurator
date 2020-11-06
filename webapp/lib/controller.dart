@@ -55,10 +55,7 @@ void init() async {
 }
 
 void initUI() {
-  if (project == null) {
-    router.routeTo('#/project-selector');
-  }
-  router.routeTo(window.location.hash);
+  router.routeTo('#/project-selector');
 }
 
 void setupRoutes() {
