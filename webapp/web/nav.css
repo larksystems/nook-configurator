@@ -12,8 +12,21 @@
     width: 120px;
 }
 
-.nav__project-title {
+.nav-project-details {
+  display: flex;
+  justify-content: flex-end;
+  width: 70%;
+}
+
+.nav-project-details__title {
     font-size: 1.2rem;
     white-space: nowrap;
     align-self: center;
+    flex-basis: 50%;
+}
+
+.nav-project-details__organization {
+  font-size: 1.2rem;
+  white-space: nowrap;
+  align-self: center;
 }
