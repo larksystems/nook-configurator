@@ -1,14 +1,14 @@
 // TODO To be replaced with real models. Just dumping dummy data here to keep controller.dart clean
 
 Map<String, List<String>> projectData = {
-  'COVID IMAQAL' : ['Luke', 'Mariana', 'Person 3', 'Person 4', 'Person 5'],
-  'COVID Kenya': ['Luke', 'Sharath']
+  'COVID IMAQAL' : ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
+  'COVID Kenya': ['Team Member 1', 'Team Member 3']
   };
 
 Map<String, String> teamMembers  = {
-  'Luke Church' : 'luke@lark.systems',
-  'Mariana' : 'mariana@africasvoices.org',
-  'Sharath Srinivasan': 'sharath@lark.systems'
+  'Team Member 1' : 'email1@organization.org',
+  'Team Member 2' : 'email2@organization.org',
+  'Team Member 3': 'email3@organization.org'
 };
 
 Map conversationData = {
@@ -29,6 +29,8 @@ Map conversationData = {
       }
     ]
 };
+
+List<String> projectOrganizations;
 
 List<String> get configurationReponseLanguageData => ['English', 'Somali'];
 

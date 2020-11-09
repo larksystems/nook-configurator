@@ -1,7 +1,5 @@
 library controller;
 
-import 'dart:html';
-
 import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
@@ -55,10 +53,7 @@ void init() async {
 }
 
 void initUI() {
-  if (project == null) {
-    router.routeTo('#/project-selector');
-  }
-  router.routeTo(window.location.hash);
+  router.routeTo('#/project-selector');
 }
 
 void setupRoutes() {
@@ -116,7 +111,7 @@ void loadAuthView() {
 
 void loadProjectSelectorView() {
   view.navView.projectTitle = '';
-  view.navView.projectOrganizations = ["Africa's Voices"];
+  view.navView.projectOrganizations = model.projectOrganizations;
   view.contentView.renderView(new view.ProjectSelectorView(model.projectData, model.teamMembers));
 }
 
