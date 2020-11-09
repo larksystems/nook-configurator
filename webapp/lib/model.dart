@@ -11,6 +11,25 @@ Map<String, String> teamMembers  = {
   'Sharath Srinivasan': 'sharath@lark.systems'
 };
 
+Map conversationData = {
+    'needs-urgent-intervention': 3,
+    'awaiting-reply': 20,
+    'conversations': [
+      {
+        'text': 'Waa inlahelaa daryel cifimad iyo nabad warta nanakashaqeyan bulshada dhaman wanasodhaweyney naa sanad ka nasohayo hadoo allah nakarsiyo',
+        'description': 'Male, 20, Displaced'
+      },
+      {
+        'text': 'Ok mahad sanidin',
+        'description': 'Female, 38'
+      },
+      {
+        'text': 'In lahelo dawlad hoose oo xoogan waxna kaqaban karta ilaalinta sharciyada iyo xuquuqaha shaqsiga ah ee bulshada dhexdeeda',
+        'description': 'Male'
+      }
+    ]
+};
+
 List<String> get configurationReponseLanguageData => ['English', 'Somali'];
 
 Map<String, TagStyle> tags = {

@@ -123,24 +123,24 @@ void loadProjectSelectorView() {
 void loadDashboardView() {
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
-  var dashboardView = new view.DashboardView();
+  var dashboardView = new view.DashboardView(model.conversationData);
   dashboardView.activePackages.addAll(
     [
-      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/escalates-configuration'),
-      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#'),
-      new view.ActivePackagesViewPartial('Batch replies (Week 12)', '', '#/batch-replies-configuration'),
+      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/escalates-configuration', '3 awaiting reply'),
+      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#', '20 open conversations'),
+      new view.ActivePackagesViewPartial('Batch replies (Week 12)', '', '#/batch-replies-configuration', ''),
     ]);
   dashboardView.availablepackages.addAll(
     [
       new view.AvailablePackagesViewPartial('Quick Poll',
         'Ask a question with fixed answers',
-        ['Needs: Q/A, Labelling team, Safeguarding response', 'Produces: Dashboard for distribution of answers']),
+        {'Needs' : 'Q/A, Labelling team, Safeguarding response', 'Produces' : 'Dashboard for distribution of answers'}),
       new view.AvailablePackagesViewPartial('Information Service',
         'Answer people\'s questions',
-        ['Needs: Response protocol, Labelling team, Safeguarding response', 'Produces: Thematic distribution, work rate tracker']),
+        {'Needs' : 'Response protocol, Labelling team, Safeguarding response', 'Produces' : 'Thematic distribution, work rate tracker'}),
       new view.AvailablePackagesViewPartial('Bulk Message',
         'Send set of people a once off message',
-        ['Needs: Definition of who. Safeguarding response', 'Produces: Success/Fail tracker'])
+        {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'})
     ]);
   dashboardView.renderActivePackages();
   dashboardView.renderAvailablePackages();
