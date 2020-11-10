@@ -350,7 +350,7 @@ class DashboardView extends BaseView {
                 ..append(
                   new SpanElement()
                     ..classes.add('project-audience-content-item__description')
-                    ..text = '- ${conversations['description']}'
+                    ..text = '- ${conversations['demogs']}'
                 )
                 ..append(
                   new AnchorElement()

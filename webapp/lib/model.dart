@@ -17,15 +17,15 @@ Map conversationData = {
     'conversations': [
       {
         'text': 'Waa inlahelaa daryel cifimad iyo nabad warta nanakashaqeyan bulshada dhaman wanasodhaweyney naa sanad ka nasohayo hadoo allah nakarsiyo',
-        'description': 'Male, 20, Displaced'
+        'demogs': 'Male, 20, Displaced'
       },
       {
         'text': 'Ok mahad sanidin',
-        'description': 'Female, 38'
+        'demogs': 'Female, 38'
       },
       {
         'text': 'In lahelo dawlad hoose oo xoogan waxna kaqaban karta ilaalinta sharciyada iyo xuquuqaha shaqsiga ah ee bulshada dhexdeeda',
-        'description': 'Male'
+        'demogs': 'Male'
       }
     ]
 };
