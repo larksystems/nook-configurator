@@ -1,6 +1,5 @@
 .content {
     display: grid;
     width: 100vw;
-    height: 100vh;
-    /* margin: 40px 60px 20px 60px; */
+    background-color: #f9f9f9;
 }

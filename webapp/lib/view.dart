@@ -279,34 +279,138 @@ class DashboardView extends BaseView {
   List<AvailablePackagesViewPartial> availablepackages;
 
   DivElement dashboardViewElement;
-  DivElement _projectActionsContainer;
-  AnchorElement _conversationsLink;
-  AnchorElement _oversightDashboardLink;
   DivElement activePackagesContainer;
   DivElement availablePackagesContainer;
 
-  DashboardView() {
+  DashboardView(Map conversationData) {
     activePackages = [];
     availablepackages = [];
-    dashboardViewElement = new DivElement()..classes.add('dashboard');
-    _projectActionsContainer = new DivElement()
-      ..classes.add('dashboard__project-actions');
-    _conversationsLink = new AnchorElement()
-      ..classes.add('dashboard__project-actions-link')
-      ..text = "Go to conversations"
-      ..href = "#";
-    _oversightDashboardLink = new AnchorElement()
-      ..classes.add('dashboard__project-actions-link')
-      ..text = "Go to oversight dashboard"
-      ..href = "#";
-    activePackagesContainer = new DivElement()
-      ..classes.add('active-packages');
-    availablePackagesContainer = new DivElement()
-      ..classes.add('available-packages');
+    dashboardViewElement = new DivElement()
+        ..classes.add('dashboard')
+        ..append(
+          new DivElement()
+            ..classes.add('project-actions')
+            ..append(
+              new SpanElement()
+                ..classes.add('project-actions__action')
+                ..append(
+                  new AnchorElement()
+                    ..classes.add('project-actions__action-link')
+                    ..text = "Oversight dashboard"
+                    ..href = "#"
+                )
+                ..append(
+                  new SpanElement()
+                    ..classes.add('project-actions__action-icon')
+                    ..text = '>'
+                )
+            )
+            ..append(
+              new SpanElement()
+                ..classes.add('project-actions__action')
+                ..append(
+                  new AnchorElement()
+                    ..classes.add('project-actions__action-link')
+                    ..text = "View conversations"
+                    ..href = "#"
+                )
+                ..append(
+                  new SpanElement()
+                    ..classes.add('project-actions__action-icon')
+                    ..text = '>'
+                )
+            )
+        )
+        ..append(
+          new DivElement()
+            ..classes.add('project-summary')
+            ..append(
+              new HeadingElement.h1()
+                ..classes.add('group-title')
+                ..text = 'Summary'
+            )
+            ..append(
+              new ImageElement() //TODO To be replaced by real chart element
+                ..classes.add('project-summary__chart')
+                ..src = 'assets/sample-summary-chart.png'
+            )
+        );
+        var projectAudienceContent = new DivElement()
+          ..classes.add('project-audience-content');
 
-    _projectActionsContainer.append(_conversationsLink);
-    _projectActionsContainer.append(_oversightDashboardLink);
-    dashboardViewElement.append(_projectActionsContainer);
+          for (var conversations in conversationData['conversations']) {
+            projectAudienceContent.append(
+              new DivElement()
+                ..classes.add('project-audience-content-item')
+                ..append(
+                  new ParagraphElement()
+                    ..classes.add('project-audience-content-item__text')
+                    ..text = '" ${conversations['text']}'
+                )
+                ..append(
+                  new SpanElement()
+                    ..classes.add('project-audience-content-item__description')
+                    ..text = '- ${conversations['demogs']}'
+                )
+                ..append(
+                  new AnchorElement()
+                    ..classes.add('project-audience-content-item__action-link')
+                    ..href  = '#'
+                    ..text = 'View'
+                )
+            );
+        }
+
+        dashboardViewElement.append(
+          new DivElement()
+            ..classes.add('project-audience')
+            ..append(
+              new DivElement()
+                ..classes.add('project-audience-header')
+                ..append(
+                  new HeadingElement.h1()
+                    ..classes.add('group-title')
+                    ..text = 'People'
+                )
+                ..append(
+                  new DivElement()
+                    ..classes.add('project-audience-actions')
+                    ..append(
+                      new DivElement()
+                        ..classes.add('project-audience-action')
+                        ..append(
+                          new SpanElement()
+                            ..classes.add('project-audience-action__text')
+                            ..text = '${conversationData['needs-urgent-intervention']} people need urgent intervention'
+                        )
+                        ..append(
+                          new SpanElement()
+                            ..classes.add('project-audience-action__icon')
+                            ..text = '>'
+                        )
+                    )
+                    ..append(
+                      new DivElement()
+                        ..classes.add('project-audience-action')
+                        ..append(
+                          new SpanElement()
+                            ..classes.add('project-audience-action__text')
+                            ..text = '${conversationData['awaiting-reply']} people awaiting your reply'
+                        )
+                        ..append(
+                          new SpanElement()
+                            ..classes.add('project-audience-action__icon')
+                            ..text = '>'
+                        )
+                    )
+                )
+            )
+            ..append(projectAudienceContent)
+        );
+    activePackagesContainer = new DivElement()
+      ..classes.add('package-group');
+    availablePackagesContainer = new DivElement()
+      ..classes.add('package-group');
     dashboardViewElement.append(activePackagesContainer);
     dashboardViewElement.append(availablePackagesContainer);
   }
@@ -315,7 +419,11 @@ class DashboardView extends BaseView {
 
   void renderActivePackages() {
     activePackagesContainer.children.clear();
-    activePackagesContainer.append(new HeadingElement.h1()..text = "Active packages");
+    activePackagesContainer.append(
+      new HeadingElement.h1()
+        ..classes.add('group-title')
+        ..text = "Active packages"
+    );
     if (activePackages.isNotEmpty) {
       activePackages.forEach((package) => activePackagesContainer.append(package.packageElement));
     }
@@ -323,7 +431,11 @@ class DashboardView extends BaseView {
 
   void renderAvailablePackages() {
     availablePackagesContainer.children.clear();
-    availablePackagesContainer.append(new HeadingElement.h1()..text = "Add a package");
+    availablePackagesContainer.append(
+      new HeadingElement.h1()
+        ..classes.add('group-title')
+        ..text = "Add a package"
+    );
     if (activePackages.isNotEmpty) {
       availablepackages.forEach((package) => availablePackagesContainer.append(package.packageElement));
     }
@@ -332,68 +444,106 @@ class DashboardView extends BaseView {
 
 class ActivePackagesViewPartial {
   DivElement packageElement;
-  HeadingElement _packageName;
-  DivElement _packageActionsContainer;
-  AnchorElement _dashboardAction;
-  AnchorElement _conversationsAction;
-  AnchorElement _configureAction;
 
-  ActivePackagesViewPartial(String packageName, String conversationsLink, String configurationLink) {
+  ActivePackagesViewPartial(String packageName, String conversationsLink, String configurationLink, String chartData) {
     packageElement = new DivElement()
-      ..classes.add('active-packages__package');
-    _packageName = new HeadingElement.h4()
-      ..text = '$packageName (Active)';
-    _packageActionsContainer = new DivElement()
-      ..classes.add('active-packages__package-actions');
-    _dashboardAction = new AnchorElement()
-      ..classes.add('active-packages__package-action')
-      ..text = 'Dashboard'
-      ..href = '#/dashboard';
-    _conversationsAction = new AnchorElement()
-      ..classes.add('active-packages__package-action')
-      ..text = 'Conversations'
-      ..href = conversationsLink;
-    _configureAction = new AnchorElement()
-      ..classes.add('active-packages__package-action')
-      ..text = 'Configure'
-      ..href = configurationLink;
-    _packageActionsContainer.append(_dashboardAction);
-    _packageActionsContainer.append(_conversationsAction);
-    _packageActionsContainer.append(_configureAction);
-    packageElement.append(_packageName);
-    packageElement.append(_packageActionsContainer);
+      ..classes.add('package');
+    var packageNameElement = new SpanElement()
+      ..classes.add('active-package-title')
+      ..append(
+        new ParagraphElement()
+          ..classes.add('active-package-title__text')
+          ..text = packageName
+      );
+    var packageActionsContainer = new DivElement()
+      ..classes.add('active-package-actions')
+      ..append(
+        new AnchorElement()
+          ..classes.add('active-package-actions__action-link')
+          ..text = 'Dashboard'
+          ..href = '#/dashboard'
+      )
+      ..append(
+        new AnchorElement()
+          ..classes.add('active-package-actions__action-link')
+          ..text = 'Conversations'
+          ..href = conversationsLink
+      )
+      ..append(
+        new AnchorElement()
+          ..classes.add('active-package-actions__action-link')
+          ..text = 'Configure'
+          ..href = configurationLink
+      );
+    var packageMainContainer = new DivElement()
+      ..classes.add('active-package-main-container')
+      ..append(packageNameElement)
+      ..append(packageActionsContainer);
+    var packageChart = new DivElement()
+      ..classes.add('active-package-chart')
+      ..append(
+        new ImageElement() //TODO To be replaced by real chart element
+          ..classes.add('active-package-chart__data')
+          ..src = 'assets/sample-package-chart.png'
+      )
+      ..append(
+        new ParagraphElement()
+          ..classes.add('active-package-chart__description')
+          ..text = chartData
+      );
+    packageElement.append(packageMainContainer);
+    packageElement.append(packageChart);
   }
 }
 
 class AvailablePackagesViewPartial {
   DivElement packageElement;
-  DivElement _addPackageLinkContainer;
-  AnchorElement _addPackageLink;
-  DivElement _descriptionContaner;
-  HeadingElement _descriptionTitle;
-  DivElement _descriptionDetails;
 
-  AvailablePackagesViewPartial(String packageName, String descriptionTitle, List<String> descriptionDetails) {
+  AvailablePackagesViewPartial(String packageName, String descriptionTitle, Map<String, String> descriptionDetails) {
     packageElement = new DivElement()
-      ..classes.add('available-packages__package');
-    _addPackageLinkContainer = new DivElement()
-      ..classes.add('available-packages__add-package');
-    _addPackageLink = new AnchorElement()
-      ..classes.add('available-packages__add-package-link')
-      ..text = packageName
-      ..href = '#';
-    _descriptionContaner = new DivElement()
-      ..classes.add('available-packages__package-description');
-    _descriptionTitle = new HeadingElement.h4()
-      ..text = descriptionTitle;
-    _descriptionDetails = new DivElement();
-    descriptionDetails.forEach((detail) => _descriptionDetails.append(new ParagraphElement()..text = detail));
-
-    _addPackageLinkContainer.append(_addPackageLink);
-    _descriptionContaner.append(_descriptionTitle);
-    _descriptionContaner.append(_descriptionDetails);
-    packageElement.append(_addPackageLinkContainer);
-    packageElement.append(_descriptionContaner);
+      ..classes.addAll(['package', 'package--dotted'])
+      ..append(
+        new SpanElement()
+          ..classes.add('available-package-name')
+          ..text = packageName
+      )
+      ..append(
+        new DivElement()
+          ..classes.add('available-package-action')
+          ..append(
+            new SpanElement()
+              ..classes.add('available-package-action__icon')
+              ..text = '+'
+          )
+          ..append(
+            new AnchorElement()
+              ..classes.add('available-package-action__link')
+              ..text = 'Add $packageName package'
+              ..href = '#'
+          )
+      )
+      ..append(
+        new SpanElement()
+          ..classes.add('available-package-description-title')
+          ..text = descriptionTitle
+      );
+    descriptionDetails.forEach((title, description) {
+      packageElement
+        ..append(
+          new DivElement()
+            ..classes.add('available-package-description-details')
+            ..append(
+              new HeadingElement.h5()
+                ..classes.add('available-package-description-details__title')
+                ..text = title.toUpperCase()
+            )
+            ..append(
+              new ParagraphElement()
+                ..classes.add('available-package-description-details__description')
+                ..text = description
+            )
+        );
+    });
   }
 }
 
