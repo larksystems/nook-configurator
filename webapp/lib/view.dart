@@ -458,7 +458,6 @@ class ActivePackagesViewPartial {
       ..append(
         new ImageElement()
           ..classes.add('active-package-title__icon')
-          ..src='assets/info-icon.svg' //https://commons.wikimedia.org/wiki/File:Infobox_info_icon.svg
       );
     var packageActionsContainer = new DivElement()
       ..classes.add('active-package-actions')
