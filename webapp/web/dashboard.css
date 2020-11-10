@@ -102,6 +102,7 @@
 
 .project-audience-content-item__text {
   flex-basis: 100%;
+  margin: 0;
 }
 
 .project-audience-content-item__description {
