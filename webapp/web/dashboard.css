@@ -1,5 +1,7 @@
 .dashboard {
-    margin: 40px 150px;
+  width: 750px;
+  justify-self: center;
+  margin-top: 50px;
 }
 
 .project-actions {
@@ -160,12 +162,6 @@
   font-size: 1.1em;
   font-weight: 600;
   margin: 0px;
-}
-
-.active-package-title__icon {
-  width: 16px;
-  height: 16px;
-  margin-left: 10px;
 }
 
 .active-package-actions {

@@ -121,7 +121,7 @@ void loadDashboardView() {
   var dashboardView = new view.DashboardView(model.conversationData);
   dashboardView.activePackages.addAll(
     [
-      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/escalates-configuration', model.conversationData['needs-urgent-intervention']),
+      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/escalates-configuration',  '${model.conversationData["needs-urgent-intervention"]} awaiting reply'),
       new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#', '30 open conversations'),
       new view.ActivePackagesViewPartial('Batch replies (Week 12)', '', '#/batch-replies-configuration', ''),
     ]);

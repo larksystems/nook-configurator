@@ -454,10 +454,6 @@ class ActivePackagesViewPartial {
         new ParagraphElement()
           ..classes.add('active-package-title__text')
           ..text = packageName
-      )
-      ..append(
-        new ImageElement()
-          ..classes.add('active-package-title__icon')
       );
     var packageActionsContainer = new DivElement()
       ..classes.add('active-package-actions')
