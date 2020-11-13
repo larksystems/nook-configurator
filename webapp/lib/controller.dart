@@ -18,6 +18,7 @@ enum UIAction {
   configureProject,
   addProject,
   addTeamMember,
+  saveProjectConfiguration
 }
 
 class Data {}
@@ -40,6 +41,11 @@ class ProjectData extends Data {
   ProjectData(this.projectName, this.projectMembers);
 }
 
+class ProjectConfigurationData extends Data {
+  Map config;
+  ProjectConfigurationData(this.config);
+}
+
 List<String> configurationResponseLanguages;
 
 model.User signedInUser;
@@ -53,7 +59,7 @@ void init() async {
 }
 
 void initUI() {
-  router.routeTo('#/project-selector');
+  router.routeTo('#/project-configuration');
 }
 
 void setupRoutes() {
@@ -101,6 +107,10 @@ void command(UIAction action, Data actionData) {
     case UIAction.addProject:
       break;
     case UIAction.addTeamMember:
+      break;
+    case UIAction.saveProjectConfiguration:
+      ProjectConfigurationData projectConfigurationData = actionData;
+      saveProjectConfiguration(projectConfigurationData.config);
       break;
   }
 }
@@ -153,7 +163,7 @@ void loadEscalatesConfigurationView() {
 loadProjectConfigurationView() {
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
-  view.contentView.renderView(new view.ProjectConfigurationView());
+  view.contentView.renderView(new view.ProjectConfigurationView(model.projectConfigurationFormData, model.additionalProjectConfigurationLanguages));
 }
 
 // Tag Operations
@@ -289,4 +299,11 @@ void reviewResponse(int rowIndex, bool reviewed) {
 void removeResponse(int rowIndex) {
   model.changeCommsPackage.suggestedReplies.removeAt(rowIndex);
   loadBatchRepliesConfigurationView();
+}
+
+void saveProjectConfiguration(Map config) {
+  model.projectConfigurationFormData = config;
+  List<String> languagesAdded = config['project-languages'].keys.toList();
+  model.additionalProjectConfigurationLanguages.removeWhere((l) => languagesAdded.contains(l));
+  loadProjectConfigurationView();
 }

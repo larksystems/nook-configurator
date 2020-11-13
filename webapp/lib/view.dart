@@ -937,127 +937,266 @@ class ResponseListView extends BaseView {
   }
 }
 
-enum FormGroupTypes {
-  TEXT,
-  CHECKBOX,
-  DATE
-}
-
 class ProjectConfigurationView extends BaseView{
-  DivElement configurationViewElement;
+  DivElement _configurationViewElement;
   FormElement _projectConfigurationForm;
+  Map formData;
+  List<String> additionalProjectLanguages;
 
-  ProjectConfigurationView() {
-    configurationViewElement = new DivElement()
+  ProjectConfigurationView(this.formData, this.additionalProjectLanguages) {
+    _configurationViewElement = new DivElement()
       ..classes.add('project-configuration');
     _projectConfigurationForm = new FormElement()
       ..classes.add('configuration-form');
     _buildForm();
-    configurationViewElement.append(_projectConfigurationForm);
+    _configurationViewElement.append(_projectConfigurationForm);
   }
 
-  DivElement get renderElement => configurationViewElement;
+  DivElement get renderElement => _configurationViewElement;
 
   void _buildForm() {
+    _projectConfigurationForm.children.clear();
+    var projectLanguages = new DivElement()
+      ..classes.add('form-group')
+      ..append(
+        new LabelElement()
+          ..classes.add('form-group__label')
+          ..text = 'Project Languages'
+      );
+    formData['project-languages'].forEach((language, data) {
+      projectLanguages
+        ..append(
+          new DivElement()
+            ..classes.addAll(['form-group-item', 'form-group-item--col4'])
+            ..append(
+              new ButtonElement()
+                ..classes.add('form-group-item-action-remove')
+                ..text = 'X'
+                ..onClick.listen((event) {
+                  var action = (event.target as Element);
+                  additionalProjectLanguages.add(action.nextElementSibling.text);
+                  action.parent.remove();
+                 })
+            )
+            ..append(
+              new LabelElement()
+                ..classes.add('form-group-item__label')
+                ..text = language
+            )
+            ..append(
+              new DivElement()
+                ..classes.addAll(['form-group-item', 'form-group-item--shrink'])
+                ..append(
+                  new CheckboxInputElement()
+                    ..classes.add('form-group-item__value')
+                    ..checked = data['send']['value']
+                    ..onChange.listen((event) {
+                      formData['project-languages'][language]['send']['value'] = (event.target as CheckboxInputElement).checked;
+                    })
+                )
+                ..append(
+                  new LabelElement()
+                    ..classes.add('form-group-item__label')
+                    ..text = data['send']['label']
+                )
+            )
+            ..append(
+              new DivElement()
+                ..classes.addAll(['form-group-item', 'form-group-item--shrink'])
+                ..append(
+                  new CheckboxInputElement()
+                    ..classes.add('form-group-item__value')
+                    ..checked = data['receive']['value']
+                    ..onChange.listen((event) {
+                      formData['project-languages'][language]['receive']['value'] = (event.target as CheckboxInputElement).checked;
+                    })
+                )
+                ..append(
+                  new LabelElement()
+                    ..classes.add('form-group-item__label')
+                    ..text = data['receive']['label']
+                )
+            )
+        );
+    });
+    var addConfigurationLanguage = new DivElement()
+      ..classes.add('form-group-item-action-add');
+    addConfigurationLanguage
+      ..append(
+        new SpanElement()
+          ..classes.add('form-group-item-action-add__icon')
+          ..text = '+'
+      )
+      ..append(
+        new LabelElement()
+          ..classes.add('form-group-item-action-add__label')
+          ..text = 'Add new language'
+      )
+      ..onClick.listen((event) {
+        event.stopPropagation();
+        var additionalLanguageDropdown = new Element.ul()
+          ..classes.add('add-language-dropdown');
+        var languagesToAdd = additionalProjectLanguages.isEmpty ? ['--None--'] : additionalProjectLanguages;
+        for (var language in languagesToAdd) {
+          additionalLanguageDropdown.append(
+            new Element.li()
+              ..classes.add('add-language-dropdown__item')
+              ..text = language
+              ..onClick.listen((event) {
+                if (language == '--None--') return;
+                formData['project-languages'][language] = {
+                  'send': {'label': 'can send', 'value': false},
+                  'receive': {'label': 'can receive', 'value': false}
+                };
+                additionalProjectLanguages.removeWhere((l) => l == language);
+                _buildForm();
+              })
+          );
+        }
+        var documentOnClickSubscription;
+          documentOnClickSubscription = document.onClick.listen((event) {
+            event.stopPropagation();
+            additionalLanguageDropdown.remove();
+          documentOnClickSubscription.cancel();
+        });
+        addConfigurationLanguage.append(additionalLanguageDropdown);
+      });
+    projectLanguages.append(addConfigurationLanguage);
     _projectConfigurationForm
+      ..append(projectLanguages)
       ..append(
-        _multipleFormGroup('Project Languages:',
-          {'English': {'send': FormGroupTypes.CHECKBOX, 'receive': FormGroupTypes.CHECKBOX },
-            'Somali': {'send': FormGroupTypes.CHECKBOX, 'receive': FormGroupTypes.CHECKBOX }})
+        new DivElement()
+          ..classes.add('form-group')
+          ..append(
+            new DivElement()
+              ..classes.addAll(['form-group-item', 'form-group-item--shrink'])
+              ..append(
+                new CheckboxInputElement()
+                  ..classes.add('form-group-item__value')
+                  ..checked = formData['automated-translations']['value']
+                  ..onChange.listen((event) {
+                      formData['automated-translations']['value'] = (event.target as CheckboxInputElement).checked;
+                  })
+              )
+              ..append(
+                new LabelElement()
+                  ..classes.add('form-group-item__label')
+                  ..text = formData['automated-translations']['label']
+              )
+          )
+      );
+    var userConfiguration = new DivElement()
+      ..classes.add('form-group')
+      ..append(
+        new LabelElement()
+          ..classes.add('form-group__label')
+          ..text = 'User configuration'
+      );
+      formData['user-configuration'].forEach((type, config) {
+        userConfiguration
+          ..append(
+            new DivElement()
+              ..classes.add('form-group-item')
+              ..append(
+                new LabelElement()
+                  ..classes.add('form-group-item__label')
+                  ..text = config['label']
+              )
+              ..append(
+                new InputElement()
+                  ..classes.addAll(['form-group-item__value', 'form-group-item__value--text'])
+                  ..type = 'text'
+                  ..value = config['value']
+                  ..onBlur.listen((event) {
+                    formData['user-configuration'][type]['value'] = (event.target as InputElement).value;
+                  })
+              )
+          );
+      });
+    _projectConfigurationForm..append(userConfiguration);
+    var codaIntegration = new DivElement()
+      ..classes.add('form-group')
+      ..append(
+        new LabelElement()
+          ..classes.add('form-group__label')
+          ..text = 'Coda integration'
+      );
+    formData['coda-integration'].forEach((type, config) {
+        codaIntegration
+          ..append(
+            new DivElement()
+              ..classes.add('form-group-item')
+              ..append(
+                new LabelElement()
+                  ..classes.add('form-group-item__label')
+                  ..text = config['label']
+              )
+              ..append(
+                new InputElement()
+                  ..classes.addAll(['form-group-item__value', 'form-group-item__value--text'])
+                  ..type = 'text'
+                  ..value = config['value']
+                  ..onBlur.listen((event) {
+                    formData['coda-integration'][type]['value'] = (event.target as InputElement).value;
+                  })
+              )
+          );
+      });
+    _projectConfigurationForm..append(codaIntegration);
+    var rapidproIntegration = new DivElement()
+    ..classes.add('form-group')
+    ..append(
+      new LabelElement()
+        ..classes.add('form-group__label')
+        ..text = 'RapidPro integration'
+    );
+    rapidproIntegration
+      ..append(
+        new DivElement()
+          ..classes.add('form-group-item')
+          ..append(
+            new LabelElement()
+              ..classes.add('form-group-item__label')
+              ..text = formData['rapidpro-integration']['start-timestamp']['label']
+          )
+          ..append(
+            new InputElement()
+              ..classes.addAll(['form-group-item__value', 'form-group-item__value--text'])
+              ..type = 'date'
+              ..valueAsDate = DateTime.parse(formData['rapidpro-integration']['start-timestamp']['value'])
+              ..onChange.listen((event) {
+                formData['rapidpro-integration']['start-timestamp']['value'] = (event.target as InputElement).value;
+              })
+          )
       )
       ..append(
-        _singleFormGroup('Automated translations enabled', FormGroupTypes.CHECKBOX)
-      )
+        new DivElement()
+          ..classes.add('form-group-item')
+          ..append(
+            new LabelElement()
+              ..classes.add('form-group-item__label')
+              ..text = formData['rapidpro-integration']['workspace-token']['label']
+          )
+          ..append(
+            new InputElement()
+              ..classes.addAll(['form-group-item__value', 'form-group-item__value--text'])
+              ..type = 'text'
+              ..value = formData['rapidpro-integration']['workspace-token']['value']
+              ..onBlur.listen((event) {
+                formData['rapidpro-integration']['workspace-token']['value'] = (event.target as InputElement).value;
+              })
+          )
+      );
+    _projectConfigurationForm
+      ..append(rapidproIntegration)
       ..append(
-        _singleFormGroup('Coda dataset regex', FormGroupTypes.TEXT)
-      )
-      ..append(
-        _singleFormGroup('Rapidpro token', FormGroupTypes.TEXT)
-      )
-      ..append(
-        _singleFormGroup('Project start date', FormGroupTypes.DATE)
-      )
-      ..append(
-        _multipleFormGroup('User Configuration:',
-          {'person1@africasvoices.org:':
-            {'can see messages': FormGroupTypes.CHECKBOX,
-              'can perform translations': FormGroupTypes.CHECKBOX,
-              'can send messages': FormGroupTypes.CHECKBOX,
-              'can send custom messages': FormGroupTypes.CHECKBOX,
-              'can approve actions': FormGroupTypes.CHECKBOX,
-              'can configure the project': FormGroupTypes.CHECKBOX
-            },
-          'person2@africasvoices.org:':
-            {'can see messages': FormGroupTypes.CHECKBOX,
-              'can perform translations': FormGroupTypes.CHECKBOX,
-              'can send messages': FormGroupTypes.CHECKBOX,
-              'can send custom messages': FormGroupTypes.CHECKBOX,
-              'can approve actions': FormGroupTypes.CHECKBOX,
-              'can configure the project': FormGroupTypes.CHECKBOX
-            },
-          'person3@africasvoices.org:':
-            {'can see messages': FormGroupTypes.CHECKBOX,
-              'can perform translations': FormGroupTypes.CHECKBOX,
-              'can send messages': FormGroupTypes.CHECKBOX,
-              'can send custom messages': FormGroupTypes.CHECKBOX,
-              'can approve actions': FormGroupTypes.CHECKBOX,
-              'can configure the project': FormGroupTypes.CHECKBOX
-            },
-          'person4@africasvoices.org:':
-            {'can see messages': FormGroupTypes.CHECKBOX,
-              'can perform translations': FormGroupTypes.CHECKBOX,
-              'can send messages': FormGroupTypes.CHECKBOX,
-              'can send custom messages': FormGroupTypes.CHECKBOX,
-              'can approve actions': FormGroupTypes.CHECKBOX,
-              'can configure the project': FormGroupTypes.CHECKBOX
-            }
+        new ButtonElement()
+          ..classes.add('save-configuration-btn')
+          ..text = 'Save changes'
+          ..onClick.listen((event) {
+            event.preventDefault();
+            controller.command(controller.UIAction.saveProjectConfiguration, new controller.ProjectConfigurationData(formData));
           })
       );
-  }
-
-  DivElement _singleFormGroup(String label, FormGroupTypes formGroupType) {
-    var formGroup = new DivElement()
-      ..classes.add('single-form-group');
-    var labelElement = new LabelElement()
-      ..classes.add('single-form-group__label')
-      ..text = label;
-    var formElement = new InputElement()
-      ..classes.add('single-form-group__input')
-      ..type = formGroupType.toString().split('.').last;
-    if (formGroupType == FormGroupTypes.CHECKBOX) {
-      formGroup
-      ..append(formElement)
-      ..append(labelElement);
-    } else {
-      formElement.classes.add('single-form-group__input--is-text');
-      formGroup
-      ..append(labelElement)
-      ..append(formElement);
-    }
-    return formGroup;
-  }
-
-  DivElement _multipleFormGroup(String groupLabel, Map<String, Map<String, FormGroupTypes>> groupElements) {
-    var formGroup = new DivElement()
-      ..classes.add('multi-form-group');
-    var formGroupLabel = new LabelElement()
-      ..classes.add('multi-form-group__label')
-      ..text = groupLabel;
-    formGroup.append(formGroupLabel);
-    groupElements.forEach((label, elementGroups) {
-      var formElementGroups = new DivElement()
-        ..classes.add('multi-form-group-elements');
-      var elementGroupLabel = new LabelElement()
-        ..classes.add('multi-form-group-elements__label')
-        ..text = label;
-      formElementGroups.append(elementGroupLabel);
-      elementGroups.forEach((label, formGroupType) {
-        var formElementGroup = _singleFormGroup(label, formGroupType)
-          ..classes.add('single-form-group--in-multi');
-        formElementGroups.append(formElementGroup);
-      });
-      formGroup.append(formElementGroups);
-    });
-    return formGroup;
   }
 }

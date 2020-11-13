@@ -2,64 +2,103 @@
     display: grid;
     grid-template-rows: auto;
     grid-gap: 20px;
-    border: 1px solid #ddd;
-    border-radius: .5rem;
     padding: 20px;
 }
 
-.single-form-group {
-    display: flex;
-    padding: 27px 0px 27px 10px;
-    border-radius: .5rem;
-    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.22);
+.form-group {
+  display: grid;
+  grid-gap: 10px;
 }
 
-.single-form-group--in-multi {
-    border: none;
-    border-radius: none;
-    box-shadow: none;
-    padding: 10px 0px;
+.form-group__label {
+  margin-bottom: 10px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.single-form-group__label {
-    align-self: center;
-    padding-right: 10px;
-    font-size: 1.1em;
+.form-group-item {
+  display: grid;
+  grid-template-columns: 25% 40%;
+  margin-left: 20px;
 }
 
-.single-form-group__input {
-    align-self: center;
-    width: 18px;
-    height: 18px;
-    margin-right: 10px;
+.form-group-item--shrink {
+  grid-template-columns: 25px auto;
+  margin: 0px;
 }
 
-.single-form-group__input--is-text {
-    align-self: center;
-    width: 30%;
-    height: 25px;
+.form-group-item--col4 {
+  grid-template-columns: 3% 20% auto auto;
+  grid-gap: 10px;
+  margin: 0px;
 }
 
-.multi-form-group {
-    display: grid;
-    grid-template-rows: auto;
-    grid-gap: 10px;
+.form-group-item__label {
+  white-space: nowrap;
 }
 
-.multi-form-group__label {
-    color: #757272;
-    font-size: 1.2em;
+.form-group-item__value {}
+
+.form-group-item__value--text {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 1px solid #c1c0c0;
+  background-color: inherit;
+  background-image: none !important;
 }
 
-.multi-form-group-elements {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    border-radius: .5rem;
-    padding: 5px 0px 0px 10px;
-    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.22);
+.form-group-item__value:checked {
+  background-color: red;
 }
 
-.multi-form-group-elements__label {
-    grid-column: span 3;
-    font-size: 1.2em;
+.form-group-item-action-remove {
+  border: none;
+  background: none;
+  color: #499398;
+  cursor: pointer;
+}
+
+.form-group-item-action-add {
+  position: relative;
+}
+
+.form-group-item-action-add__icon {
+  font-size: 1.5em;
+  padding: 5px;
+  cursor: pointer;
+  color: #499398;
+}
+
+.form-group-item-action-add__label {
+  cursor: pointer;
+  padding-left: 5px;
+  color: #499398;
+}
+
+.add-language-dropdown {
+  background-color: #f9f9f9;
+  position: absolute;
+  top: -4px;
+  left: 155px;
+  padding: 0px;
+  border: 1px solid #ddd;
+  min-width: 180px;
+}
+
+.add-language-dropdown__item {
+  list-style-type: none;
+  border-bottom: 1px solid #ddd;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.save-configuration-btn {
+  width: 130px;
+  height: 40px;
+  font-size: 1.1em;
+  background-color: #499398;
+  color: #ffffff;
+  border: none;
+  margin-top: 60px;
 }
