@@ -59,7 +59,7 @@ void init() async {
 }
 
 void initUI() {
-  router.routeTo('#/project-configuration');
+  router.routeTo('#/project-selector');
 }
 
 void setupRoutes() {
