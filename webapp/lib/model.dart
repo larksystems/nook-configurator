@@ -1,5 +1,4 @@
 // TODO To be replaced with real models. Just dumping dummy data here to keep controller.dart clean
-
 Map<String, List<String>> projectData = {
   'COVID IMAQAL' : ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
   'COVID Kenya': ['Team Member 1', 'Team Member 3']
@@ -32,7 +31,70 @@ Map conversationData = {
 
 List<String> projectOrganizations;
 
-List<String> get configurationReponseLanguageData => ['English', 'Somali'];
+Map projectConfigurationFormData = {
+  'project-languages': {
+    'English': {
+      'send': {'label': 'can send', 'value': true},
+      'receive': {'label': 'can receive', 'value': true}
+    },
+    'Somali': {
+      'send': {'label': 'can send', 'value': true},
+      'receive': {'label': 'can receive', 'value': true}
+    }
+  },
+  'automated-translations': {
+    'label': 'Automated translations enabled',
+    'value': true
+  },
+  'user-configuration': {
+      'read-conversations': {
+        'label': 'can read conversations',
+        'value': 'Person 1, Person 2, Person 3, Person 4'
+      },
+      'perform-translations': {
+        'label': 'can perform translations',
+        'value': 'Person 1, Person 2, Person 3'
+      },
+      'send-messages': {
+        'label': 'can send messages',
+        'value': 'Person 1, Person 2, Person 3'
+      },
+      'send-custom-messages': {
+        'label': 'can send custom messages',
+        'value': 'Person 1, Person 2, Person 3'
+      },
+      'approve-actions': {
+        'label': 'can approve actions',
+        'value': 'Person 3, Person 4'
+      },
+      'configure-project': {
+        'label': 'can configure the project',
+        'value': 'Person 3, Person 4'
+      }
+  },
+  'coda-integration': {
+    'dataset-regex': {
+      'label': 'Dataset regex',
+      'value': 'Example_Project_.*'
+    },
+    'firebase-token': {
+      'label': 'Firebase auth token',
+      'value': 'firebase-adminsdk-12345.json'
+    }
+  },
+  'rapidpro-integration': {
+    'start-timestamp': {
+      'label': 'Start timestamp',
+      'value': '2020-11-13T15:11:27.741'
+    },
+    'workspace-token': {
+      'label': 'Workspace token',
+      'value': 'cmFuZG9tIHN0cmluZw'
+    }
+  }
+};
+
+List<String> additionalProjectConfigurationLanguages = ['Kiswahili', 'Kinyarwanda'];
 
 Map<String, TagStyle> tags = {
   'rumour - origin': TagStyle.Normal,
