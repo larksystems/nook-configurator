@@ -940,10 +940,11 @@ class ResponseListView extends BaseView {
 class ProjectConfigurationView extends BaseView{
   DivElement _configurationViewElement;
   FormElement _projectConfigurationForm;
-  Map formData;
+  Map _formData;
   List<String> additionalProjectLanguages;
 
-  ProjectConfigurationView(this.formData, this.additionalProjectLanguages) {
+  ProjectConfigurationView(Map formData, this.additionalProjectLanguages) {
+    _formData = new Map.from(formData);
     _configurationViewElement = new DivElement()
       ..classes.add('project-configuration');
     _projectConfigurationForm = new FormElement()
@@ -963,7 +964,7 @@ class ProjectConfigurationView extends BaseView{
           ..classes.add('form-group__label')
           ..text = 'Project Languages'
       );
-    formData['project-languages'].forEach((language, data) {
+    _formData['project-languages'].forEach((language, data) {
       projectLanguages
         ..append(
           new DivElement()
@@ -991,7 +992,7 @@ class ProjectConfigurationView extends BaseView{
                     ..classes.add('form-group-item__value')
                     ..checked = data['send']['value']
                     ..onChange.listen((event) {
-                      formData['project-languages'][language]['send']['value'] = (event.target as CheckboxInputElement).checked;
+                      _formData['project-languages'][language]['send']['value'] = (event.target as CheckboxInputElement).checked;
                     })
                 )
                 ..append(
@@ -1008,7 +1009,7 @@ class ProjectConfigurationView extends BaseView{
                     ..classes.add('form-group-item__value')
                     ..checked = data['receive']['value']
                     ..onChange.listen((event) {
-                      formData['project-languages'][language]['receive']['value'] = (event.target as CheckboxInputElement).checked;
+                      _formData['project-languages'][language]['receive']['value'] = (event.target as CheckboxInputElement).checked;
                     })
                 )
                 ..append(
@@ -1044,7 +1045,7 @@ class ProjectConfigurationView extends BaseView{
               ..text = language
               ..onClick.listen((event) {
                 if (language == '--None--') return;
-                formData['project-languages'][language] = {
+                _formData['project-languages'][language] = {
                   'send': {'label': 'can send', 'value': false},
                   'receive': {'label': 'can receive', 'value': false}
                 };
@@ -1073,15 +1074,15 @@ class ProjectConfigurationView extends BaseView{
               ..append(
                 new CheckboxInputElement()
                   ..classes.add('form-group-item__value')
-                  ..checked = formData['automated-translations']['value']
+                  ..checked = _formData['automated-translations']['value']
                   ..onChange.listen((event) {
-                      formData['automated-translations']['value'] = (event.target as CheckboxInputElement).checked;
+                      _formData['automated-translations']['value'] = (event.target as CheckboxInputElement).checked;
                   })
               )
               ..append(
                 new LabelElement()
                   ..classes.add('form-group-item__label')
-                  ..text = formData['automated-translations']['label']
+                  ..text = _formData['automated-translations']['label']
               )
           )
       );
@@ -1092,7 +1093,7 @@ class ProjectConfigurationView extends BaseView{
           ..classes.add('form-group__label')
           ..text = 'User configuration'
       );
-      formData['user-configuration'].forEach((type, config) {
+      _formData['user-configuration'].forEach((type, config) {
         userConfiguration
           ..append(
             new DivElement()
@@ -1108,7 +1109,7 @@ class ProjectConfigurationView extends BaseView{
                   ..type = 'text'
                   ..value = config['value']
                   ..onBlur.listen((event) {
-                    formData['user-configuration'][type]['value'] = (event.target as InputElement).value;
+                    _formData['user-configuration'][type]['value'] = (event.target as InputElement).value;
                   })
               )
           );
@@ -1121,7 +1122,7 @@ class ProjectConfigurationView extends BaseView{
           ..classes.add('form-group__label')
           ..text = 'Coda integration'
       );
-    formData['coda-integration'].forEach((type, config) {
+    _formData['coda-integration'].forEach((type, config) {
         codaIntegration
           ..append(
             new DivElement()
@@ -1137,7 +1138,7 @@ class ProjectConfigurationView extends BaseView{
                   ..type = 'text'
                   ..value = config['value']
                   ..onBlur.listen((event) {
-                    formData['coda-integration'][type]['value'] = (event.target as InputElement).value;
+                    _formData['coda-integration'][type]['value'] = (event.target as InputElement).value;
                   })
               )
           );
@@ -1157,15 +1158,15 @@ class ProjectConfigurationView extends BaseView{
           ..append(
             new LabelElement()
               ..classes.add('form-group-item__label')
-              ..text = formData['rapidpro-integration']['start-timestamp']['label']
+              ..text = _formData['rapidpro-integration']['start-timestamp']['label']
           )
           ..append(
             new InputElement()
               ..classes.addAll(['form-group-item__value', 'form-group-item__value--text'])
               ..type = 'date'
-              ..valueAsDate = DateTime.parse(formData['rapidpro-integration']['start-timestamp']['value'])
+              ..valueAsDate = DateTime.parse(_formData['rapidpro-integration']['start-timestamp']['value'])
               ..onChange.listen((event) {
-                formData['rapidpro-integration']['start-timestamp']['value'] = (event.target as InputElement).value;
+                _formData['rapidpro-integration']['start-timestamp']['value'] = (event.target as InputElement).value;
               })
           )
       )
@@ -1175,15 +1176,15 @@ class ProjectConfigurationView extends BaseView{
           ..append(
             new LabelElement()
               ..classes.add('form-group-item__label')
-              ..text = formData['rapidpro-integration']['workspace-token']['label']
+              ..text = _formData['rapidpro-integration']['workspace-token']['label']
           )
           ..append(
             new InputElement()
               ..classes.addAll(['form-group-item__value', 'form-group-item__value--text'])
               ..type = 'text'
-              ..value = formData['rapidpro-integration']['workspace-token']['value']
+              ..value = _formData['rapidpro-integration']['workspace-token']['value']
               ..onBlur.listen((event) {
-                formData['rapidpro-integration']['workspace-token']['value'] = (event.target as InputElement).value;
+                _formData['rapidpro-integration']['workspace-token']['value'] = (event.target as InputElement).value;
               })
           )
       );
@@ -1195,7 +1196,7 @@ class ProjectConfigurationView extends BaseView{
           ..text = 'Save changes'
           ..onClick.listen((event) {
             event.preventDefault();
-            controller.command(controller.UIAction.saveProjectConfiguration, new controller.ProjectConfigurationData(formData));
+            controller.command(controller.UIAction.saveProjectConfiguration, new controller.ProjectConfigurationData(_formData));
           })
       );
   }

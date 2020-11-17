@@ -1,3 +1,8 @@
+.project-configuration {
+  justify-self: center;
+  width: 700px;
+}
+
 .configuration-form {
     display: grid;
     grid-template-rows: auto;
@@ -18,7 +23,7 @@
 
 .form-group-item {
   display: grid;
-  grid-template-columns: 25% 40%;
+  grid-template-columns: 30% 70%;
   margin-left: 20px;
 }
 
@@ -33,9 +38,7 @@
   margin: 0px;
 }
 
-.form-group-item__label {
-  white-space: nowrap;
-}
+.form-group-item__label {}
 
 .form-group-item__value {}
 
@@ -45,7 +48,6 @@
   border-right: none;
   border-bottom: 1px solid #c1c0c0;
   background-color: inherit;
-  background-image: none !important;
 }
 
 .form-group-item__value:checked {
