@@ -944,7 +944,7 @@ class ProjectConfigurationView extends BaseView{
   List<String> additionalProjectLanguages;
 
   ProjectConfigurationView(Map formData, this.additionalProjectLanguages) {
-    _formData = new Map.from(formData);
+    _formData = json.decode(json.encode(formData));
     _configurationViewElement = new DivElement()
       ..classes.add('project-configuration');
     _projectConfigurationForm = new FormElement()
