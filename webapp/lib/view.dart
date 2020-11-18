@@ -963,12 +963,38 @@ class ResponseListView extends BaseView {
   DivElement _createResponseEntry(int rowIndex, [Map response]) {
     var responseEntry = new DivElement()
       ..classes.add('conversation-response')
-      ..dataset['index'] = '$rowIndex'
-      ..append(
+      ..dataset['index'] = '$rowIndex';
+    responseEntry.append(
         new ButtonElement()
           ..classes.add('button-remove-conversation-responses')
           ..text = 'x'
-          ..onClick.listen((_) => onRemoveResponseCallback(controller.selectedPackage, rowIndex))
+          ..onClick.listen((_) {
+            var removeResponsesModal = new DivElement()
+              ..classes.add('remove-conversation-responses-modal');
+            removeResponsesModal
+              ..append(
+                new ParagraphElement()
+                  ..classes.add('remove-conversation-responses-modal__message')
+                  ..text = 'Are you sure?'
+              )
+              ..append(
+                new DivElement()
+                  ..classes.add('remove-conversation-responses-modal-actions')
+                  ..append(
+                    new ButtonElement()
+                      ..classes.add('remove-conversation-responses-modal-actions__action')
+                      ..text = 'Yes'
+                      ..onClick.listen((_) => onRemoveResponseCallback(controller.selectedPackage, rowIndex))
+                  )
+                  ..append(
+                    new ButtonElement()
+                      ..classes.add('remove-conversation-responses-modal-actions__action')
+                      ..text = 'No'
+                      ..onClick.listen((_) => removeResponsesModal.remove())
+                  )
+              );
+            responseEntry.append(removeResponsesModal);
+          })
       );
     for (int i = 0; i < response['messages'].length; i++) {
       int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
