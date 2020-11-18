@@ -914,13 +914,24 @@ class ResponseView {
   Element _responseElement;
   Function onUpdateResponseCallback;
 
-  ResponseView(int rowIndex, int colIndex, String response, this.onUpdateResponseCallback) {
-    _responseElement = new ParagraphElement()
-          ..classes.add('conversation-response__language')
-          ..text = response != null ? response : ''
-          ..contentEditable = 'true'
-          ..dataset['index'] = '$colIndex'
-          ..onBlur.listen((event) => onUpdateResponseCallback(controller.selectedPackage, rowIndex, colIndex, (event.target as Element).text));
+  ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback) {
+    _responseElement = new DivElement()
+      ..classes.add('conversation-response-language')
+      ..append(
+        new ParagraphElement()
+        ..classes.add('conversation-response-language__text')
+        ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
+        ..text = response != null ? response : ''
+        ..contentEditable = 'true'
+        ..dataset['index'] = '$colIndex'
+        ..onBlur.listen((event) => onUpdateResponseCallback(controller.selectedPackage, rowIndex, colIndex, (event.target as Element).text))
+      )
+      ..append(
+        new SpanElement()
+          ..classes.add('conversation-response-language__text-count')
+          ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
+          ..text = '${responseCount}/160'
+      );
   }
 
   Element get renderElement => _responseElement;
@@ -960,7 +971,8 @@ class ResponseListView extends BaseView {
           ..onClick.listen((_) => onRemoveResponseCallback(controller.selectedPackage, rowIndex))
       );
     for (int i = 0; i < response['messages'].length; i++) {
-      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], onUpdateResponseCallback).renderElement);
+      int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
+      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
     }
     responseEntry.append(
       DivElement()
