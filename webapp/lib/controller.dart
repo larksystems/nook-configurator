@@ -1,5 +1,7 @@
 library controller;
 
+import 'dart:html';
+
 import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
@@ -16,6 +18,7 @@ enum UIAction {
   signOutButtonClicked,
   viewProject,
   configureProject,
+  loadPackageConfigurationView,
   addProject,
   addTeamMember,
   saveProjectConfiguration
@@ -46,11 +49,16 @@ class ProjectConfigurationData extends Data {
   ProjectConfigurationData(this.config);
 }
 
+class PackageConfigurationData extends Data {
+  String packageName;
+  PackageConfigurationData(this.packageName);
+}
+
 List<String> configurationResponseLanguages;
 
 model.User signedInUser;
-
 ProjectData project;
+String selectedPackage;
 
 void init() async {
   setupRoutes();
@@ -59,16 +67,17 @@ void init() async {
 }
 
 void initUI() {
-  router.routeTo('#/project-selector');
+  router.routeTo(window.location.hash);
 }
 
 void setupRoutes() {
   router = new Router()
     ..addAuthHandler(new Route('#/auth', loadAuthView))
-    ..addDefaultHandler(new Route('#/dashboard', loadDashboardView))
-    ..addHandler(new Route('#/project-selector', loadProjectSelectorView))
-    ..addHandler(new Route('#/batch-replies-configuration', loadBatchRepliesConfigurationView))
-    ..addHandler(new Route('#/escalates-configuration', loadEscalatesConfigurationView))
+    ..addHandler(new Route('#/dashboard', loadDashboardView))
+    ..addDefaultHandler(new Route('#/project-selector', loadProjectSelectorView))
+    ..addHandler(new Route('#/urgent-conversations-configuration', loadPackageConfigurationView))
+    ..addHandler(new Route('#/open-conversations-configuration', loadPackageConfigurationView))
+    ..addHandler(new Route('#/change-communications-configuration', loadPackageConfigurationView))
     ..addHandler(new Route('#/project-configuration', loadProjectConfigurationView))
     ..listen();
 }
@@ -104,6 +113,11 @@ void command(UIAction action, Data actionData) {
       project = actionData;
       router.routeTo('#/project-configuration');
       break;
+    case UIAction.loadPackageConfigurationView:
+      PackageConfigurationData packageConfigurationData = actionData;
+      selectedPackage = packageConfigurationData.packageName;
+      loadPackageConfigurationView();
+      break;
     case UIAction.addProject:
       break;
     case UIAction.addTeamMember:
@@ -131,9 +145,9 @@ void loadDashboardView() {
   var dashboardView = new view.DashboardView(model.conversationData);
   dashboardView.activePackages.addAll(
     [
-      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/escalates-configuration',  '${model.conversationData["needs-urgent-intervention"]} awaiting reply'),
-      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#', '30 open conversations'),
-      new view.ActivePackagesViewPartial('Batch replies (Week 12)', '', '#/batch-replies-configuration', ''),
+      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/urgent-conversations-configuration',  '${model.conversationData["needs-urgent-intervention"]} awaiting reply'),
+      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#/open-conversations-configuration', '30 open conversations'),
+      new view.ActivePackagesViewPartial('Change Communications (Week 12)', '', '#/change-communications-configuration', ''),
     ]);
   dashboardView.availablepackages.addAll(
     [
@@ -152,12 +166,21 @@ void loadDashboardView() {
   view.contentView.renderView(dashboardView);
 }
 
-void loadBatchRepliesConfigurationView() {
-  view.contentView.renderView(new view.BatchRepliesConfigurationView(model.changeCommsPackage));
-}
-
-void loadEscalatesConfigurationView() {
-  view.contentView.renderView(new view.EscalatesConfigurationView());
+void loadPackageConfigurationView() {
+  view.PackageConfiguratorView configuratorView;
+  selectedPackage = selectedPackage ?? model.packageConfigurationData.keys.toList().first;
+  switch (selectedPackage) {
+    case 'Change Communications':
+      configuratorView = new view.ChangeCommunicationsConfigurationView(model.packageConfigurationData);
+      break;
+    case 'Urgent conversations':
+      configuratorView = new view.UrgentConversationsConfigurationView(model.packageConfigurationData);
+      break;
+    case 'Open conversations':
+      configuratorView = new view.UrgentConversationsConfigurationView(model.packageConfigurationData);
+      break;
+  }
+  view.contentView.renderView(configuratorView);
 }
 
 loadProjectConfigurationView() {
@@ -173,18 +196,18 @@ enum TagOperation {
   REMOVE
 }
 
-void _addTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
+void _addTag(String selectedPackage, String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
   tagCollection.addAll({tag: tagStyle});
-  if (!isEditable) model.changeCommsPackage.availableTags.remove(tag);
+  if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.remove(tag);
 }
 
-void _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyle> tagCollection) {
+void _updateTag(String selectedPackage, String originalTag, String updatedTag, Map<String, model.TagStyle> tagCollection) {
   if (originalTag == updatedTag) return;
   var tagKeys = tagCollection.keys.toList();
   var tagValues= tagCollection.values.toList();
   var originalIndex = tagKeys.indexOf(originalTag);
   if (originalIndex < 0) {
-    _addTag(updatedTag, model.TagStyle.Normal, tagCollection);
+    _addTag(selectedPackage, updatedTag, model.TagStyle.Normal, tagCollection);
     return;
   }
   tagKeys.removeAt(originalIndex);
@@ -197,71 +220,71 @@ void _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyl
   tagCollection.addAll(updatedTagCollection);
 }
 
-void _removeTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
+void _removeTag(String selectedPackage, String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
   tagCollection.remove(tag);
-  if (!isEditable) model.changeCommsPackage.availableTags.addAll({tag : tagStyle});
+  if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.addAll({tag : tagStyle});
 }
 
-void hasAllTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void hasAllTagsChanged(String selectedPackage, String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagStyle, model.changeCommsPackage.hasAllTags);
+      _addTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagStyle, model.changeCommsPackage.hasAllTags);
+      _removeTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
       break;
   }
-  loadBatchRepliesConfigurationView();
+  loadPackageConfigurationView();
 }
 
-void containsLastInTurnTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void containsLastInTurnTagsChanged(String selectedPackage, String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagStyle, model.changeCommsPackage.containsLastInTurnTags);
+      _addTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagStyle, model.changeCommsPackage.containsLastInTurnTags);
+      _removeTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
       break;
   }
-  loadBatchRepliesConfigurationView();
+  loadPackageConfigurationView();
 }
 
-void hasNoneTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void hasNoneTagsChanged(String selectedPackage, String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagStyle, model.changeCommsPackage.hasNoneTags);
+      _addTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagStyle, model.changeCommsPackage.hasNoneTags);
+      _removeTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
       break;
   }
-  loadBatchRepliesConfigurationView();
+  loadPackageConfigurationView();
 }
 
-void addsTagsChanged(String originalTag, String updatedTag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void addsTagsChanged(String selectedPackage, String originalTag, String updatedTag, model.TagStyle tagStyle, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(updatedTag, tagStyle, model.changeCommsPackage.addsTags, true);
+      _addTag(selectedPackage, updatedTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
       break;
     case TagOperation.UPDATE:
-      _updateTag(originalTag, updatedTag, model.changeCommsPackage.addsTags);
+      _updateTag(selectedPackage, originalTag, updatedTag, model.packageConfigurationData[selectedPackage].addsTags);
       break;
     case TagOperation.REMOVE:
-      _removeTag(originalTag, tagStyle, model.changeCommsPackage.addsTags, true);
+      _removeTag(selectedPackage, originalTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
       break;
   }
-  loadBatchRepliesConfigurationView();
+  loadPackageConfigurationView();
 }
 
 // Suggested Replies operations
-void addNewResponse() {
-  model.changeCommsPackage.suggestedReplies.add(
+void addNewResponse(String selectedPackage) {
+  model.packageConfigurationData[selectedPackage].suggestedReplies.add(
     {
       "messages":
         [
@@ -273,32 +296,32 @@ void addNewResponse() {
       "reviewed-date": ""
     },
   );
-  loadBatchRepliesConfigurationView();
+  loadPackageConfigurationView();
 }
 
-void updateResponse(int rowIndex, int colIndex, String response) {
-  model.changeCommsPackage.suggestedReplies[rowIndex]['messages'][colIndex] = response;
-  loadBatchRepliesConfigurationView();
+void updateResponse(String selectedPackage, int rowIndex, int colIndex, String response) {
+  model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['messages'][colIndex] = response;
+  loadPackageConfigurationView();
 }
 
-void reviewResponse(int rowIndex, bool reviewed) {
+void reviewResponse(String selectedPackage, int rowIndex, bool reviewed) {
   if (reviewed) {
     var now = DateTime.now().toLocal();
     var reviewedDate = '${now.year}-${now.month}-${now.day}';
-    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed'] = true;
-    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
-    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
+    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = true;
+    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
+    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
   } else {
-    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed'] = false;
-    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-by'] = '';
-    model.changeCommsPackage.suggestedReplies[rowIndex]['reviewed-date'] = '';
+    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = false;
+    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = '';
+    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = '';
   }
-  loadBatchRepliesConfigurationView();
+  loadPackageConfigurationView();
 }
 
-void removeResponse(int rowIndex) {
-  model.changeCommsPackage.suggestedReplies.removeAt(rowIndex);
-  loadBatchRepliesConfigurationView();
+void removeResponse(String selectedPackage, int rowIndex) {
+  model.packageConfigurationData[selectedPackage].suggestedReplies.removeAt(rowIndex);
+  loadPackageConfigurationView();
 }
 
 void saveProjectConfiguration(Map config) {

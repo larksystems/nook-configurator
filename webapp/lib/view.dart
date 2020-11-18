@@ -25,10 +25,12 @@ void init() {
 class NavView {
   DivElement navViewElement;
   DivElement _appLogos;
+  DivElement _navLinks;
   DivElement _projectTitle;
   DivElement _projectOrganizations;
   AuthHeaderViewPartial authHeaderViewPartial;
-
+  ButtonElement _backBtn;
+  AnchorElement _allProjectsLink;
 
   NavView() {
     navViewElement = new DivElement()
@@ -36,6 +38,18 @@ class NavView {
     _appLogos = new DivElement()
       ..classes.add('nav__app-logo')
       ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
+    _backBtn = new ButtonElement()
+      ..classes.add('nav-links__back-btn')
+      ..text = '< Back'
+      ..onClick.listen((_) => window.history.back());
+    _allProjectsLink = new AnchorElement()
+      ..classes.add('nav-links__all-projects-link')
+      ..href = '#/project-selector'
+      ..text = 'All projects';
+    _navLinks = new DivElement()
+      ..classes.add('nav-links')
+      ..append(_backBtn)
+      ..append(_allProjectsLink);
     _projectTitle = new DivElement()
       ..classes.add('nav-project-details__title');
     _projectOrganizations = new DivElement()
@@ -47,9 +61,14 @@ class NavView {
     authHeaderViewPartial = new AuthHeaderViewPartial();
 
     navViewElement.append(_appLogos);
+    navViewElement.append(_navLinks);
     navViewElement.append(projectDetails);
     navViewElement.append(authHeaderViewPartial.authElement);
   }
+
+  Element get backBtn => _backBtn;
+
+  Element get allProjectsLink => _allProjectsLink;
 
   void set projectTitle(String projectName) => _projectTitle.text = projectName;
 
@@ -291,6 +310,21 @@ class DashboardView extends BaseView {
         ..append(
           new DivElement()
             ..classes.add('project-actions')
+            ..append(
+              new SpanElement()
+                ..classes.add('project-actions__action')
+                ..append(
+                  new AnchorElement()
+                    ..classes.add('project-actions__action-link')
+                    ..text = "Configure project"
+                    ..href = "#/project-configuration"
+                )
+                ..append(
+                  new SpanElement()
+                    ..classes.add('project-actions__action-icon')
+                    ..text = '>'
+                )
+            )
             ..append(
               new SpanElement()
                 ..classes.add('project-actions__action')
@@ -548,14 +582,13 @@ class AvailablePackagesViewPartial {
   }
 }
 
-class EscalatesConfigurationView extends PackageConfiguratorView {}
-
 class PackageConfiguratorView extends BaseView {
   DivElement packageConfiguratorViewElement;
   DivElement _packageConfiguratorSidebar;
   DivElement _packageConfiguratorContent;
+  List<String> activePackages;
 
-  PackageConfiguratorView() {
+  PackageConfiguratorView(this.activePackages) {
     packageConfiguratorViewElement = new DivElement()
       ..classes.add('configure-package-view');
     _packageConfiguratorSidebar = new DivElement()
@@ -570,8 +603,6 @@ class PackageConfiguratorView extends BaseView {
   DivElement get renderElement => packageConfiguratorViewElement;
 
   void _buildSidebarPartial() {
-    Map<String, bool> activePackages = {'Escalates': true, 'Change Communications': false};
-
     _packageConfiguratorSidebar.append(
       new SpanElement()
         ..text = 'Active Packages'
@@ -581,55 +612,42 @@ class PackageConfiguratorView extends BaseView {
     var packageList = new Element.ul()
       ..classes.add('selected-active-package-list');
 
-    activePackages.forEach((packageName, selected) {
+    for (var package in activePackages) {
       packageList.append(
         new DivElement()
           ..classes.add('selected-active-package-list__item')
-          ..append(
-            new CheckboxInputElement()
-              ..classes.add('selected-active-package-list__item-state')
-              ..checked = selected
-          )
+          ..classes.toggle('selected-active-package-list__item--selected', (package == controller.selectedPackage))
           ..append(
             new Element.li()
               ..classes.add('selected-active-package-list__item-text')
-              ..text = packageName
+              ..text = package
           )
+          ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(package)))
       );
-    });
+    };
 
     _packageConfiguratorSidebar.append(packageList);
   }
-}
-
-class BatchRepliesConfigurationView extends PackageConfiguratorView {
-  DivElement hasAllTagsContainer;
-  DivElement containsLastInTurnTagsContainer;
-  DivElement hasNoneTagsContainer;
-  DivElement suggestedRepliesContainer;
-  DivElement addsTagsContainer;
-  BatchRepliesConfigurationView(model.Configuration data) : super() {
-    _buildContentPartial(data);
-  }
 
   void _buildContentPartial(model.Configuration data) {
+    if (data == null) return;
     List<TagView> hasAllTags = [];
     data.hasAllTags.forEach((tag, tagStyle) {
       hasAllTags.add(new TagView(tag, tagStyle, controller.hasAllTagsChanged));
     });
-    hasAllTagsContainer = new TagListView(hasAllTags, data.availableTags, controller.hasAllTagsChanged).renderElement;
+    var hasAllTagsContainer = new TagListView(hasAllTags, data.availableTags, controller.hasAllTagsChanged).renderElement;
 
     List<TagView> containsLastInTurnTags = [];
     data.containsLastInTurnTags.forEach((tag, tagStyle) {
       containsLastInTurnTags.add(new TagView(tag, tagStyle, controller.containsLastInTurnTagsChanged));
     });
-    containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, data.availableTags, controller.containsLastInTurnTagsChanged).renderElement;
+    var containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, data.availableTags, controller.containsLastInTurnTagsChanged).renderElement;
 
     List<TagView> hasNoneTags = [];
     data.hasNoneTags.forEach((tag, tagStyle) {
       hasNoneTags.add(new TagView(tag, tagStyle, controller.hasNoneTagsChanged));
     });
-    hasNoneTagsContainer = new TagListView(hasNoneTags, data.availableTags, controller.hasNoneTagsChanged).renderElement;
+    var hasNoneTagsContainer = new TagListView(hasNoneTags, data.availableTags, controller.hasNoneTagsChanged).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -710,7 +728,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
         )
     );
 
-    suggestedRepliesContainer =
+    var suggestedRepliesContainer =
       new ResponseListView(data.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
 
     _packageConfiguratorContent.append(
@@ -735,7 +753,7 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
     data.addsTags.forEach((tag, tagStyle) {
       addsTags.add(new TagView(tag, tagStyle, controller.addsTagsChanged, true));
     });
-    addsTagsContainer = new TagListView(addsTags, data.availableTags, controller.addsTagsChanged, true).renderElement;
+    var addsTagsContainer = new TagListView(addsTags, data.availableTags, controller.addsTagsChanged, true).renderElement;
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -746,6 +764,31 @@ class BatchRepliesConfigurationView extends PackageConfiguratorView {
             ..text = 'What new labels would like to tag the message with?'
         )
         ..append(addsTagsContainer)
+    );
+  }
+}
+
+class ChangeCommunicationsConfigurationView extends PackageConfiguratorView {
+  ChangeCommunicationsConfigurationView(Map<String, model.Configuration> data) : super(data.keys.toList()) {
+    _buildContentPartial(data[controller.selectedPackage]);
+  }
+}
+class UrgentConversationsConfigurationView extends PackageConfiguratorView {
+  UrgentConversationsConfigurationView(Map<String, model.Configuration> data): super(data.keys.toList()) {
+     _buildContentPartial(data[controller.selectedPackage]);
+  }
+}
+
+class OpenConversationsConfigurationView extends PackageConfiguratorView {
+  OpenConversationsConfigurationView(Map<String, model.Configuration> data): super(data.keys.toList()) {
+    _buildContentPartial(data[controller.selectedPackage]);
+  }
+
+  @override
+  void _buildContentPartial(model.Configuration data) {
+    _packageConfiguratorContent.append(
+      new DivElement()
+        ..classes.add('configure-package-tags')
     );
   }
 }
@@ -795,7 +838,7 @@ class TagListView extends BaseView {
           ..text = tag
           ..onClick.listen((event) {
             if (tag == '--None--') return;
-            onTagChangedCallback(tag, tags[tag], controller.TagOperation.ADD);
+            onTagChangedCallback(controller.selectedPackage, tag, tags[tag], controller.TagOperation.ADD);
           })
       );
     }
@@ -846,16 +889,16 @@ class TagView extends BaseView {
           ..text = 'x'
           ..onClick.listen((_) {
             if (isEditableTag) {
-              onTagChangedCallback(tag, tag, tagStyle, controller.TagOperation.REMOVE);
+              onTagChangedCallback(controller.selectedPackage, tag, tag, tagStyle, controller.TagOperation.REMOVE);
               return;
             }
-            onTagChangedCallback(tag, tagStyle, controller.TagOperation.REMOVE);
+            onTagChangedCallback(controller.selectedPackage, tag, tagStyle, controller.TagOperation.REMOVE);
           })
       );
 
     if (isEditableTag) {
       _tagText.contentEditable = 'true';
-      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagStyle, controller.TagOperation.UPDATE));
+      _tagText.onBlur.listen((event) => onTagChangedCallback(controller.selectedPackage, tag, (event.target as Element).text, tagStyle, controller.TagOperation.UPDATE));
     }
 
     return tagElement;
@@ -869,7 +912,7 @@ class TagView extends BaseView {
 
 class ResponseView {
   Element _responseElement;
-  Function(int, int, String) onUpdateResponseCallback;
+  Function onUpdateResponseCallback;
 
   ResponseView(int rowIndex, int colIndex, String response, this.onUpdateResponseCallback) {
     _responseElement = new ParagraphElement()
@@ -877,7 +920,7 @@ class ResponseView {
           ..text = response != null ? response : ''
           ..contentEditable = 'true'
           ..dataset['index'] = '$colIndex'
-          ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text));
+          ..onBlur.listen((event) => onUpdateResponseCallback(controller.selectedPackage, rowIndex, colIndex, (event.target as Element).text));
   }
 
   Element get renderElement => _responseElement;
@@ -886,9 +929,9 @@ class ResponseView {
 class ResponseListView extends BaseView {
   DivElement _responsesContainer;
   Function onAddNewResponseCallback;
-  Function(int, int, String) onUpdateResponseCallback;
-  Function(int, bool) onReviewResponseCallback;
-  Function(int) onRemoveResponseCallback;
+  Function onUpdateResponseCallback;
+  Function onReviewResponseCallback;
+  Function onRemoveResponseCallback;
 
   ResponseListView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
     _responsesContainer = new DivElement()
@@ -900,7 +943,7 @@ class ResponseListView extends BaseView {
       new ButtonElement()
         ..classes.add('button-add-conversation-responses')
         ..text = '+'
-        ..onClick.listen((event) => onAddNewResponseCallback())
+        ..onClick.listen((event) => onAddNewResponseCallback(controller.selectedPackage))
     );
   }
 
@@ -914,7 +957,7 @@ class ResponseListView extends BaseView {
         new ButtonElement()
           ..classes.add('button-remove-conversation-responses')
           ..text = 'x'
-          ..onClick.listen((_) => onRemoveResponseCallback(rowIndex))
+          ..onClick.listen((_) => onRemoveResponseCallback(controller.selectedPackage, rowIndex))
       );
     for (int i = 0; i < response['messages'].length; i++) {
       responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], onUpdateResponseCallback).renderElement);
@@ -926,7 +969,7 @@ class ResponseListView extends BaseView {
           new CheckboxInputElement()
               ..classes.add('conversation-response__reviewed-state')
               ..checked = response != null ? response['reviewed'] : false
-              ..onClick.listen((event) => onReviewResponseCallback(rowIndex, (event.target as CheckboxInputElement).checked))
+              ..onClick.listen((event) => onReviewResponseCallback(controller.selectedPackage, rowIndex, (event.target as CheckboxInputElement).checked))
         )
         ..append(
           new ParagraphElement()
