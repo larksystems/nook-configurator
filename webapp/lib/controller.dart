@@ -75,9 +75,7 @@ void setupRoutes() {
     ..addAuthHandler(new Route('#/auth', loadAuthView))
     ..addHandler(new Route('#/dashboard', loadDashboardView))
     ..addDefaultHandler(new Route('#/project-selector', loadProjectSelectorView))
-    ..addHandler(new Route('#/urgent-conversations-configuration', loadPackageConfigurationView))
-    ..addHandler(new Route('#/open-conversations-configuration', loadPackageConfigurationView))
-    ..addHandler(new Route('#/change-communications-configuration', loadPackageConfigurationView))
+    ..addHandler(new Route('#/package-configuration', loadPackageConfigurationView))
     ..addHandler(new Route('#/project-configuration', loadProjectConfigurationView))
     ..listen();
 }
@@ -115,8 +113,7 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.loadPackageConfigurationView:
       PackageConfigurationData packageConfigurationData = actionData;
-      selectedPackage = packageConfigurationData.packageName;
-      loadPackageConfigurationView();
+      router.routeTo('#/package-configuration?package=${packageConfigurationData.packageName}');
       break;
     case UIAction.addProject:
       break;
@@ -145,9 +142,9 @@ void loadDashboardView() {
   var dashboardView = new view.DashboardView(model.conversationData);
   dashboardView.activePackages.addAll(
     [
-      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/urgent-conversations-configuration',  '${model.conversationData["needs-urgent-intervention"]} awaiting reply'),
-      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#/open-conversations-configuration', '30 open conversations'),
-      new view.ActivePackagesViewPartial('Change Communications (Week 12)', '', '#/change-communications-configuration', ''),
+      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/package-configuration?package=Urgent conversations',  '${model.conversationData["needs-urgent-intervention"]} awaiting reply'),
+      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#/package-configuration?package=Open conversations', '30 open conversations'),
+      new view.ActivePackagesViewPartial('Change communications (Week 12)', '', '#/package-configuration?package=Change communications', ''),
     ]);
   dashboardView.availablepackages.addAll(
     [
@@ -167,19 +164,9 @@ void loadDashboardView() {
 }
 
 void loadPackageConfigurationView() {
-  view.PackageConfiguratorView configuratorView;
-  selectedPackage = selectedPackage ?? model.packageConfigurationData.keys.toList().first;
-  switch (selectedPackage) {
-    case 'Change Communications':
-      configuratorView = new view.ChangeCommunicationsConfigurationView(model.packageConfigurationData);
-      break;
-    case 'Urgent conversations':
-      configuratorView = new view.UrgentConversationsConfigurationView(model.packageConfigurationData);
-      break;
-    case 'Open conversations':
-      configuratorView = new view.UrgentConversationsConfigurationView(model.packageConfigurationData);
-      break;
-  }
+  var packages = model.packageConfigurationData.keys.toList();
+  selectedPackage = router.routeParams['package'];
+  var configuratorView = new view.PackageConfiguratorView(packages, model.packageConfigurationData[selectedPackage]);
   view.contentView.renderView(configuratorView);
 }
 
@@ -196,18 +183,18 @@ enum TagOperation {
   REMOVE
 }
 
-void _addTag(String selectedPackage, String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
+void _addTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
   tagCollection.addAll({tag: tagStyle});
   if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.remove(tag);
 }
 
-void _updateTag(String selectedPackage, String originalTag, String updatedTag, Map<String, model.TagStyle> tagCollection) {
+void _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyle> tagCollection) {
   if (originalTag == updatedTag) return;
   var tagKeys = tagCollection.keys.toList();
   var tagValues= tagCollection.values.toList();
   var originalIndex = tagKeys.indexOf(originalTag);
   if (originalIndex < 0) {
-    _addTag(selectedPackage, updatedTag, model.TagStyle.Normal, tagCollection);
+    _addTag(updatedTag, model.TagStyle.Normal, tagCollection);
     return;
   }
   tagKeys.removeAt(originalIndex);
@@ -220,70 +207,70 @@ void _updateTag(String selectedPackage, String originalTag, String updatedTag, M
   tagCollection.addAll(updatedTagCollection);
 }
 
-void _removeTag(String selectedPackage, String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
+void _removeTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
   tagCollection.remove(tag);
   if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.addAll({tag : tagStyle});
 }
 
-void hasAllTagsChanged(String selectedPackage, String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void hasAllTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
+      _addTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
+      _removeTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
       break;
   }
   loadPackageConfigurationView();
 }
 
-void containsLastInTurnTagsChanged(String selectedPackage, String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void containsLastInTurnTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
+      _addTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
+      _removeTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
       break;
   }
   loadPackageConfigurationView();
 }
 
-void hasNoneTagsChanged(String selectedPackage, String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void hasNoneTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
+      _addTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(selectedPackage, tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
+      _removeTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
       break;
   }
   loadPackageConfigurationView();
 }
 
-void addsTagsChanged(String selectedPackage, String originalTag, String updatedTag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void addsTagsChanged(String originalTag, String updatedTag, model.TagStyle tagStyle, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(selectedPackage, updatedTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
+      _addTag(updatedTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
       break;
     case TagOperation.UPDATE:
-      _updateTag(selectedPackage, originalTag, updatedTag, model.packageConfigurationData[selectedPackage].addsTags);
+      _updateTag(originalTag, updatedTag, model.packageConfigurationData[selectedPackage].addsTags);
       break;
     case TagOperation.REMOVE:
-      _removeTag(selectedPackage, originalTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
+      _removeTag(originalTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
       break;
   }
   loadPackageConfigurationView();
 }
 
 // Suggested Replies operations
-void addNewResponse(String selectedPackage) {
+void addNewResponse() {
   model.packageConfigurationData[selectedPackage].suggestedReplies.add(
     {
       "messages":
@@ -299,12 +286,12 @@ void addNewResponse(String selectedPackage) {
   loadPackageConfigurationView();
 }
 
-void updateResponse(String selectedPackage, int rowIndex, int colIndex, String response) {
+void updateResponse(int rowIndex, int colIndex, String response) {
   model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['messages'][colIndex] = response;
   loadPackageConfigurationView();
 }
 
-void reviewResponse(String selectedPackage, int rowIndex, bool reviewed) {
+void reviewResponse(int rowIndex, bool reviewed) {
   if (reviewed) {
     var now = DateTime.now().toLocal();
     var reviewedDate = '${now.year}-${now.month}-${now.day}';
@@ -319,7 +306,7 @@ void reviewResponse(String selectedPackage, int rowIndex, bool reviewed) {
   loadPackageConfigurationView();
 }
 
-void removeResponse(String selectedPackage, int rowIndex) {
+void removeResponse(int rowIndex) {
   model.packageConfigurationData[selectedPackage].suggestedReplies.removeAt(rowIndex);
   loadPackageConfigurationView();
 }
