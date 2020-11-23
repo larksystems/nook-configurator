@@ -554,8 +554,9 @@ class AvailablePackagesViewPartial {
             new AnchorElement()
               ..classes.add('available-package-action__link')
               ..text = 'Add $packageName package'
-              ..href = '#'
+              ..href = '#/dashboard'
           )
+          ..onClick.listen((event) => controller.command(controller.UIAction.addPackage, new controller.PackageConfigurationData(packageName)))
       )
       ..append(
         new SpanElement()

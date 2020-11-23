@@ -1,3 +1,5 @@
+import 'view.dart' as view;
+
 // TODO To be replaced with real models. Just dumping dummy data here to keep controller.dart clean
 Map<String, List<String>> projectData = {
   'COVID IMAQAL' : ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
@@ -96,6 +98,18 @@ Map projectConfigurationFormData = {
 
 List<String> additionalProjectConfigurationLanguages = ['Kiswahili', 'Kinyarwanda'];
 
+List<Map> activePackages = [
+  {'name': 'Urgent conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Urgent conversations',  'chartData': '${conversationData["needs-urgent-intervention"]} awaiting reply'},
+  {'name': 'Open conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Open conversations',  'chartData': '30 open conversations'},
+  {'name': 'Urgent conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Change communications',  'chartData': ''},
+];
+
+List<Map> availablePackages = [
+  {'name': 'Quick Poll', 'description': 'Ask a question with fixed answers', 'details': {'Needs': 'Q/A, Labelling team, Safeguarding response', 'Produces': 'Dashboard for distribution of answers'}},
+  {'name': 'Information Service', 'description': 'Answer people\'s questions', 'details': {'Needs' : 'Response protocol, Labelling team, Safeguarding response', 'Produces' : 'Thematic distribution, work rate tracker'}},
+  {'name': 'Bulk Message', 'description': 'Send set of people a once off message', 'details': {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'}},
+];
+
 Map<String, TagStyle> tags = {
   'rumour - origin': TagStyle.Normal,
   'rumour - virus description': TagStyle.Normal,
@@ -182,7 +196,7 @@ Map<String, Configuration> packageConfigurationData = {
       ..suggestedReplies = escalatesSuggestedReplies
       ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
       'Open conversations': new Configuration()
-      ..availableTags = {}
+      ..availableTags = tags
       ..hasAllTags = {}
       ..containsLastInTurnTags = {}
       ..hasNoneTags = {}
