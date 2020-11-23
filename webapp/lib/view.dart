@@ -892,23 +892,28 @@ class ResponseView {
   Function onUpdateResponseCallback;
 
   ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback) {
+    var responseCounter = new SpanElement()
+      ..classes.add('conversation-response-language__text-count')
+      ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
+      ..text = '${responseCount}/160';
+    var responseText =  new ParagraphElement();
+    responseText
+      ..classes.add('conversation-response-language__text')
+      ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
+      ..text = response != null ? response : ''
+      ..contentEditable = 'true'
+      ..dataset['index'] = '$colIndex'
+      ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text))
+      ..onInput.listen((event) {
+        int count = responseText.text.split('').length;
+        responseCounter.text = '${count}/160';
+        responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
+        responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
+      });
     _responseElement = new DivElement()
       ..classes.add('conversation-response-language')
-      ..append(
-        new ParagraphElement()
-        ..classes.add('conversation-response-language__text')
-        ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
-        ..text = response != null ? response : ''
-        ..contentEditable = 'true'
-        ..dataset['index'] = '$colIndex'
-        ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text))
-      )
-      ..append(
-        new SpanElement()
-          ..classes.add('conversation-response-language__text-count')
-          ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
-          ..text = '${responseCount}/160'
-      );
+      ..append(responseText)
+      ..append(responseCounter);
   }
     Element get renderElement => _responseElement;
 }
