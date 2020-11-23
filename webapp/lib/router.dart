@@ -3,15 +3,26 @@ import 'controller.dart' as controller;
 
 class Route {
   String path;
+  Map<String, String> params;
   Function handler;
 
-  Route(this.path, this.handler);
+  Route(this.path, this.handler, [this.params]) {
+    if (params == null) params = {};
+  }
+
+  void processParams(String paramsString) {
+    for (var param in paramsString.split('&')) {
+      var paramParts = param.split('=');
+      params[paramParts[0]] = Uri.decodeComponent(paramParts[1]);
+    }
+  }
 }
 
 class Router {
   Map<String, Route> _routes;
   Route _authRoute;
   Route _defaultRoute;
+  Route _currentRoute;
 
   Router() {
     _routes = {};
@@ -32,25 +43,31 @@ class Router {
   }
 
   void listen() {
-    window.onPopState.listen((PopStateEvent event) => _loadView(window.location.hash));
+    window.onPopState.listen((_) => _loadView(window.location.hash));
   }
 
   void routeTo(String path) {
     _loadView(path);
   }
 
+  Map<String, String> get routeParams => _currentRoute.params;
+
   void _loadView(String path) {
-    var targetRoute = _routes[path];
+    var pathParts = path.split('?');
+    _currentRoute = _routes[pathParts[0]];
     if (controller.signedInUser == null) {
-      targetRoute = _authRoute;
+      _currentRoute = _authRoute;
     }
-    if (controller.signedInUser != null && targetRoute == _authRoute) {
-      targetRoute = _defaultRoute;
+    if (controller.signedInUser != null && _currentRoute == _authRoute) {
+      _currentRoute = _defaultRoute;
     }
-    if (targetRoute == null) {
-      targetRoute = _defaultRoute;
+    if (_currentRoute == null) {
+      _currentRoute = _defaultRoute;
     }
-    targetRoute.handler();
-    window.location.hash = targetRoute.path;
+    if (pathParts.length > 1) {
+      _currentRoute.processParams(pathParts[1]);
+    }
+    window.location.hash = _currentRoute.path;
+    _currentRoute.handler();
   }
 }

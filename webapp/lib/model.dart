@@ -166,7 +166,7 @@ enum TagStyle {
 }
 
 Map<String, Configuration> packageConfigurationData = {
-  'Change Communications': new Configuration()
+  'Change communications': new Configuration()
     ..availableTags = tags
     ..hasAllTags = {}
     ..containsLastInTurnTags = {'denial': TagStyle.Normal , 'rumour': TagStyle.Normal}
@@ -181,7 +181,13 @@ Map<String, Configuration> packageConfigurationData = {
       ..hasNoneTags = {}
       ..suggestedReplies = escalatesSuggestedReplies
       ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
-      'Open conversations': null
+      'Open conversations': new Configuration()
+      ..availableTags = {}
+      ..hasAllTags = {}
+      ..containsLastInTurnTags = {}
+      ..hasNoneTags = {}
+      ..suggestedReplies = []
+      ..addsTags = {},
 };
 class User {
   String userName;
