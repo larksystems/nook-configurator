@@ -171,12 +171,7 @@ loadProjectConfigurationView() {
 
 void addPackage(String packageName) {
   model.packageConfigurationData[packageName] = new model.Configuration()
-    ..availableTags = model.tags
-    ..hasAllTags = {}
-    ..containsLastInTurnTags = {}
-    ..hasNoneTags = {}
-    ..suggestedReplies = []
-    ..addsTags = {};
+    ..availableTags = model.tags;
   model.activePackages.add({'name': packageName, 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=$packageName',  'chartData': ''});
   model.availablePackages.removeWhere((package) => package['name'] == packageName);
 }
