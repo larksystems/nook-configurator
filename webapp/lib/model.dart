@@ -166,12 +166,12 @@ List<Map> escalatesSuggestedReplies = [
 ];
 
 class Configuration {
-  Map<String, TagStyle> availableTags;
-  Map<String, TagStyle> hasAllTags;
-  Map<String, TagStyle> containsLastInTurnTags;
-  Map<String, TagStyle> hasNoneTags;
-  List<Map> suggestedReplies;
-  Map<String, TagStyle> addsTags;
+  Map<String, TagStyle> availableTags = {};
+  Map<String, TagStyle> hasAllTags = {};
+  Map<String, TagStyle> containsLastInTurnTags = {};
+  Map<String, TagStyle> hasNoneTags = {};
+  List<Map> suggestedReplies = [];
+  Map<String, TagStyle> addsTags = {};
 }
 
 enum TagStyle {

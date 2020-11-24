@@ -145,11 +145,11 @@ void loadDashboardView() {
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   var dashboardView = new view.DashboardView(model.conversationData);
-  for (var data in model.activePackages) {
-    dashboardView.activePackages.add(new view.ActivePackagesViewPartial(data['name'], data['conversationsLink'], data['configurationLink'], data['chartData']));
+  for (var package in model.activePackages) {
+    dashboardView.activePackages.add(new view.ActivePackagesViewPartial(package['name'], package['conversationsLink'], package['configurationLink'], package['chartData']));
   }
-  for (var data in model.availablePackages) {
-    dashboardView.availablepackages.add(new view.AvailablePackagesViewPartial(data['name'], data['description'], data['details']));
+  for (var package in model.availablePackages) {
+    dashboardView.availablepackages.add(new view.AvailablePackagesViewPartial(package['name'], package['description'], package['details']));
   }
   dashboardView.renderActivePackages();
   dashboardView.renderAvailablePackages();

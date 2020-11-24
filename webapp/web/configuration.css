@@ -207,8 +207,8 @@
 }
 
 .conversation-response-language__text--alert {
-  border-color: #ff0000;
-  outline-color: #ff0000;
+  border-color: #fa8072;
+  outline-color: #fa8072;
 }
 
 .conversation-response-language__text-count {
@@ -217,8 +217,8 @@
 }
 
 .conversation-response-language__text-count--alert {
-  color: #ff0000;
-  outline-color: #ff0000;
+  color: #fa8072;
+  outline-color: #fa8072;
 }
 
 .conversation-response__reviewed {

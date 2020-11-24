@@ -633,7 +633,6 @@ class PackageConfiguratorView extends BaseView {
   }
 
   void _buildContentPartial() {
-    if (configurationData == null) return;
     List<TagView> hasAllTags = [];
     configurationData.hasAllTags.forEach((tag, tagStyle) {
       hasAllTags.add(new TagView(tag, tagStyle, controller.hasAllTagsChanged));
