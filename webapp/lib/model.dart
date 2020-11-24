@@ -1,5 +1,3 @@
-import 'view.dart' as view;
-
 // TODO To be replaced with real models. Just dumping dummy data here to keep controller.dart clean
 Map<String, List<String>> projectData = {
   'COVID IMAQAL' : ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
