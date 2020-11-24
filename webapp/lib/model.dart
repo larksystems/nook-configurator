@@ -105,7 +105,7 @@ Map<String, TagStyle> tags = {
   'other tag 3': TagStyle.Normal
 };
 
-List<Map> messages = [
+List<Map> changeCommunicationsSuggestedReplies = [
   {
     "messages":
       [
@@ -128,13 +128,36 @@ List<Map> messages = [
   }
 ];
 
+List<Map> escalatesSuggestedReplies = [
+  {
+    "messages":
+      [
+        "Do you need information regarding Coronavirus?",
+        "Ma u baahantahay macluumaad ku saabsan xanuunka Koroona fayraska?",
+      ],
+    "reviewed": false,
+    "reviewed-by": "",
+    "reviewed-date": ""
+  },
+  {
+    "messages":
+      [
+        "Thanks for your message. Unfortunately we only provide information on coronavirus.a",
+        "Waad ku mahadsantahay farriintaada. Nasiib darro kaliye waxaan bixinaa macluumaad ku saabsan Koronafayraska.",
+      ],
+    "reviewed": false,
+    "reviewed-by": "",
+    "reviewed-date": ""
+  }
+];
+
 class Configuration {
-  Map<String, TagStyle> availableTags;
-  Map<String, TagStyle> hasAllTags;
-  Map<String, TagStyle> containsLastInTurnTags;
-  Map<String, TagStyle> hasNoneTags;
-  List<Map> suggestedReplies;
-  Map<String, TagStyle> addsTags;
+  Map<String, TagStyle> availableTags = {};
+  Map<String, TagStyle> hasAllTags = {};
+  Map<String, TagStyle> containsLastInTurnTags = {};
+  Map<String, TagStyle> hasNoneTags = {};
+  List<Map> suggestedReplies = [];
+  Map<String, TagStyle> addsTags = {};
 }
 
 enum TagStyle {
@@ -142,15 +165,21 @@ enum TagStyle {
   Important,
 }
 
-Configuration changeCommsPackage = new Configuration()
-  ..availableTags = tags
-  ..hasAllTags = {}
-  ..containsLastInTurnTags = {'denial': TagStyle.Normal , 'rumour': TagStyle.Normal}
-  ..hasNoneTags = {'escalate': TagStyle.Normal, 'STOP': TagStyle.Normal}
-  ..suggestedReplies = messages
-  ..addsTags = {'Organic conversation appreciation': TagStyle.Normal, 'Organic conversation hostility': TagStyle.Normal,
-    'RP Substance appreciation': TagStyle.Normal, 'RP Substance hostility': TagStyle.Normal};
-
+Map<String, Configuration> packageConfigurationData = {
+  'Change communications': new Configuration()
+    ..availableTags = tags
+    ..containsLastInTurnTags = {'denial': TagStyle.Normal , 'rumour': TagStyle.Normal}
+    ..hasNoneTags = {'escalate': TagStyle.Normal, 'STOP': TagStyle.Normal}
+    ..suggestedReplies = changeCommunicationsSuggestedReplies
+    ..addsTags = {'Organic conversation appreciation': TagStyle.Normal, 'Organic conversation hostility': TagStyle.Normal,
+      'RP Substance appreciation': TagStyle.Normal, 'RP Substance hostility': TagStyle.Normal},
+  'Urgent conversations': new Configuration()
+    ..availableTags = tags
+    ..hasAllTags = {'escalate': TagStyle.Important}
+    ..suggestedReplies = escalatesSuggestedReplies
+    ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
+  'Open conversations': new Configuration(),
+};
 class User {
   String userName;
   String userEmail;

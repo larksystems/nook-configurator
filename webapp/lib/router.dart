@@ -3,15 +3,19 @@ import 'controller.dart' as controller;
 
 class Route {
   String path;
+  Map<String, String> params;
   Function handler;
 
-  Route(this.path, this.handler);
+  Route(this.path, this.handler, [this.params]) {
+    if (params == null) params = {};
+  }
 }
 
 class Router {
   Map<String, Route> _routes;
   Route _authRoute;
   Route _defaultRoute;
+  Route _currentRoute;
 
   Router() {
     _routes = {};
@@ -32,25 +36,42 @@ class Router {
   }
 
   void listen() {
-    window.onPopState.listen((PopStateEvent event) => _loadView(window.location.hash));
+    window.onPopState.listen((_) => routeTo(window.location.hash));
   }
 
+  Map<String, String> get routeParams => _currentRoute.params;
   void routeTo(String path) {
-    _loadView(path);
+    if (controller.signedInUser == null) {
+      _setRouteAndLoad(_authRoute);
+      return;
+    }
+    if (controller.signedInUser != null && _currentRoute == _authRoute) {
+      _setRouteAndLoad(_defaultRoute);
+      return;
+    }
+    var pathUri = Uri.parse(path);
+    // Check if there's a query after the fragment and process it, it seems that traditional URIs don't suppor this.
+    if (pathUri.fragment.contains('?')) {
+      var tuple = pathUri.fragment.split('?');
+      pathUri = pathUri.replace(
+        fragment: tuple[0],
+        query: tuple[1]
+      );
+    }
+    var desiredRoute = _routes['#${pathUri.fragment}'];
+    if (desiredRoute == null) {
+      _setRouteAndLoad(_defaultRoute);
+      return;
+    }
+    if (pathUri.hasQuery) {
+      desiredRoute.params = pathUri.queryParameters;
+    }
+    _setRouteAndLoad(desiredRoute);
   }
 
-  void _loadView(String path) {
-    var targetRoute = _routes[path];
-    if (controller.signedInUser == null) {
-      targetRoute = _authRoute;
-    }
-    if (controller.signedInUser != null && targetRoute == _authRoute) {
-      targetRoute = _defaultRoute;
-    }
-    if (targetRoute == null) {
-      targetRoute = _defaultRoute;
-    }
-    targetRoute.handler();
-    window.location.hash = targetRoute.path;
+  void _setRouteAndLoad(Route route) {
+    _currentRoute = route;
+    window.location.hash = _currentRoute.path;
+    _currentRoute.handler();
   }
 }

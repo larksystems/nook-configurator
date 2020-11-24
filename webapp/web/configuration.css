@@ -28,6 +28,10 @@
   padding: 15px 10px;
 }
 
+.selected-active-package-list__item--selected {
+  background-color: #c0c1c1;
+}
+
 .selected-active-package-list__item:hover {
   cursor: pointer;
   background-color: #ddd;
@@ -40,7 +44,8 @@
 
 .selected-active-package-list__item-text {
   list-style-type: none;
-  font-size: 1.2em;
+  font-size: 1.15em;
+  white-space: nowrap;
 }
 
 .configure-package-content {
