@@ -174,20 +174,20 @@ Map<String, Configuration> packageConfigurationData = {
     ..suggestedReplies = changeCommunicationsSuggestedReplies
     ..addsTags = {'Organic conversation appreciation': TagStyle.Normal, 'Organic conversation hostility': TagStyle.Normal,
       'RP Substance appreciation': TagStyle.Normal, 'RP Substance hostility': TagStyle.Normal},
-    'Urgent conversations': new Configuration()
-      ..availableTags = tags
-      ..hasAllTags = {'escalate': TagStyle.Important}
-      ..containsLastInTurnTags = {}
-      ..hasNoneTags = {}
-      ..suggestedReplies = escalatesSuggestedReplies
-      ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
-      'Open conversations': new Configuration()
-      ..availableTags = {}
-      ..hasAllTags = {}
-      ..containsLastInTurnTags = {}
-      ..hasNoneTags = {}
-      ..suggestedReplies = []
-      ..addsTags = {},
+  'Urgent conversations': new Configuration()
+    ..availableTags = tags
+    ..hasAllTags = {'escalate': TagStyle.Important}
+    ..containsLastInTurnTags = {}
+    ..hasNoneTags = {}
+    ..suggestedReplies = escalatesSuggestedReplies
+    ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
+  'Open conversations': new Configuration()
+    ..availableTags = {}
+    ..hasAllTags = {}
+    ..containsLastInTurnTags = {}
+    ..hasNoneTags = {}
+    ..suggestedReplies = []
+    ..addsTags = {},
 };
 class User {
   String userName;
