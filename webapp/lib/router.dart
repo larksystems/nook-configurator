@@ -9,13 +9,6 @@ class Route {
   Route(this.path, this.handler, [this.params]) {
     if (params == null) params = {};
   }
-
-  void processParams(String paramsString) {
-    for (var param in paramsString.split('&')) {
-      var paramParts = param.split('=');
-      params[paramParts[0]] = Uri.decodeComponent(paramParts[1]);
-    }
-  }
 }
 
 class Router {
@@ -43,30 +36,41 @@ class Router {
   }
 
   void listen() {
-    window.onPopState.listen((_) => _loadView(window.location.hash));
-  }
-
-  void routeTo(String path) {
-    _loadView(path);
+    window.onPopState.listen((_) => routeTo(window.location.hash));
   }
 
   Map<String, String> get routeParams => _currentRoute.params;
-
-  void _loadView(String path) {
-    var pathParts = path.split('?');
-    _currentRoute = _routes[pathParts[0]];
+  void routeTo(String path) {
     if (controller.signedInUser == null) {
-      _currentRoute = _authRoute;
+      _setRouteAndLoad(_authRoute);
+      return;
     }
     if (controller.signedInUser != null && _currentRoute == _authRoute) {
-      _currentRoute = _defaultRoute;
+      _setRouteAndLoad(_defaultRoute);
+      return;
     }
-    if (_currentRoute == null) {
-      _currentRoute = _defaultRoute;
+    var pathUri = Uri.parse(path);
+    // Check if there's a query after the fragment and process it, it seems that traditional URIs don't suppor this.
+    if (pathUri.fragment.contains('?')) {
+      var tuple = pathUri.fragment.split('?');
+      pathUri = pathUri.replace(
+        fragment: tuple[0],
+        query: tuple[1]
+      );
     }
-    if (pathParts.length > 1) {
-      _currentRoute.processParams(pathParts[1]);
+    var desiredRoute = _routes['#${pathUri.fragment}'];
+    if (desiredRoute == null) {
+      _setRouteAndLoad(_defaultRoute);
+      return;
     }
+    if (pathUri.hasQuery) {
+      desiredRoute.params = pathUri.queryParameters;
+    }
+    _setRouteAndLoad(desiredRoute);
+  }
+
+  void _setRouteAndLoad(Route route) {
+    _currentRoute = route;
     window.location.hash = _currentRoute.path;
     _currentRoute.handler();
   }
