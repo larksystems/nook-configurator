@@ -180,26 +180,17 @@ enum TagStyle {
 Map<String, Configuration> packageConfigurationData = {
   'Change communications': new Configuration()
     ..availableTags = tags
-    ..hasAllTags = {}
     ..containsLastInTurnTags = {'denial': TagStyle.Normal , 'rumour': TagStyle.Normal}
     ..hasNoneTags = {'escalate': TagStyle.Normal, 'STOP': TagStyle.Normal}
     ..suggestedReplies = changeCommunicationsSuggestedReplies
     ..addsTags = {'Organic conversation appreciation': TagStyle.Normal, 'Organic conversation hostility': TagStyle.Normal,
       'RP Substance appreciation': TagStyle.Normal, 'RP Substance hostility': TagStyle.Normal},
-    'Urgent conversations': new Configuration()
-      ..availableTags = tags
-      ..hasAllTags = {'escalate': TagStyle.Important}
-      ..containsLastInTurnTags = {}
-      ..hasNoneTags = {}
-      ..suggestedReplies = escalatesSuggestedReplies
-      ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
-      'Open conversations': new Configuration()
-      ..availableTags = tags
-      ..hasAllTags = {}
-      ..containsLastInTurnTags = {}
-      ..hasNoneTags = {}
-      ..suggestedReplies = []
-      ..addsTags = {},
+  'Urgent conversations': new Configuration()
+    ..availableTags = tags
+    ..hasAllTags = {'escalate': TagStyle.Important}
+    ..suggestedReplies = escalatesSuggestedReplies
+    ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
+  'Open conversations': new Configuration(),
 };
 class User {
   String userName;
