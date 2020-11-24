@@ -18,6 +18,7 @@ enum UIAction {
   signOutButtonClicked,
   viewProject,
   configureProject,
+  addPackage,
   loadPackageConfigurationView,
   addProject,
   addTeamMember,
@@ -111,6 +112,10 @@ void command(UIAction action, Data actionData) {
       project = actionData;
       router.routeTo('#/project-configuration');
       break;
+    case UIAction.addPackage:
+      PackageConfigurationData packageConfigurationData = actionData;
+      addPackage(packageConfigurationData.packageName);
+      break;
     case UIAction.loadPackageConfigurationView:
       PackageConfigurationData packageConfigurationData = actionData;
       router.routeTo('#/package-configuration?package=${packageConfigurationData.packageName}');
@@ -140,24 +145,12 @@ void loadDashboardView() {
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   var dashboardView = new view.DashboardView(model.conversationData);
-  dashboardView.activePackages.addAll(
-    [
-      new view.ActivePackagesViewPartial('Urgent conversations', '#/conversations', '#/package-configuration?package=Urgent conversations',  '${model.conversationData["needs-urgent-intervention"]} awaiting reply'),
-      new view.ActivePackagesViewPartial('Open conversations', '#/conversations', '#/package-configuration?package=Open conversations', '30 open conversations'),
-      new view.ActivePackagesViewPartial('Change communications (Week 12)', '', '#/package-configuration?package=Change communications', ''),
-    ]);
-  dashboardView.availablepackages.addAll(
-    [
-      new view.AvailablePackagesViewPartial('Quick Poll',
-        'Ask a question with fixed answers',
-        {'Needs' : 'Q/A, Labelling team, Safeguarding response', 'Produces' : 'Dashboard for distribution of answers'}),
-      new view.AvailablePackagesViewPartial('Information Service',
-        'Answer people\'s questions',
-        {'Needs' : 'Response protocol, Labelling team, Safeguarding response', 'Produces' : 'Thematic distribution, work rate tracker'}),
-      new view.AvailablePackagesViewPartial('Bulk Message',
-        'Send set of people a once off message',
-        {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'})
-    ]);
+  for (var package in model.activePackages) {
+    dashboardView.activePackages.add(new view.ActivePackagesViewPartial(package['name'], package['conversationsLink'], package['configurationLink'], package['chartData']));
+  }
+  for (var package in model.availablePackages) {
+    dashboardView.availablepackages.add(new view.AvailablePackagesViewPartial(package['name'], package['description'], package['details']));
+  }
   dashboardView.renderActivePackages();
   dashboardView.renderAvailablePackages();
   view.contentView.renderView(dashboardView);
@@ -174,6 +167,13 @@ loadProjectConfigurationView() {
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   view.contentView.renderView(new view.ProjectConfigurationView(model.projectConfigurationFormData, model.additionalProjectConfigurationLanguages));
+}
+
+void addPackage(String packageName) {
+  model.packageConfigurationData[packageName] = new model.Configuration()
+    ..availableTags = model.tags;
+  model.activePackages.add({'name': packageName, 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=$packageName',  'chartData': ''});
+  model.availablePackages.removeWhere((package) => package['name'] == packageName);
 }
 
 // Tag Operations

@@ -96,6 +96,18 @@ Map projectConfigurationFormData = {
 
 List<String> additionalProjectConfigurationLanguages = ['Kiswahili', 'Kinyarwanda'];
 
+List<Map> activePackages = [
+  {'name': 'Urgent conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Urgent conversations',  'chartData': '${conversationData["needs-urgent-intervention"]} awaiting reply'},
+  {'name': 'Open conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Open conversations',  'chartData': '30 open conversations'},
+  {'name': 'Urgent conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Change communications',  'chartData': ''},
+];
+
+List<Map> availablePackages = [
+  {'name': 'Quick Poll', 'description': 'Ask a question with fixed answers', 'details': {'Needs': 'Q/A, Labelling team, Safeguarding response', 'Produces': 'Dashboard for distribution of answers'}},
+  {'name': 'Information Service', 'description': 'Answer people\'s questions', 'details': {'Needs' : 'Response protocol, Labelling team, Safeguarding response', 'Produces' : 'Thematic distribution, work rate tracker'}},
+  {'name': 'Bulk Message', 'description': 'Send set of people a once off message', 'details': {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'}},
+];
+
 Map<String, TagStyle> tags = {
   'rumour - origin': TagStyle.Normal,
   'rumour - virus description': TagStyle.Normal,
