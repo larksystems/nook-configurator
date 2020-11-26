@@ -743,9 +743,6 @@ class PackageConfiguratorView extends BaseView {
 
     var suggestedRepliesContainer = suggestedRepliesView.renderElement;
 
-    suggestedRepliesView.populateFromFirestore();
-
-
     _packageConfiguratorContent.append(
       new DivElement()
         ..classes.add('configure-package-responses')
@@ -950,18 +947,6 @@ class ResponseListView extends BaseView {
         ..text = '+'
         ..onClick.listen((event) => onAddNewResponseCallback())
     );
-  }
-
-  void populateFromFirestore() {
-    print ("ResponseListView.ctor");
-    var fs = platform.firestoreInstance;
-
-    var suggestedReplies = fs.collection(new_model.SuggestedReply.collectionName).get();
-    suggestedReplies.then((value) {
-      for (var suggestedReply in value.docs) {
-        print (suggestedReply);
-      }
-    });
   }
 
   DivElement get renderElement => _responsesContainer;
