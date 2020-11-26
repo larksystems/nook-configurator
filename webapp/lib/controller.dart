@@ -19,10 +19,13 @@ enum UIAction {
   viewProject,
   configureProject,
   addPackage,
+  duplicatePackage,
+  editActivePackage,
   loadPackageConfigurationView,
   addProject,
   addTeamMember,
-  saveProjectConfiguration
+  saveProjectConfiguration,
+  savePackageConfiguration,
 }
 
 class Data {}
@@ -51,8 +54,9 @@ class ProjectConfigurationData extends Data {
 }
 
 class PackageConfigurationData extends Data {
-  String packageName;
-  PackageConfigurationData(this.packageName);
+  String originalPackageName;
+  String updatedPackageName;
+  PackageConfigurationData(this.originalPackageName, [this.updatedPackageName]);
 }
 
 List<String> configurationResponseLanguages;
@@ -114,11 +118,19 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.addPackage:
       PackageConfigurationData packageConfigurationData = actionData;
-      addPackage(packageConfigurationData.packageName);
+      addPackage(packageConfigurationData.originalPackageName);
+      break;
+    case UIAction.duplicatePackage:
+      PackageConfigurationData packageConfigurationData = actionData;
+      duplicatePackage(packageConfigurationData.originalPackageName);
+      break;
+    case UIAction.editActivePackage:
+      PackageConfigurationData packageConfigurationData = actionData;
+      editActivePackage(packageConfigurationData.originalPackageName, packageConfigurationData.updatedPackageName);
       break;
     case UIAction.loadPackageConfigurationView:
       PackageConfigurationData packageConfigurationData = actionData;
-      router.routeTo('#/package-configuration?package=${packageConfigurationData.packageName}');
+      router.routeTo('#/package-configuration?package=${packageConfigurationData.originalPackageName}');
       break;
     case UIAction.addProject:
       break;
@@ -128,20 +140,45 @@ void command(UIAction action, Data actionData) {
       ProjectConfigurationData projectConfigurationData = actionData;
       saveProjectConfiguration(projectConfigurationData.config);
       break;
+    case UIAction.saveProjectConfiguration:
+      savePackageConfiguration();
+      break;
+  }
+}
+
+enum NavAction {
+  ALLPROJECTS,
+  DASHBOARD
+}
+
+void _toggleNavActions(NavAction navAction, bool show) {
+  switch (navAction) {
+    case NavAction.ALLPROJECTS:
+      view.navView.allProjectsLink.classes.toggle('nav-links__link--show', show);
+      break;
+    case NavAction.DASHBOARD:
+      view.navView.dashboardLink.classes.toggle('nav-links__link--show', show);
+      break;
   }
 }
 
 void loadAuthView() {
+  _toggleNavActions(NavAction.ALLPROJECTS, false);
+  _toggleNavActions(NavAction.DASHBOARD, false);
   view.contentView.renderView(new view.AuthMainView());
 }
 
 void loadProjectSelectorView() {
+  _toggleNavActions(NavAction.ALLPROJECTS, false);
+  _toggleNavActions(NavAction.DASHBOARD, false);
   view.navView.projectTitle = '';
   view.navView.projectOrganizations = model.projectOrganizations;
   view.contentView.renderView(new view.ProjectSelectorView(model.projectData, model.teamMembers));
 }
 
 void loadDashboardView() {
+  _toggleNavActions(NavAction.ALLPROJECTS, true);
+  _toggleNavActions(NavAction.DASHBOARD, false);
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   var dashboardView = new view.DashboardView(model.conversationData);
@@ -157,13 +194,17 @@ void loadDashboardView() {
 }
 
 void loadPackageConfigurationView() {
-  var packages = model.packageConfigurationData.keys.toList();
+  _toggleNavActions(NavAction.ALLPROJECTS, false);
+  _toggleNavActions(NavAction.DASHBOARD, true);
+  var packages =  new List<String>.from(model.activePackages.map((package) => package['name']));
   selectedPackage = router.routeParams['package'];
   var configuratorView = new view.PackageConfiguratorView(packages, model.packageConfigurationData[selectedPackage]);
   view.contentView.renderView(configuratorView);
 }
 
 loadProjectConfigurationView() {
+  _toggleNavActions(NavAction.ALLPROJECTS, false);
+  _toggleNavActions(NavAction.DASHBOARD, true);
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   view.contentView.renderView(new view.ProjectConfigurationView(model.projectConfigurationFormData, model.additionalProjectConfigurationLanguages));
@@ -174,6 +215,38 @@ void addPackage(String packageName) {
     ..availableTags = model.tags;
   model.activePackages.add({'name': packageName, 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=$packageName',  'chartData': ''});
   model.availablePackages.removeWhere((package) => package['name'] == packageName);
+}
+
+void duplicatePackage(String packageName) {
+  var originalPackage = model.packageConfigurationData[packageName];
+  var duplicatePackageName = '$packageName [COPY]';
+  model.packageConfigurationData[duplicatePackageName] = new model.Configuration()
+    ..availableTags = originalPackage.availableTags
+    ..hasAllTags = originalPackage.hasAllTags
+    ..containsLastInTurnTags = originalPackage.containsLastInTurnTags
+    ..hasNoneTags = originalPackage.hasNoneTags
+    ..suggestedReplies = originalPackage.suggestedReplies
+    ..addsTags = originalPackage.addsTags;
+    model.activePackages.add({'name': duplicatePackageName, 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=$duplicatePackageName',  'chartData': ''});
+    router.routeTo('#/dashboard');
+}
+
+void editActivePackage(String originalPackageName, updatedPackageName) {
+  if (originalPackageName == updatedPackageName) return;
+  var packageIndex =  model.activePackages.indexWhere((p) => p['name'] == originalPackageName);
+  if (packageIndex > -1) {
+    var package = model.activePackages[packageIndex];
+    package['name'] = updatedPackageName;
+    package['configurationLink'] = '#/package-configuration?package=$updatedPackageName';
+    model.activePackages.removeAt(packageIndex);
+    model.activePackages.insert(packageIndex, package);
+  }
+  var packageData = model.packageConfigurationData[originalPackageName];
+  if (packageData != null) {
+    model.packageConfigurationData.remove(originalPackageName);
+    model.packageConfigurationData[updatedPackageName] = packageData;
+  }
+  router.routeTo('#/dashboard');
 }
 
 // Tag Operations
@@ -317,3 +390,5 @@ void saveProjectConfiguration(Map config) {
   model.additionalProjectConfigurationLanguages.removeWhere((l) => languagesAdded.contains(l));
   loadProjectConfigurationView();
 }
+
+void savePackageConfiguration() {}

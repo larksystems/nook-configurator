@@ -99,7 +99,7 @@ List<String> additionalProjectConfigurationLanguages = ['Kiswahili', 'Kinyarwand
 List<Map> activePackages = [
   {'name': 'Urgent conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Urgent conversations',  'chartData': '${conversationData["needs-urgent-intervention"]} awaiting reply'},
   {'name': 'Open conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Open conversations',  'chartData': '30 open conversations'},
-  {'name': 'Urgent conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Change communications',  'chartData': ''},
+  {'name': 'Change communications', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Change communications',  'chartData': ''},
 ];
 
 List<Map> availablePackages = [

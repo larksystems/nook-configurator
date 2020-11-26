@@ -164,6 +164,14 @@
   margin: 0px;
 }
 
+.active-package-title__edit-action {
+  margin-left: 10px;
+  font-size: 0.9em;
+  color: #499398;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .active-package-actions {
   margin: 10px 0px;
 }

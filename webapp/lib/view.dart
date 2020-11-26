@@ -29,7 +29,7 @@ class NavView {
   DivElement _projectTitle;
   DivElement _projectOrganizations;
   AuthHeaderViewPartial authHeaderViewPartial;
-  ButtonElement _backBtn;
+  AnchorElement _dashboardLink;
   AnchorElement _allProjectsLink;
 
   NavView() {
@@ -38,17 +38,17 @@ class NavView {
     _appLogos = new DivElement()
       ..classes.add('nav__app-logo')
       ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
-    _backBtn = new ButtonElement()
-      ..classes.add('nav-links__back-btn')
-      ..text = '< Back'
-      ..onClick.listen((_) => window.history.back());
+    _dashboardLink = new AnchorElement()
+      ..classes.add('nav-links__link')
+      ..href = '#/dashboard'
+      ..text = 'Dashboard';
     _allProjectsLink = new AnchorElement()
-      ..classes.add('nav-links__all-projects-link')
+      ..classes.add('nav-links__link')
       ..href = '#/project-selector'
       ..text = 'All projects';
     _navLinks = new DivElement()
       ..classes.add('nav-links')
-      ..append(_backBtn)
+      ..append(_dashboardLink)
       ..append(_allProjectsLink);
     _projectTitle = new DivElement()
       ..classes.add('nav-project-details__title');
@@ -66,7 +66,7 @@ class NavView {
     navViewElement.append(authHeaderViewPartial.authElement);
   }
 
-  Element get backBtn => _backBtn;
+  Element get dashboardLink => _dashboardLink;
 
   Element get allProjectsLink => _allProjectsLink;
 
@@ -483,12 +483,25 @@ class ActivePackagesViewPartial {
   ActivePackagesViewPartial(String packageName, String conversationsLink, String configurationLink, String chartData) {
     packageElement = new DivElement()
       ..classes.add('package');
-    var packageNameElement = new SpanElement()
+    var packageNameElement = new ParagraphElement();
+    packageNameElement
+      ..classes.add('active-package-title__text')
+      ..text = packageName
+      ..onBlur.listen((event) {
+        packageNameElement.contentEditable = 'false';
+        controller.command(controller.UIAction.editActivePackage, new controller.PackageConfigurationData(packageName, (event.target as Element).text));
+      });
+    var packageNameContainer = new SpanElement()
       ..classes.add('active-package-title')
+      ..append(packageNameElement)
       ..append(
-        new ParagraphElement()
-          ..classes.add('active-package-title__text')
-          ..text = packageName
+        new SpanElement()
+          ..classes.add('active-package-title__edit-action')
+          ..text = 'edit'
+          ..onClick.listen((_) {
+          packageNameElement.contentEditable = 'true';
+          packageNameElement.focus();
+        })
       );
     var packageActionsContainer = new DivElement()
       ..classes.add('active-package-actions')
@@ -509,10 +522,17 @@ class ActivePackagesViewPartial {
           ..classes.add('active-package-actions__action-link')
           ..text = 'Configure'
           ..href = configurationLink
+      )
+      ..append(
+        new AnchorElement()
+          ..classes.add('active-package-actions__action-link')
+          ..text = 'Duplicate'
+          ..href = '#/dashboard'
+          ..onClick.listen((_) => controller.command(controller.UIAction.duplicatePackage, new controller.PackageConfigurationData(packageName)))
       );
     var packageMainContainer = new DivElement()
       ..classes.add('active-package-main-container')
-      ..append(packageNameElement)
+      ..append(packageNameContainer)
       ..append(packageActionsContainer);
     var packageChart = new DivElement()
       ..classes.add('active-package-chart')
@@ -616,17 +636,44 @@ class PackageConfiguratorView extends BaseView {
       ..classes.add('selected-active-package-list');
 
     for (var package in activePackages) {
-      packageList.append(
-        new DivElement()
-          ..classes.add('selected-active-package-list__item')
-          ..classes.toggle('selected-active-package-list__item--selected', (package == controller.selectedPackage))
-          ..append(
-            new Element.li()
-              ..classes.add('selected-active-package-list__item-text')
-              ..text = package
-          )
-          ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(package)))
-      );
+      var packageListItem = new DivElement();
+      packageListItem
+        ..classes.add('selected-active-package-list__item')
+        ..classes.toggle('selected-active-package-list__item--selected', (package == controller.selectedPackage))
+        ..append(
+          new Element.li()
+            ..classes.add('selected-active-package-list__item-text')
+            ..text = package
+        )
+        ..append(
+          new SpanElement()
+          ..classes.add('selected-active-package-list__item-action')
+          ..classes.toggle('selected-active-package-list__item-action--show', (package == controller.selectedPackage))
+          ..text = ':'
+          ..onClick.listen((event) {
+            event.stopPropagation();
+            var selectedPackageDropdown = new Element.ul()
+              ..classes.addAll(['add-tag-dropdown', 'selected-package-dropdown'])
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Duplicate'
+                  ..onClick.listen((event) {
+                    event.stopImmediatePropagation();
+                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(package));
+                  })
+              );
+            packageListItem.append(selectedPackageDropdown);
+            var documentOnClickSubscription;
+            documentOnClickSubscription = document.onClick.listen((event) {
+              event.stopPropagation();
+              selectedPackageDropdown.remove();
+            documentOnClickSubscription.cancel();
+    });
+          })
+        )
+        ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(package)));
+      packageList.append(packageListItem);
     };
 
     _packageConfiguratorSidebar.append(packageList);
@@ -757,7 +804,8 @@ class PackageConfiguratorView extends BaseView {
     });
     var addsTagsContainer = new TagListView(addsTags, configurationData.availableTags, controller.addsTagsChanged, true).renderElement;
 
-    _packageConfiguratorContent.append(
+    _packageConfiguratorContent
+    ..append(
       new DivElement()
         ..classes.add('configure-package-labels')
         ..append(
@@ -766,6 +814,12 @@ class PackageConfiguratorView extends BaseView {
             ..text = 'What new labels would like to tag the message with?'
         )
         ..append(addsTagsContainer)
+    )
+    ..append(
+      new ButtonElement()
+        ..classes.add('.save-configuration-btn')
+        ..text = 'Save Configuration'
+        ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration, null))
     );
   }
 }
