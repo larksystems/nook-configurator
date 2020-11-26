@@ -816,10 +816,14 @@ class PackageConfiguratorView extends BaseView {
         ..append(addsTagsContainer)
     )
     ..append(
-      new ButtonElement()
-        ..classes.add('.save-configuration-btn')
-        ..text = 'Save Configuration'
-        ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration, null))
+      new DivElement()
+        ..classes.add('configure-package-actions')
+        ..append(
+          new ButtonElement()
+            ..classes.add('save-configuration-btn')
+            ..text = 'Save Configuration'
+            ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration, null))
+        )
     );
   }
 }
