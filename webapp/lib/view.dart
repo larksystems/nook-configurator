@@ -2,9 +2,15 @@ import 'dart:convert';
 import 'dart:html';
 
 import 'model.dart' as model;
+import 'new_model.dart' as new_model;
+
 
 import 'logger.dart';
 import 'controller.dart' as controller;
+
+import 'platform.dart' as platform;
+
+
 
 Logger log = new Logger('view.dart');
 
@@ -730,8 +736,15 @@ class PackageConfiguratorView extends BaseView {
         )
     );
 
-    var suggestedRepliesContainer =
-      new ResponseListView(configurationData.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
+
+
+    var suggestedRepliesView =
+      new ResponseListView(configurationData.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse);
+
+    var suggestedRepliesContainer = suggestedRepliesView.renderElement;
+
+    suggestedRepliesView.populateFromFirestore();
+
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -925,7 +938,7 @@ class ResponseListView extends BaseView {
   Function onReviewResponseCallback;
   Function onRemoveResponseCallback;
 
-  ResponseListView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
+  ResponseListView(List<new_model.SuggestedReply> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
     _responsesContainer = new DivElement()
       ..classes.add('conversation-responses');
     for (int i = 0; i < suggestedReplies.length; i++) {
@@ -939,9 +952,21 @@ class ResponseListView extends BaseView {
     );
   }
 
+  void populateFromFirestore() {
+    print ("ResponseListView.ctor");
+    var fs = platform.firestoreInstance;
+
+    var suggestedReplies = fs.collection(new_model.SuggestedReply.collectionName).get();
+    suggestedReplies.then((value) {
+      for (var suggestedReply in value.docs) {
+        print (suggestedReply);
+      }
+    });
+  }
+
   DivElement get renderElement => _responsesContainer;
 
-  DivElement _createResponseEntry(int rowIndex, [Map response]) {
+  DivElement _createResponseEntry(int rowIndex, [new_model.SuggestedReply response]) {
     var responseEntry = new DivElement()
       ..classes.add('conversation-response')
       ..dataset['index'] = '$rowIndex';
@@ -977,23 +1002,30 @@ class ResponseListView extends BaseView {
             responseEntry.append(removeResponsesModal);
           })
       );
-    for (int i = 0; i < response['messages'].length; i++) {
-      int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
-    }
+
+      responseEntry.append(
+        new ResponseView(rowIndex, 0, response.text, 1, onUpdateResponseCallback).renderElement);
+
+      responseEntry.append(
+        new ResponseView(rowIndex, 1, response.translation, 1, onUpdateResponseCallback).renderElement);
+
+    // for (int i = 0; i < response ['messages'].length; i++) {
+      // int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
+      // responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
+    // }
     responseEntry.append(
       DivElement()
         ..classes.add('conversation-response__reviewed')
         ..append(
           new CheckboxInputElement()
               ..classes.add('conversation-response__reviewed-state')
-              ..checked = response != null ? response['reviewed'] : false
+              ..checked = false
               ..onClick.listen((event) => onReviewResponseCallback(rowIndex, (event.target as CheckboxInputElement).checked))
         )
         ..append(
           new ParagraphElement()
             ..classes.add('conversation-response__reviewed-description')
-            ..text = response != null ? '${response['reviewed-by']}, ${response['reviewed-date']}' : ''
+            ..text = ''//response != null ? '${response['reviewed-by']}, ${response['reviewed-date']}' : ''
         )
     );
     return responseEntry;
