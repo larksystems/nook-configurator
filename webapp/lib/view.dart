@@ -681,20 +681,20 @@ class PackageConfiguratorView extends BaseView {
 
   void _buildContentPartial() {
     List<TagView> hasAllTags = [];
-    configurationData.hasAllTags.forEach((tag, tagStyle) {
-      hasAllTags.add(new TagView(tag, tagStyle, controller.hasAllTagsChanged));
+    configurationData.hasAllTags.forEach((tag, tagType) {
+      hasAllTags.add(new TagView(tag, tagType, controller.hasAllTagsChanged));
     });
     var hasAllTagsContainer = new TagListView(hasAllTags, configurationData.availableTags, controller.hasAllTagsChanged).renderElement;
 
     List<TagView> containsLastInTurnTags = [];
-    configurationData.containsLastInTurnTags.forEach((tag, tagStyle) {
-      containsLastInTurnTags.add(new TagView(tag, tagStyle, controller.containsLastInTurnTagsChanged));
+    configurationData.containsLastInTurnTags.forEach((tag, tagType) {
+      containsLastInTurnTags.add(new TagView(tag, tagType, controller.containsLastInTurnTagsChanged));
     });
     var containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, configurationData.availableTags, controller.containsLastInTurnTagsChanged).renderElement;
 
     List<TagView> hasNoneTags = [];
-    configurationData.hasNoneTags.forEach((tag, tagStyle) {
-      hasNoneTags.add(new TagView(tag, tagStyle, controller.hasNoneTagsChanged));
+    configurationData.hasNoneTags.forEach((tag, tagType) {
+      hasNoneTags.add(new TagView(tag, tagType, controller.hasNoneTagsChanged));
     });
     var hasNoneTagsContainer = new TagListView(hasNoneTags, configurationData.availableTags, controller.hasNoneTagsChanged).renderElement;
 
@@ -799,8 +799,8 @@ class PackageConfiguratorView extends BaseView {
     );
 
     List<TagView> addsTags = [];
-    configurationData.addsTags.forEach((tag, tagStyle) {
-      addsTags.add(new TagView(tag, tagStyle, controller.addsTagsChanged, true));
+    configurationData.addsTags.forEach((tag, tagType) {
+      addsTags.add(new TagView(tag, tagType, controller.addsTagsChanged, true));
     });
     var addsTagsContainer = new TagListView(addsTags, configurationData.availableTags, controller.addsTagsChanged, true).renderElement;
 
@@ -830,7 +830,7 @@ class TagListView extends BaseView {
   SpanElement _tagsActionContainer;
   Function onTagChangedCallback;
 
-  TagListView(this.tagElements, Map<String, model.TagStyle> availableTags, this.onTagChangedCallback, [bool tagsEditable = false]) {
+  TagListView(this.tagElements, Map<String, model.TagType> availableTags, this.onTagChangedCallback, [bool tagsEditable = false]) {
     _tagsContainer = new DivElement()
       ..classes.add('tags');
     _tagsActionContainer = new SpanElement()
@@ -842,7 +842,7 @@ class TagListView extends BaseView {
           ..onClick.listen((event) {
             event.stopPropagation();
             if (tagsEditable) {
-              var tagElement = new TagView('', model.TagStyle.Normal, onTagChangedCallback, tagsEditable);
+              var tagElement = new TagView('', model.TagType.Normal, onTagChangedCallback, tagsEditable);
               _tagsActionContainer.insertAdjacentElement('beforebegin', tagElement.renderElement);
               tagElement.focus();
               return;
@@ -858,7 +858,7 @@ class TagListView extends BaseView {
 
   DivElement get renderElement => _tagsContainer;
 
-  void _addTagDropdown(Map<String, model.TagStyle> tags, Function onTagChangedCallback) {
+  void _addTagDropdown(Map<String, model.TagType> tags, Function onTagChangedCallback) {
     var tagListDropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
     var tagsToShow = tags.isEmpty ? ['--None--'] : tags.keys;
@@ -888,19 +888,19 @@ class TagView extends BaseView {
   SpanElement _tagText;
   Function onTagChangedCallback;
 
-  TagView(String tag, model.TagStyle tagStyle, this.onTagChangedCallback, [bool isEditableTag = false]) {
-    _tagElement = _createTag(tag, tagStyle, isEditableTag);
+  TagView(String tag, model.TagType tagType, this.onTagChangedCallback, [bool isEditableTag = false]) {
+    _tagElement = _createTag(tag, tagType, isEditableTag);
   }
 
   DivElement get renderElement => _tagElement;
 
-  DivElement _createTag(String tag, model.TagStyle tagStyle, bool isEditableTag) {
+  DivElement _createTag(String tag, model.TagType tagType, bool isEditableTag) {
     var tagElement = new DivElement()
       ..classes.add('tag')
       ..dataset['id'] = tag.isEmpty ? 'id-123' : tag;
 
-    switch (tagStyle) {
-      case model.TagStyle.Important:
+    switch (tagType) {
+      case model.TagType.Important:
         tagElement.classes.add('tag--important');
         break;
       default:
@@ -920,16 +920,16 @@ class TagView extends BaseView {
           ..text = 'x'
           ..onClick.listen((_) {
             if (isEditableTag) {
-              onTagChangedCallback(tag, tag, tagStyle, controller.TagOperation.REMOVE);
+              onTagChangedCallback(tag, tag, tagType, controller.TagOperation.REMOVE);
               return;
             }
-            onTagChangedCallback(tag, tagStyle, controller.TagOperation.REMOVE);
+            onTagChangedCallback(tag, tagType, controller.TagOperation.REMOVE);
           })
       );
 
     if (isEditableTag) {
       _tagText.contentEditable = 'true';
-      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagStyle, controller.TagOperation.UPDATE));
+      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagType, controller.TagOperation.UPDATE));
     }
 
     return tagElement;
