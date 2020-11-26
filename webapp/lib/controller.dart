@@ -183,23 +183,23 @@ enum TagOperation {
   REMOVE
 }
 
-void _addTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
-  tagCollection.addAll({tag: tagStyle});
+void _addTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
+  tagCollection.addAll({tag: tagType});
   if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.remove(tag);
 }
 
-void _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyle> tagCollection) {
+void _updateTag(String originalTag, String updatedTag, Map<String, model.TagType> tagCollection) {
   if (originalTag == updatedTag) return;
   var tagKeys = tagCollection.keys.toList();
   var tagValues= tagCollection.values.toList();
   var originalIndex = tagKeys.indexOf(originalTag);
   if (originalIndex < 0) {
-    _addTag(updatedTag, model.TagStyle.Normal, tagCollection);
+    _addTag(updatedTag, model.TagType.Normal, tagCollection);
     return;
   }
   tagKeys.removeAt(originalIndex);
   tagKeys.insert(originalIndex, updatedTag);
-  Map<String, model.TagStyle> updatedTagCollection = {};
+  Map<String, model.TagType> updatedTagCollection = {};
   for (int i = 0; i < tagKeys.length; i++) {
     updatedTagCollection[tagKeys[i]] = tagValues[i];
   }
@@ -207,63 +207,63 @@ void _updateTag(String originalTag, String updatedTag, Map<String, model.TagStyl
   tagCollection.addAll(updatedTagCollection);
 }
 
-void _removeTag(String tag, model.TagStyle tagStyle, Map<String, model.TagStyle> tagCollection, [bool isEditable = false]) {
+void _removeTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
   tagCollection.remove(tag);
-  if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.addAll({tag : tagStyle});
+  if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.addAll({tag : tagType});
 }
 
-void hasAllTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
+      _addTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasAllTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasAllTags);
+      _removeTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasAllTags);
       break;
   }
   loadPackageConfigurationView();
 }
 
-void containsLastInTurnTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
+      _addTag(tag, tagType, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
+      _removeTag(tag, tagType, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
       break;
   }
   loadPackageConfigurationView();
 }
 
-void hasNoneTagsChanged(String tag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
+      _addTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasNoneTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagStyle, model.packageConfigurationData[selectedPackage].hasNoneTags);
+      _removeTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasNoneTags);
       break;
   }
   loadPackageConfigurationView();
 }
 
-void addsTagsChanged(String originalTag, String updatedTag, model.TagStyle tagStyle, TagOperation tagOperation) {
+void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(updatedTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
+      _addTag(updatedTag, tagType, model.packageConfigurationData[selectedPackage].addsTags, true);
       break;
     case TagOperation.UPDATE:
       _updateTag(originalTag, updatedTag, model.packageConfigurationData[selectedPackage].addsTags);
       break;
     case TagOperation.REMOVE:
-      _removeTag(originalTag, tagStyle, model.packageConfigurationData[selectedPackage].addsTags, true);
+      _removeTag(originalTag, tagType, model.packageConfigurationData[selectedPackage].addsTags, true);
       break;
   }
   loadPackageConfigurationView();

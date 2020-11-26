@@ -108,13 +108,13 @@ List<Map> availablePackages = [
   {'name': 'Bulk Message', 'description': 'Send set of people a once off message', 'details': {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'}},
 ];
 
-Map<String, TagStyle> tags = {
-  'rumour - origin': TagStyle.Normal,
-  'rumour - virus description': TagStyle.Normal,
-  'rumour - cure': TagStyle.Normal,
-  'other tag 1': TagStyle.Normal,
-  'other tag 2': TagStyle.Normal,
-  'other tag 3': TagStyle.Normal
+Map<String, TagType> tags = {
+  'rumour - origin': TagType.Normal,
+  'rumour - virus description': TagType.Normal,
+  'rumour - cure': TagType.Normal,
+  'other tag 1': TagType.Normal,
+  'other tag 2': TagType.Normal,
+  'other tag 3': TagType.Normal
 };
 
 List<Map> changeCommunicationsSuggestedReplies = [
@@ -164,15 +164,15 @@ List<Map> escalatesSuggestedReplies = [
 ];
 
 class Configuration {
-  Map<String, TagStyle> availableTags = {};
-  Map<String, TagStyle> hasAllTags = {};
-  Map<String, TagStyle> containsLastInTurnTags = {};
-  Map<String, TagStyle> hasNoneTags = {};
+  Map<String, TagType> availableTags = {};
+  Map<String, TagType> hasAllTags = {};
+  Map<String, TagType> containsLastInTurnTags = {};
+  Map<String, TagType> hasNoneTags = {};
   List<Map> suggestedReplies = [];
-  Map<String, TagStyle> addsTags = {};
+  Map<String, TagType> addsTags = {};
 }
 
-enum TagStyle {
+enum TagType {
   Normal,
   Important,
 }
@@ -180,16 +180,16 @@ enum TagStyle {
 Map<String, Configuration> packageConfigurationData = {
   'Change communications': new Configuration()
     ..availableTags = tags
-    ..containsLastInTurnTags = {'denial': TagStyle.Normal , 'rumour': TagStyle.Normal}
-    ..hasNoneTags = {'escalate': TagStyle.Normal, 'STOP': TagStyle.Normal}
+    ..containsLastInTurnTags = {'denial': TagType.Normal , 'rumour': TagType.Normal}
+    ..hasNoneTags = {'escalate': TagType.Normal, 'STOP': TagType.Normal}
     ..suggestedReplies = changeCommunicationsSuggestedReplies
-    ..addsTags = {'Organic conversation appreciation': TagStyle.Normal, 'Organic conversation hostility': TagStyle.Normal,
-      'RP Substance appreciation': TagStyle.Normal, 'RP Substance hostility': TagStyle.Normal},
+    ..addsTags = {'Organic conversation appreciation': TagType.Normal, 'Organic conversation hostility': TagType.Normal,
+      'RP Substance appreciation': TagType.Normal, 'RP Substance hostility': TagType.Normal},
   'Urgent conversations': new Configuration()
     ..availableTags = tags
-    ..hasAllTags = {'escalate': TagStyle.Important}
+    ..hasAllTags = {'escalate': TagType.Important}
     ..suggestedReplies = escalatesSuggestedReplies
-    ..addsTags = {'de-escalate': TagStyle.Normal, 'no-escalate': TagStyle.Normal},
+    ..addsTags = {'de-escalate': TagType.Normal, 'no-escalate': TagType.Normal},
   'Open conversations': new Configuration(),
 };
 class User {
