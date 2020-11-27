@@ -131,6 +131,7 @@
 .package {
     display: grid;
     grid-template-columns: auto auto;
+    position: relative;
     border: 2px solid #cacaca;
     border-bottom-style: none;
     padding: 11px;
@@ -190,6 +191,22 @@
 
 .active-package-chart__description {
   margin: 0px;
+}
+
+.active-package-menu {
+  position: absolute;
+  right: -3px;
+  cursor: pointer;
+}
+
+.active-package-menu:after {
+  content: '\2807';
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.active-package-dropdown {
+  left: 100% !important;
 }
 
 .available-package-name {

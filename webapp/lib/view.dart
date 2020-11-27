@@ -480,7 +480,7 @@ class DashboardView extends BaseView {
 class ActivePackagesViewPartial {
   DivElement packageElement;
 
-  ActivePackagesViewPartial(String packageName, String conversationsLink, String configurationLink, String chartData) {
+  ActivePackagesViewPartial(String packageId, String packageName, String conversationsLink, String configurationLink, String chartData) {
     packageElement = new DivElement()
       ..classes.add('package');
     var packageNameElement = new ParagraphElement();
@@ -489,20 +489,11 @@ class ActivePackagesViewPartial {
       ..text = packageName
       ..onBlur.listen((event) {
         packageNameElement.contentEditable = 'false';
-        controller.command(controller.UIAction.editActivePackage, new controller.PackageConfigurationData(packageName, (event.target as Element).text));
+        controller.command(controller.UIAction.editActivePackage, new controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
       });
     var packageNameContainer = new SpanElement()
       ..classes.add('active-package-title')
-      ..append(packageNameElement)
-      ..append(
-        new SpanElement()
-          ..classes.add('active-package-title__edit-action')
-          ..text = 'edit'
-          ..onClick.listen((_) {
-          packageNameElement.contentEditable = 'true';
-          packageNameElement.focus();
-        })
-      );
+      ..append(packageNameElement);
     var packageActionsContainer = new DivElement()
       ..classes.add('active-package-actions')
       ..append(
@@ -522,13 +513,6 @@ class ActivePackagesViewPartial {
           ..classes.add('active-package-actions__action-link')
           ..text = 'Configure'
           ..href = configurationLink
-      )
-      ..append(
-        new AnchorElement()
-          ..classes.add('active-package-actions__action-link')
-          ..text = 'Duplicate'
-          ..href = '#/dashboard'
-          ..onClick.listen((_) => controller.command(controller.UIAction.duplicatePackage, new controller.PackageConfigurationData(packageName)))
       );
     var packageMainContainer = new DivElement()
       ..classes.add('active-package-main-container')
@@ -546,8 +530,42 @@ class ActivePackagesViewPartial {
           ..classes.add('active-package-chart__description')
           ..text = chartData
       );
-    packageElement.append(packageMainContainer);
-    packageElement.append(packageChart);
+    packageElement
+      ..append(packageMainContainer)
+      ..append(packageChart)
+      ..append(
+        new SpanElement()
+          ..classes.add('active-package-menu')
+          ..onClick.listen((event) {
+            event.stopPropagation();
+            var selectedPackageDropdown = new Element.ul()
+              ..classes.addAll(['add-tag-dropdown', 'active-package-dropdown'])
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Rename'
+                  ..onClick.listen((event) {
+                    packageNameElement.contentEditable = 'true';
+                    packageNameElement.focus();
+                  })
+              )
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Duplicate'
+                  ..onClick.listen((event) {
+                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+                  })
+              );
+            packageElement.append(selectedPackageDropdown);
+            var documentOnClickSubscription;
+            documentOnClickSubscription = document.onClick.listen((event) {
+              event.stopPropagation();
+              selectedPackageDropdown.remove();
+              documentOnClickSubscription.cancel();
+            });
+          })
+      );
   }
 }
 
@@ -576,7 +594,7 @@ class AvailablePackagesViewPartial {
               ..text = 'Add $packageName package'
               ..href = '#/dashboard'
           )
-          ..onClick.listen((event) => controller.command(controller.UIAction.addPackage, new controller.PackageConfigurationData(packageName)))
+          ..onClick.listen((event) => controller.command(controller.UIAction.addPackage, new controller.PackageConfigurationData('', packageName)))
       )
       ..append(
         new SpanElement()
@@ -607,7 +625,7 @@ class PackageConfiguratorView extends BaseView {
   DivElement packageConfiguratorViewElement;
   DivElement _packageConfiguratorSidebar;
   DivElement _packageConfiguratorContent;
-  List<String> activePackages;
+  List<Map<String, String>> activePackages;
   model.Configuration configurationData;
 
   PackageConfiguratorView(this.activePackages, this.configurationData) {
@@ -637,19 +655,23 @@ class PackageConfiguratorView extends BaseView {
 
     for (var package in activePackages) {
       var packageListItem = new DivElement();
+      var packageListItemText = new Element.li();
+      packageListItemText
+        ..classes.add('selected-active-package-list__item-text')
+        ..text = package['name']
+        ..onBlur.listen((event) {
+          packageListItemText.contentEditable = 'false';
+          controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(package['id'], package['name'], (event.target as Element).text));
+        });
       packageListItem
+        ..dataset['id'] = package['id']
         ..classes.add('selected-active-package-list__item')
-        ..classes.toggle('selected-active-package-list__item--selected', (package == controller.selectedPackage))
-        ..append(
-          new Element.li()
-            ..classes.add('selected-active-package-list__item-text')
-            ..text = package
-        )
+        ..classes.toggle('selected-active-package-list__item--selected', (package['id'] == controller.selectedPackage))
+        ..append(packageListItemText)
         ..append(
           new SpanElement()
           ..classes.add('selected-active-package-list__item-action')
-          ..classes.toggle('selected-active-package-list__item-action--show', (package == controller.selectedPackage))
-          ..text = ':'
+          ..classes.toggle('selected-active-package-list__item-action--show', (package['id'] == controller.selectedPackage))
           ..onClick.listen((event) {
             event.stopPropagation();
             var selectedPackageDropdown = new Element.ul()
@@ -657,10 +679,20 @@ class PackageConfiguratorView extends BaseView {
               ..append(
                 new Element.li()
                   ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Rename'
+                  ..onClick.listen((event) {
+                    event.stopImmediatePropagation();
+                    packageListItemText.contentEditable = 'true';
+                    packageListItemText.focus();
+                  })
+              )
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
                   ..text = 'Duplicate'
                   ..onClick.listen((event) {
                     event.stopImmediatePropagation();
-                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(package));
+                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(package['id'], package['name']));
                   })
               );
             packageListItem.append(selectedPackageDropdown);
@@ -668,11 +700,11 @@ class PackageConfiguratorView extends BaseView {
             documentOnClickSubscription = document.onClick.listen((event) {
               event.stopPropagation();
               selectedPackageDropdown.remove();
-            documentOnClickSubscription.cancel();
-    });
+              documentOnClickSubscription.cancel();
+            });
           })
         )
-        ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(package)));
+        ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(package['id'], package['name'])));
       packageList.append(packageListItem);
     };
 

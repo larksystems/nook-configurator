@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 // TODO To be replaced with real models. Just dumping dummy data here to keep controller.dart clean
 Map<String, List<String>> projectData = {
   'COVID IMAQAL' : ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
@@ -96,18 +98,6 @@ Map projectConfigurationFormData = {
 
 List<String> additionalProjectConfigurationLanguages = ['Kiswahili', 'Kinyarwanda'];
 
-List<Map> activePackages = [
-  {'name': 'Urgent conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Urgent conversations',  'chartData': '${conversationData["needs-urgent-intervention"]} awaiting reply'},
-  {'name': 'Open conversations', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Open conversations',  'chartData': '30 open conversations'},
-  {'name': 'Change communications', 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=Change communications',  'chartData': ''},
-];
-
-List<Map> availablePackages = [
-  {'name': 'Quick Poll', 'description': 'Ask a question with fixed answers', 'details': {'Needs': 'Q/A, Labelling team, Safeguarding response', 'Produces': 'Dashboard for distribution of answers'}},
-  {'name': 'Information Service', 'description': 'Answer people\'s questions', 'details': {'Needs' : 'Response protocol, Labelling team, Safeguarding response', 'Produces' : 'Thematic distribution, work rate tracker'}},
-  {'name': 'Bulk Message', 'description': 'Send set of people a once off message', 'details': {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'}},
-];
-
 Map<String, TagType> tags = {
   'rumour - origin': TagType.Normal,
   'rumour - virus description': TagType.Normal,
@@ -177,21 +167,64 @@ enum TagType {
   Important,
 }
 
-Map<String, Configuration> packageConfigurationData = {
-  'Change communications': new Configuration()
-    ..availableTags = tags
-    ..containsLastInTurnTags = {'denial': TagType.Normal , 'rumour': TagType.Normal}
-    ..hasNoneTags = {'escalate': TagType.Normal, 'STOP': TagType.Normal}
-    ..suggestedReplies = changeCommunicationsSuggestedReplies
-    ..addsTags = {'Organic conversation appreciation': TagType.Normal, 'Organic conversation hostility': TagType.Normal,
-      'RP Substance appreciation': TagType.Normal, 'RP Substance hostility': TagType.Normal},
-  'Urgent conversations': new Configuration()
-    ..availableTags = tags
-    ..hasAllTags = {'escalate': TagType.Important}
-    ..suggestedReplies = escalatesSuggestedReplies
-    ..addsTags = {'de-escalate': TagType.Normal, 'no-escalate': TagType.Normal},
-  'Open conversations': new Configuration(),
-};
+// Map<String, Configuration> packageConfigurationData = {
+//   'Change communications': new Configuration()
+//     ..availableTags = tags
+//     ..containsLastInTurnTags = {'denial': TagType.Normal , 'rumour': TagType.Normal}
+//     ..hasNoneTags = {'escalate': TagType.Normal, 'STOP': TagType.Normal}
+//     ..suggestedReplies = changeCommunicationsSuggestedReplies
+//     ..addsTags = {'Organic conversation appreciation': TagType.Normal, 'Organic conversation hostility': TagType.Normal,
+//       'RP Substance appreciation': TagType.Normal, 'RP Substance hostility': TagType.Normal},
+//   'Urgent conversations': new Configuration()
+//     ..availableTags = tags
+//     ..hasAllTags = {'escalate': TagType.Important}
+//     ..suggestedReplies = escalatesSuggestedReplies
+//     ..addsTags = {'de-escalate': TagType.Normal, 'no-escalate': TagType.Normal},
+//   'Open conversations': new Configuration(),
+// };
+
+List<Map> activePackages = [
+  {
+    'id': 'package-439c41b9',
+    'name': 'Urgent conversations',
+    'conversationsLink': '#/conversations',
+    'configurationLink': '#/package-configuration?package=package-439c41b9',
+    'chartData': '${conversationData["needs-urgent-intervention"]} awaiting reply',
+    'configurationData': new Configuration()
+      ..availableTags = tags
+      ..hasAllTags = {'escalate': TagType.Important}
+      ..suggestedReplies = escalatesSuggestedReplies
+      ..addsTags = {'de-escalate': TagType.Normal, 'no-escalate': TagType.Normal}
+  },
+  {
+    'id': 'package-1f895432',
+    'name': 'Open conversations',
+    'conversationsLink': '#/conversations',
+    'configurationLink': '#/package-configuration?package=package-1f895432',
+    'chartData': '30 open conversations',
+    'configurationData': new Configuration()..availableTags = tags
+  },
+  {
+    'id': 'package-0aef7d7e',
+    'name': 'Change communications',
+    'conversationsLink': '#/conversations',
+    'configurationLink': '#/package-configuration?package=package-0aef7d7e',
+    'chartData': '',
+    'configurationData': new Configuration()
+      ..availableTags = tags
+      ..containsLastInTurnTags = {'denial': TagType.Normal , 'rumour': TagType.Normal}
+      ..hasNoneTags = {'escalate': TagType.Normal, 'STOP': TagType.Normal}
+      ..suggestedReplies = changeCommunicationsSuggestedReplies
+      ..addsTags = {'Organic conversation appreciation': TagType.Normal, 'Organic conversation hostility': TagType.Normal,
+        'RP Substance appreciation': TagType.Normal, 'RP Substance hostility': TagType.Normal}
+    },
+];
+
+List<Map> availablePackages = [
+  {'name': 'Quick Poll', 'description': 'Ask a question with fixed answers', 'details': {'Needs': 'Q/A, Labelling team, Safeguarding response', 'Produces': 'Dashboard for distribution of answers'}},
+  {'name': 'Information Service', 'description': 'Answer people\'s questions', 'details': {'Needs' : 'Response protocol, Labelling team, Safeguarding response', 'Produces' : 'Thematic distribution, work rate tracker'}},
+  {'name': 'Bulk Message', 'description': 'Send set of people a once off message', 'details': {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'}},
+];
 class User {
   String userName;
   String userEmail;

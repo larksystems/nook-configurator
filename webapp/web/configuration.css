@@ -48,11 +48,20 @@
   font-size: 1.15em;
 }
 
+.selected-active-package-list__item-text:focus {
+  background-color: #fff;
+}
+
 .selected-active-package-list__item-action {
   justify-self: center;
   font-weight: bold;
   font-size: 1.2em;
   visibility: hidden;
+}
+
+.selected-active-package-list__item-action:after {
+  content: '\2807';
+  font-size: 1.2em;
 }
 
 .selected-active-package-list__item-action--show {

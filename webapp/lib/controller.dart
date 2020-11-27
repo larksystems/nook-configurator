@@ -2,6 +2,8 @@ library controller;
 
 import 'dart:html';
 
+import 'package:uuid/uuid.dart';
+
 import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
@@ -54,9 +56,10 @@ class ProjectConfigurationData extends Data {
 }
 
 class PackageConfigurationData extends Data {
+  String packageId;
   String originalPackageName;
   String updatedPackageName;
-  PackageConfigurationData(this.originalPackageName, [this.updatedPackageName]);
+  PackageConfigurationData(this.packageId, this.originalPackageName, [this.updatedPackageName]);
 }
 
 List<String> configurationResponseLanguages;
@@ -122,15 +125,15 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.duplicatePackage:
       PackageConfigurationData packageConfigurationData = actionData;
-      duplicatePackage(packageConfigurationData.originalPackageName);
+      duplicatePackage(packageConfigurationData.packageId, packageConfigurationData.originalPackageName);
       break;
     case UIAction.editActivePackage:
       PackageConfigurationData packageConfigurationData = actionData;
-      editActivePackage(packageConfigurationData.originalPackageName, packageConfigurationData.updatedPackageName);
+      editActivePackage(packageConfigurationData.packageId, packageConfigurationData.originalPackageName, packageConfigurationData.updatedPackageName);
       break;
     case UIAction.loadPackageConfigurationView:
       PackageConfigurationData packageConfigurationData = actionData;
-      router.routeTo('#/package-configuration?package=${packageConfigurationData.originalPackageName}');
+      router.routeTo('#/package-configuration?package=${packageConfigurationData.packageId}');
       break;
     case UIAction.addProject:
       break;
@@ -183,7 +186,7 @@ void loadDashboardView() {
   view.navView.projectOrganizations = [''];
   var dashboardView = new view.DashboardView(model.conversationData);
   for (var package in model.activePackages) {
-    dashboardView.activePackages.add(new view.ActivePackagesViewPartial(package['name'], package['conversationsLink'], package['configurationLink'], package['chartData']));
+    dashboardView.activePackages.add(new view.ActivePackagesViewPartial(package['id'], package['name'], package['conversationsLink'], package['configurationLink'], package['chartData']));
   }
   for (var package in model.availablePackages) {
     dashboardView.availablepackages.add(new view.AvailablePackagesViewPartial(package['name'], package['description'], package['details']));
@@ -196,9 +199,9 @@ void loadDashboardView() {
 void loadPackageConfigurationView() {
   _toggleNavActions(NavAction.ALLPROJECTS, false);
   _toggleNavActions(NavAction.DASHBOARD, true);
-  var packages =  new List<String>.from(model.activePackages.map((package) => package['name']));
+  var packages = new List<Map<String, String>>.from(model.activePackages.map((package) => new Map<String, String>.from({'id': package['id'], 'name': package['name']})));
   selectedPackage = router.routeParams['package'];
-  var configuratorView = new view.PackageConfiguratorView(packages, model.packageConfigurationData[selectedPackage]);
+  var configuratorView = new view.PackageConfiguratorView(packages, _findActivePackageConfigurationById(selectedPackage));
   view.contentView.renderView(configuratorView);
 }
 
@@ -211,42 +214,46 @@ loadProjectConfigurationView() {
 }
 
 void addPackage(String packageName) {
-  model.packageConfigurationData[packageName] = new model.Configuration()
-    ..availableTags = model.tags;
-  model.activePackages.add({'name': packageName, 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=$packageName',  'chartData': ''});
+  var id  = 'package-${new Uuid().v4().split('-')[0]}';
+  model.activePackages.add(
+    {
+      'id': id,
+      'name': packageName,
+      'conversationsLink': '#/conversations',
+      'configurationLink': '#/package-configuration?package=$id',
+      'chartData': '',
+      'configurationData': new model.Configuration().availableTags = model.tags
+    }
+  );
   model.availablePackages.removeWhere((package) => package['name'] == packageName);
 }
 
-void duplicatePackage(String packageName) {
-  var originalPackage = model.packageConfigurationData[packageName];
-  var duplicatePackageName = '$packageName [COPY]';
-  model.packageConfigurationData[duplicatePackageName] = new model.Configuration()
-    ..availableTags = originalPackage.availableTags
-    ..hasAllTags = originalPackage.hasAllTags
-    ..containsLastInTurnTags = originalPackage.containsLastInTurnTags
-    ..hasNoneTags = originalPackage.hasNoneTags
-    ..suggestedReplies = originalPackage.suggestedReplies
-    ..addsTags = originalPackage.addsTags;
-    model.activePackages.add({'name': duplicatePackageName, 'conversationsLink': '#/conversations', 'configurationLink': '#/package-configuration?package=$duplicatePackageName',  'chartData': ''});
-    router.routeTo('#/dashboard');
+void duplicatePackage(String packageId, String packageName) {
+  var originalPackageConfiguration = _findActivePackageConfigurationById(packageId);
+  var newId = 'package-${new Uuid().v4().split('-')[0]}';
+  model.activePackages.add(
+    {
+      'id': newId,
+      'name': '$packageName [COPY]',
+      'conversationsLink': '#/conversations',
+      'configurationLink': '#/package-configuration?package=$newId',
+      'chartData': '',
+      'configurationData': new model.Configuration()
+        ..availableTags = originalPackageConfiguration.availableTags
+        ..hasAllTags = originalPackageConfiguration.hasAllTags
+        ..containsLastInTurnTags = originalPackageConfiguration.containsLastInTurnTags
+        ..hasNoneTags = originalPackageConfiguration.hasNoneTags
+        ..suggestedReplies = originalPackageConfiguration.suggestedReplies
+        ..addsTags = originalPackageConfiguration.addsTags
+    });
+  router.routeTo(window.location.hash);
 }
 
-void editActivePackage(String originalPackageName, updatedPackageName) {
+void editActivePackage(String packageId, String originalPackageName, updatedPackageName) {
   if (originalPackageName == updatedPackageName) return;
-  var packageIndex =  model.activePackages.indexWhere((p) => p['name'] == originalPackageName);
-  if (packageIndex > -1) {
-    var package = model.activePackages[packageIndex];
-    package['name'] = updatedPackageName;
-    package['configurationLink'] = '#/package-configuration?package=$updatedPackageName';
-    model.activePackages.removeAt(packageIndex);
-    model.activePackages.insert(packageIndex, package);
-  }
-  var packageData = model.packageConfigurationData[originalPackageName];
-  if (packageData != null) {
-    model.packageConfigurationData.remove(originalPackageName);
-    model.packageConfigurationData[updatedPackageName] = packageData;
-  }
-  router.routeTo('#/dashboard');
+  var package = _findActivePackageById(packageId);
+  package['name'] = updatedPackageName;
+  router.routeTo(window.location.hash);
 }
 
 // Tag Operations
@@ -258,7 +265,7 @@ enum TagOperation {
 
 void _addTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
   tagCollection.addAll({tag: tagType});
-  if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.remove(tag);
+  if (!isEditable) _findActivePackageConfigurationById(selectedPackage).availableTags.remove(tag);
 }
 
 void _updateTag(String originalTag, String updatedTag, Map<String, model.TagType> tagCollection) {
@@ -282,18 +289,18 @@ void _updateTag(String originalTag, String updatedTag, Map<String, model.TagType
 
 void _removeTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
   tagCollection.remove(tag);
-  if (!isEditable) model.packageConfigurationData[selectedPackage].availableTags.addAll({tag : tagType});
+  if (!isEditable) _findActivePackageConfigurationById(selectedPackage).availableTags.addAll({tag : tagType});
 }
 
 void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasAllTags);
+      _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasAllTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasAllTags);
+      _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasAllTags);
       break;
   }
   loadPackageConfigurationView();
@@ -302,12 +309,12 @@ void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperat
 void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagType, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
+      _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).containsLastInTurnTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagType, model.packageConfigurationData[selectedPackage].containsLastInTurnTags);
+      _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).containsLastInTurnTags);
       break;
   }
   loadPackageConfigurationView();
@@ -316,12 +323,12 @@ void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperati
 void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasNoneTags);
+      _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasNoneTags);
       break;
     case TagOperation.UPDATE:
       break;
     case TagOperation.REMOVE:
-      _removeTag(tag, tagType, model.packageConfigurationData[selectedPackage].hasNoneTags);
+      _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasNoneTags);
       break;
   }
   loadPackageConfigurationView();
@@ -330,13 +337,13 @@ void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOpera
 void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.ADD:
-      _addTag(updatedTag, tagType, model.packageConfigurationData[selectedPackage].addsTags, true);
+      _addTag(updatedTag, tagType, _findActivePackageConfigurationById(selectedPackage).addsTags, true);
       break;
     case TagOperation.UPDATE:
-      _updateTag(originalTag, updatedTag, model.packageConfigurationData[selectedPackage].addsTags);
+      _updateTag(originalTag, updatedTag, _findActivePackageConfigurationById(selectedPackage).addsTags);
       break;
     case TagOperation.REMOVE:
-      _removeTag(originalTag, tagType, model.packageConfigurationData[selectedPackage].addsTags, true);
+      _removeTag(originalTag, tagType, _findActivePackageConfigurationById(selectedPackage).addsTags, true);
       break;
   }
   loadPackageConfigurationView();
@@ -344,7 +351,7 @@ void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagTyp
 
 // Suggested Replies operations
 void addNewResponse() {
-  model.packageConfigurationData[selectedPackage].suggestedReplies.add(
+  _findActivePackageConfigurationById(selectedPackage).suggestedReplies.add(
     {
       "messages":
         [
@@ -360,7 +367,7 @@ void addNewResponse() {
 }
 
 void updateResponse(int rowIndex, int colIndex, String response) {
-  model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['messages'][colIndex] = response;
+  _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['messages'][colIndex] = response;
   loadPackageConfigurationView();
 }
 
@@ -368,19 +375,19 @@ void reviewResponse(int rowIndex, bool reviewed) {
   if (reviewed) {
     var now = DateTime.now().toLocal();
     var reviewedDate = '${now.year}-${now.month}-${now.day}';
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = true;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
+    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed'] = true;
+    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
+    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
   } else {
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = false;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = '';
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = '';
+    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed'] = false;
+    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-by'] = '';
+    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-date'] = '';
   }
   loadPackageConfigurationView();
 }
 
 void removeResponse(int rowIndex) {
-  model.packageConfigurationData[selectedPackage].suggestedReplies.removeAt(rowIndex);
+  _findActivePackageConfigurationById(selectedPackage).suggestedReplies.removeAt(rowIndex);
   loadPackageConfigurationView();
 }
 
@@ -392,3 +399,13 @@ void saveProjectConfiguration(Map config) {
 }
 
 void savePackageConfiguration() {}
+
+// Helper Mehods
+
+Map _findActivePackageById(String packageId) {
+  return model.activePackages.singleWhere((package) =>  package['id'] == packageId, orElse: null);
+}
+
+model.Configuration _findActivePackageConfigurationById(String packageId) {
+  return model.activePackages.singleWhere((package) =>  package['id'] == packageId, orElse: null)['configurationData'];
+}
