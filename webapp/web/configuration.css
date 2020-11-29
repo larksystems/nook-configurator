@@ -3,10 +3,12 @@
   /* grid-template-columns: 20% auto; */
   max-width: 750px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .configure-package-sidebar {
   border-right: 1px solid #ddd;
+  overflow-y: scroll;
 }
 
 .configure-package-sidebar__title {
@@ -53,6 +55,7 @@
 .configure-package-content {
   display: grid;
   grid-template-rows: auto min-content;
+  overflow-y: scroll;
 }
 
 .configure-package-tags {
@@ -290,6 +293,5 @@
 
 .configure-package-labels {
   display: grid;
-  padding-left: 20px;
-  margin-bottom: 100px;
+  padding: 20px;
 }
