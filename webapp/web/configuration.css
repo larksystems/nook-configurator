@@ -1,6 +1,8 @@
 .configure-package-view {
   display: grid;
-  grid-template-columns: 20% auto;
+  /* grid-template-columns: 20% auto; */
+  max-width: 750px;
+  margin: 0 auto;
 }
 
 .configure-package-sidebar {
@@ -50,6 +52,7 @@
 
 .configure-package-content {
   display: grid;
+  grid-template-rows: auto min-content;
 }
 
 .configure-package-tags {
@@ -170,9 +173,7 @@
   grid-template-rows: 90% auto;
 }
 
-.configure-package-responses{
-  display: grid;
-  grid-template-rows: auto auto;
+.configure-package-responses {
   border-bottom: 1px solid #ddd;
   padding: 20px;
 }
@@ -187,10 +188,9 @@
 
 .conversation-response {
   display: grid;
-  grid-template-columns: 2% 35% 35% auto;
+  grid-template-columns: 3% auto auto;
   grid-gap: 10px;
   position: relative;
-  padding-left: 20px;
 }
 
 .conversation-response-language {
@@ -266,6 +266,7 @@
   font-weight: 400;
   color: #fff;
   margin-bottom: 0px;
+  text-shadow: 0 0 1px black;
 }
 
 .remove-conversation-responses-modal-actions {
