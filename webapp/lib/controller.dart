@@ -150,8 +150,8 @@ void command(UIAction action, Data actionData) {
 }
 
 enum NavAction {
-  ALLPROJECTS,
-  DASHBOARD
+  allProjects,
+  dashboard
 }
 
 void _toggleNavActions(NavAction navAction, bool show) {
