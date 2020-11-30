@@ -910,7 +910,7 @@ class TagListView extends BaseView {
           ..text = tag
           ..onClick.listen((event) {
             if (tag == '--None--') return;
-            onTagChangedCallback(tag, tags[tag], controller.TagOperation.ADD);
+            onTagChangedCallback(tag, tags[tag], controller.TagOperation.add);
           })
       );
     }
@@ -961,16 +961,16 @@ class TagView extends BaseView {
           ..text = 'x'
           ..onClick.listen((_) {
             if (isEditableTag) {
-              onTagChangedCallback(tag, tag, tagType, controller.TagOperation.REMOVE);
+              onTagChangedCallback(tag, tag, tagType, controller.TagOperation.remove);
               return;
             }
-            onTagChangedCallback(tag, tagType, controller.TagOperation.REMOVE);
+            onTagChangedCallback(tag, tagType, controller.TagOperation.remove);
           })
       );
 
     if (isEditableTag) {
       _tagText.contentEditable = 'true';
-      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagType, controller.TagOperation.UPDATE));
+      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagType, controller.TagOperation.update));
     }
 
     return tagElement;

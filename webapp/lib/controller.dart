@@ -244,9 +244,9 @@ void editActivePackage(String packageId, String originalPackageName, updatedPack
 
 // Tag Operations
 enum TagOperation {
-  ADD,
-  UPDATE,
-  REMOVE
+  add,
+  update,
+  remove
 }
 
 void _addTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
@@ -280,12 +280,12 @@ void _removeTag(String tag, model.TagType tagType, Map<String, model.TagType> ta
 
 void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
-    case TagOperation.ADD:
+    case TagOperation.add:
       _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasAllTags);
       break;
-    case TagOperation.UPDATE:
+    case TagOperation.update:
       break;
-    case TagOperation.REMOVE:
+    case TagOperation.remove:
       _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasAllTags);
       break;
   }
@@ -294,12 +294,12 @@ void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperat
 
 void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
-    case TagOperation.ADD:
+    case TagOperation.add:
       _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).containsLastInTurnTags);
       break;
-    case TagOperation.UPDATE:
+    case TagOperation.update:
       break;
-    case TagOperation.REMOVE:
+    case TagOperation.remove:
       _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).containsLastInTurnTags);
       break;
   }
@@ -308,12 +308,12 @@ void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperati
 
 void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
-    case TagOperation.ADD:
+    case TagOperation.add:
       _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasNoneTags);
       break;
-    case TagOperation.UPDATE:
+    case TagOperation.update:
       break;
-    case TagOperation.REMOVE:
+    case TagOperation.remove:
       _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasNoneTags);
       break;
   }
@@ -322,13 +322,13 @@ void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOpera
 
 void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
-    case TagOperation.ADD:
+    case TagOperation.add:
       _addTag(updatedTag, tagType, _findActivePackageConfigurationById(selectedPackage).addsTags, true);
       break;
-    case TagOperation.UPDATE:
+    case TagOperation.update:
       _updateTag(originalTag, updatedTag, _findActivePackageConfigurationById(selectedPackage).addsTags);
       break;
-    case TagOperation.REMOVE:
+    case TagOperation.remove:
       _removeTag(originalTag, tagType, _findActivePackageConfigurationById(selectedPackage).addsTags, true);
       break;
   }
