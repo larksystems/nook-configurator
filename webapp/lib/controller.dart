@@ -143,7 +143,7 @@ void command(UIAction action, Data actionData) {
       ProjectConfigurationData projectConfigurationData = actionData;
       saveProjectConfiguration(projectConfigurationData.config);
       break;
-    case UIAction.saveProjectConfiguration:
+    case UIAction.savePackageConfiguration:
       savePackageConfiguration();
       break;
   }
@@ -154,38 +154,27 @@ enum NavAction {
   dashboard
 }
 
-void _toggleNavActions(NavAction navAction, bool show) {
-  switch (navAction) {
-    case NavAction.ALLPROJECTS:
-      view.navView.allProjectsLink.classes.toggle('nav-links__link--show', show);
-      break;
-    case NavAction.DASHBOARD:
-      view.navView.dashboardLink.classes.toggle('nav-links__link--show', show);
-      break;
-  }
-}
-
 void loadAuthView() {
-  _toggleNavActions(NavAction.ALLPROJECTS, false);
-  _toggleNavActions(NavAction.DASHBOARD, false);
+  view.navView.navActions[NavAction.allProjects](false);
+  view.navView.navActions[NavAction.dashboard](false);
   view.contentView.renderView(new view.AuthMainView());
 }
 
 void loadProjectSelectorView() {
-  _toggleNavActions(NavAction.ALLPROJECTS, false);
-  _toggleNavActions(NavAction.DASHBOARD, false);
+  view.navView.navActions[NavAction.allProjects](false);
+  view.navView.navActions[NavAction.dashboard](false);
   view.navView.projectTitle = '';
   view.navView.projectOrganizations = model.projectOrganizations;
   view.contentView.renderView(new view.ProjectSelectorView(model.projectData, model.teamMembers));
 }
 
 void loadDashboardView() {
-  _toggleNavActions(NavAction.ALLPROJECTS, true);
-  _toggleNavActions(NavAction.DASHBOARD, false);
+  view.navView.navActions[NavAction.allProjects](true);
+  view.navView.navActions[NavAction.dashboard](false);
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   var dashboardView = new view.DashboardView(model.conversationData);
-  for (var package in model.activePackages) {
+  for (var package in model.activePackages.values) {
     dashboardView.activePackages.add(new view.ActivePackagesViewPartial(package['id'], package['name'], package['conversationsLink'], package['configurationLink'], package['chartData']));
   }
   for (var package in model.availablePackages) {
@@ -197,55 +186,52 @@ void loadDashboardView() {
 }
 
 void loadPackageConfigurationView() {
-  _toggleNavActions(NavAction.ALLPROJECTS, false);
-  _toggleNavActions(NavAction.DASHBOARD, true);
-  var packages = new List<Map<String, String>>.from(model.activePackages.map((package) => new Map<String, String>.from({'id': package['id'], 'name': package['name']})));
+  view.navView.navActions[NavAction.allProjects](false);
+  view.navView.navActions[NavAction.dashboard](true);
+  var packages = new Map<String, String>.fromIterable(model.activePackages.values, key: (package) => package['id'], value: (package) => package['name']);
   selectedPackage = router.routeParams['package'];
   var configuratorView = new view.PackageConfiguratorView(packages, _findActivePackageConfigurationById(selectedPackage));
   view.contentView.renderView(configuratorView);
 }
 
 loadProjectConfigurationView() {
-  _toggleNavActions(NavAction.ALLPROJECTS, false);
-  _toggleNavActions(NavAction.DASHBOARD, true);
+  view.navView.navActions[NavAction.allProjects](false);
+  view.navView.navActions[NavAction.dashboard](true);
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   view.contentView.renderView(new view.ProjectConfigurationView(model.projectConfigurationFormData, model.additionalProjectConfigurationLanguages));
 }
 
 void addPackage(String packageName) {
-  var id  = 'package-${new Uuid().v4().split('-')[0]}';
-  model.activePackages.add(
-    {
-      'id': id,
-      'name': packageName,
-      'conversationsLink': '#/conversations',
-      'configurationLink': '#/package-configuration?package=$id',
-      'chartData': '',
-      'configurationData': new model.Configuration().availableTags = model.tags
-    }
-  );
+  var id  = generatePackageId;
+  model.activePackages[id] = {
+    'id': id,
+    'name': packageName,
+    'conversationsLink': '#/conversations',
+    'configurationLink': '#/package-configuration?package=$id',
+    'chartData': '',
+    'configurationData': new model.Configuration()..availableTags = model.tags
+  };
   model.availablePackages.removeWhere((package) => package['name'] == packageName);
 }
 
 void duplicatePackage(String packageId, String packageName) {
   var originalPackageConfiguration = _findActivePackageConfigurationById(packageId);
-  var newId = 'package-${new Uuid().v4().split('-')[0]}';
-  model.activePackages.add(
-    {
-      'id': newId,
-      'name': '$packageName [COPY]',
-      'conversationsLink': '#/conversations',
-      'configurationLink': '#/package-configuration?package=$newId',
-      'chartData': '',
-      'configurationData': new model.Configuration()
-        ..availableTags = originalPackageConfiguration.availableTags
-        ..hasAllTags = originalPackageConfiguration.hasAllTags
-        ..containsLastInTurnTags = originalPackageConfiguration.containsLastInTurnTags
-        ..hasNoneTags = originalPackageConfiguration.hasNoneTags
-        ..suggestedReplies = originalPackageConfiguration.suggestedReplies
-        ..addsTags = originalPackageConfiguration.addsTags
-    });
+  var newId = generatePackageId;
+  model.activePackages[newId] = {
+    'id': newId,
+    'name': '$packageName [COPY]',
+    'conversationsLink': '#/conversations',
+    'configurationLink': '#/package-configuration?package=$newId',
+    'chartData': '',
+    'configurationData': new model.Configuration()
+      ..availableTags = new Map.from(originalPackageConfiguration.availableTags)
+      ..hasAllTags = new Map.from(originalPackageConfiguration.hasAllTags)
+      ..containsLastInTurnTags = new Map.from(originalPackageConfiguration.containsLastInTurnTags)
+      ..hasNoneTags = new Map.from(originalPackageConfiguration.hasNoneTags)
+      ..suggestedReplies = new List.from(originalPackageConfiguration.suggestedReplies)
+      ..addsTags = new Map.from(originalPackageConfiguration.addsTags)
+  };
   router.routeTo(window.location.hash);
 }
 
@@ -403,9 +389,11 @@ void savePackageConfiguration() {}
 // Helper Mehods
 
 Map _findActivePackageById(String packageId) {
-  return model.activePackages.singleWhere((package) =>  package['id'] == packageId, orElse: null);
+  return model.activePackages[packageId];
 }
 
 model.Configuration _findActivePackageConfigurationById(String packageId) {
-  return model.activePackages.singleWhere((package) =>  package['id'] == packageId, orElse: null)['configurationData'];
+  return model.activePackages[packageId]['configurationData'];
 }
+
+String get generatePackageId => 'package-${new Uuid().v4().split('-')[0]}';

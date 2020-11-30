@@ -183,8 +183,8 @@ enum TagType {
 //   'Open conversations': new Configuration(),
 // };
 
-List<Map> activePackages = [
-  {
+Map<String, Map> activePackages = {
+  'package-439c41b9': {
     'id': 'package-439c41b9',
     'name': 'Urgent conversations',
     'conversationsLink': '#/conversations',
@@ -196,7 +196,7 @@ List<Map> activePackages = [
       ..suggestedReplies = escalatesSuggestedReplies
       ..addsTags = {'de-escalate': TagType.Normal, 'no-escalate': TagType.Normal}
   },
-  {
+  'package-1f895432': {
     'id': 'package-1f895432',
     'name': 'Open conversations',
     'conversationsLink': '#/conversations',
@@ -204,7 +204,7 @@ List<Map> activePackages = [
     'chartData': '30 open conversations',
     'configurationData': new Configuration()..availableTags = tags
   },
-  {
+  'package-0aef7d7e': {
     'id': 'package-0aef7d7e',
     'name': 'Change communications',
     'conversationsLink': '#/conversations',
@@ -218,7 +218,7 @@ List<Map> activePackages = [
       ..addsTags = {'Organic conversation appreciation': TagType.Normal, 'Organic conversation hostility': TagType.Normal,
         'RP Substance appreciation': TagType.Normal, 'RP Substance hostility': TagType.Normal}
     },
-];
+};
 
 List<Map> availablePackages = [
   {'name': 'Quick Poll', 'description': 'Ask a question with fixed answers', 'details': {'Needs': 'Q/A, Labelling team, Safeguarding response', 'Produces': 'Dashboard for distribution of answers'}},

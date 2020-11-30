@@ -20,6 +20,10 @@ void init() {
   contentView = new ContentView();
   headerElement.append(navView.navViewElement);
   mainElement.append(contentView.contentViewElement);
+  navView.navActions = {
+      controller.NavAction.allProjects: navView.setAllProjectsLinkVisibility,
+      controller.NavAction.dashboard: navView.setDashboardLinkVisibility
+  };
 }
 
 class NavView {
@@ -31,6 +35,7 @@ class NavView {
   AuthHeaderViewPartial authHeaderViewPartial;
   AnchorElement _dashboardLink;
   AnchorElement _allProjectsLink;
+  Map<controller.NavAction, void Function(bool)> navActions;
 
   NavView() {
     navViewElement = new DivElement()
@@ -66,9 +71,9 @@ class NavView {
     navViewElement.append(authHeaderViewPartial.authElement);
   }
 
-  Element get dashboardLink => _dashboardLink;
+  void setDashboardLinkVisibility (bool show) => _dashboardLink.classes.toggle('nav-links__link--show', show);
 
-  Element get allProjectsLink => _allProjectsLink;
+  void setAllProjectsLinkVisibility (bool show) => _allProjectsLink.classes.toggle('nav-links__link--show', show);
 
   void set projectTitle(String projectName) => _projectTitle.text = projectName;
 
@@ -625,7 +630,7 @@ class PackageConfiguratorView extends BaseView {
   DivElement packageConfiguratorViewElement;
   DivElement _packageConfiguratorSidebar;
   DivElement _packageConfiguratorContent;
-  List<Map<String, String>> activePackages;
+  Map<String, String> activePackages;
   model.Configuration configurationData;
 
   PackageConfiguratorView(this.activePackages, this.configurationData) {
@@ -653,25 +658,25 @@ class PackageConfiguratorView extends BaseView {
     var packageList = new Element.ul()
       ..classes.add('selected-active-package-list');
 
-    for (var package in activePackages) {
+    activePackages.forEach((packageId, packageName) {
       var packageListItem = new DivElement();
       var packageListItemText = new Element.li();
       packageListItemText
         ..classes.add('selected-active-package-list__item-text')
-        ..text = package['name']
+        ..text = packageName
         ..onBlur.listen((event) {
           packageListItemText.contentEditable = 'false';
-          controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(package['id'], package['name'], (event.target as Element).text));
+          controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
         });
       packageListItem
-        ..dataset['id'] = package['id']
+        ..dataset['id'] = packageId
         ..classes.add('selected-active-package-list__item')
-        ..classes.toggle('selected-active-package-list__item--selected', (package['id'] == controller.selectedPackage))
+        ..classes.toggle('selected-active-package-list__item--selected', (packageId == controller.selectedPackage))
         ..append(packageListItemText)
         ..append(
           new SpanElement()
           ..classes.add('selected-active-package-list__item-action')
-          ..classes.toggle('selected-active-package-list__item-action--show', (package['id'] == controller.selectedPackage))
+          ..classes.toggle('selected-active-package-list__item-action--show', (packageId == controller.selectedPackage))
           ..onClick.listen((event) {
             event.stopPropagation();
             var selectedPackageDropdown = new Element.ul()
@@ -692,7 +697,7 @@ class PackageConfiguratorView extends BaseView {
                   ..text = 'Duplicate'
                   ..onClick.listen((event) {
                     event.stopImmediatePropagation();
-                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(package['id'], package['name']));
+                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
                   })
               );
             packageListItem.append(selectedPackageDropdown);
@@ -704,9 +709,9 @@ class PackageConfiguratorView extends BaseView {
             });
           })
         )
-        ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(package['id'], package['name'])));
+        ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(packageId, packageName)));
       packageList.append(packageListItem);
-    };
+    });
 
     _packageConfiguratorSidebar.append(packageList);
   }
