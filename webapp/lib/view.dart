@@ -560,6 +560,7 @@ class ActivePackagesViewPartial {
                   ..onClick.listen((event) {
                     packageNameElement.contentEditable = 'true';
                     packageNameElement.focus();
+                    _scrollToEnd(packageNameElement);
                   })
               )
               ..append(
@@ -698,6 +699,7 @@ class PackageConfiguratorView extends BaseView {
                     event.stopImmediatePropagation();
                     packageListItemText.contentEditable = 'true';
                     packageListItemText.focus();
+                    _scrollToEnd(packageListItemText);
                   })
               )
               ..append(
@@ -1367,4 +1369,15 @@ class ProjectConfigurationView extends BaseView{
           })
       );
   }
+}
+
+// Helpers
+
+_scrollToEnd(Element element) {
+  var range = document.createRange();
+  range.selectNodeContents(element);
+  range.collapse(false);
+  var selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
