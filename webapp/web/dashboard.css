@@ -165,6 +165,10 @@
   margin: 0px;
 }
 
+.active-package-title__text:focus {
+  padding: 0px 5px;
+}
+
 .active-package-title__edit-action {
   margin-left: 10px;
   font-size: 0.9em;

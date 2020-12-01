@@ -672,6 +672,7 @@ class PackageConfiguratorView extends BaseView {
       packageListItemText
         ..classes.add('selected-active-package-list__item-text')
         ..text = packageName
+        ..onClick.listen((event) { if (event.target == document.activeElement) event.stopPropagation(); })
         ..onBlur.listen((event) {
           packageListItemText.contentEditable = 'false';
           controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
