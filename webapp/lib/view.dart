@@ -560,7 +560,7 @@ class ActivePackagesViewPartial {
                   ..onClick.listen((event) {
                     packageNameElement.contentEditable = 'true';
                     packageNameElement.focus();
-                    _scrollToEnd(packageNameElement);
+                    _cursorToEnd(packageNameElement);
                   })
               )
               ..append(
@@ -699,7 +699,7 @@ class PackageConfiguratorView extends BaseView {
                     event.stopImmediatePropagation();
                     packageListItemText.contentEditable = 'true';
                     packageListItemText.focus();
-                    _scrollToEnd(packageListItemText);
+                    _cursorToEnd(packageListItemText);
                   })
               )
               ..append(
@@ -1373,7 +1373,7 @@ class ProjectConfigurationView extends BaseView{
 
 // Helpers
 
-_scrollToEnd(Element element) {
+_cursorToEnd(Element element) {
   var range = document.createRange();
   range.selectNodeContents(element);
   range.collapse(false);
