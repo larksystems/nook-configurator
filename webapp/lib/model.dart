@@ -167,22 +167,6 @@ enum TagType {
   Important,
 }
 
-// Map<String, Configuration> packageConfigurationData = {
-//   'Change communications': new Configuration()
-//     ..availableTags = tags
-//     ..containsLastInTurnTags = {'denial': TagType.Normal , 'rumour': TagType.Normal}
-//     ..hasNoneTags = {'escalate': TagType.Normal, 'STOP': TagType.Normal}
-//     ..suggestedReplies = changeCommunicationsSuggestedReplies
-//     ..addsTags = {'Organic conversation appreciation': TagType.Normal, 'Organic conversation hostility': TagType.Normal,
-//       'RP Substance appreciation': TagType.Normal, 'RP Substance hostility': TagType.Normal},
-//   'Urgent conversations': new Configuration()
-//     ..availableTags = tags
-//     ..hasAllTags = {'escalate': TagType.Important}
-//     ..suggestedReplies = escalatesSuggestedReplies
-//     ..addsTags = {'de-escalate': TagType.Normal, 'no-escalate': TagType.Normal},
-//   'Open conversations': new Configuration(),
-// };
-
 Map<String, Map> activePackages = {
   'package-439c41b9': {
     'id': 'package-439c41b9',

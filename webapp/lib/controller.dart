@@ -150,27 +150,25 @@ void command(UIAction action, Data actionData) {
 }
 
 enum NavAction {
+  none,
   allProjects,
   dashboard
 }
 
 void loadAuthView() {
-  view.navView.navActions[NavAction.allProjects](false);
-  view.navView.navActions[NavAction.dashboard](false);
+  view.navView.showParent(NavAction.none);
   view.contentView.renderView(new view.AuthMainView());
 }
 
 void loadProjectSelectorView() {
-  view.navView.navActions[NavAction.allProjects](false);
-  view.navView.navActions[NavAction.dashboard](false);
+  view.navView.showParent(NavAction.none);
   view.navView.projectTitle = '';
   view.navView.projectOrganizations = model.projectOrganizations;
   view.contentView.renderView(new view.ProjectSelectorView(model.projectData, model.teamMembers));
 }
 
 void loadDashboardView() {
-  view.navView.navActions[NavAction.allProjects](true);
-  view.navView.navActions[NavAction.dashboard](false);
+  view.navView.showParent(NavAction.allProjects);
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   var dashboardView = new view.DashboardView(model.conversationData);
@@ -186,17 +184,15 @@ void loadDashboardView() {
 }
 
 void loadPackageConfigurationView() {
-  view.navView.navActions[NavAction.allProjects](false);
-  view.navView.navActions[NavAction.dashboard](true);
+  view.navView.showParent(NavAction.dashboard);
   var packages = new Map<String, String>.fromIterable(model.activePackages.values, key: (package) => package['id'], value: (package) => package['name']);
   selectedPackage = router.routeParams['package'];
-  var configuratorView = new view.PackageConfiguratorView(packages, _findActivePackageConfigurationById(selectedPackage));
+  var configuratorView = new view.PackageConfiguratorView(packages, model.activePackages[selectedPackage]['configurationData']);
   view.contentView.renderView(configuratorView);
 }
 
 loadProjectConfigurationView() {
-  view.navView.navActions[NavAction.allProjects](false);
-  view.navView.navActions[NavAction.dashboard](true);
+  view.navView.showParent(NavAction.dashboard);
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
   view.contentView.renderView(new view.ProjectConfigurationView(model.projectConfigurationFormData, model.additionalProjectConfigurationLanguages));
@@ -216,7 +212,7 @@ void addPackage(String packageName) {
 }
 
 void duplicatePackage(String packageId, String packageName) {
-  var originalPackageConfiguration = _findActivePackageConfigurationById(packageId);
+  var originalPackageConfiguration = model.activePackages[packageId]['configurationData'];
   var newId = generatePackageId;
   model.activePackages[newId] = {
     'id': newId,
@@ -237,7 +233,7 @@ void duplicatePackage(String packageId, String packageName) {
 
 void editActivePackage(String packageId, String originalPackageName, updatedPackageName) {
   if (originalPackageName == updatedPackageName) return;
-  var package = _findActivePackageById(packageId);
+  var package = model.activePackages[packageId];
   package['name'] = updatedPackageName;
   router.routeTo(window.location.hash);
 }
@@ -251,7 +247,7 @@ enum TagOperation {
 
 void _addTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
   tagCollection.addAll({tag: tagType});
-  if (!isEditable) _findActivePackageConfigurationById(selectedPackage).availableTags.remove(tag);
+  if (!isEditable) model.activePackages[selectedPackage]['configurationData'].availableTags.remove(tag);
 }
 
 void _updateTag(String originalTag, String updatedTag, Map<String, model.TagType> tagCollection) {
@@ -275,18 +271,18 @@ void _updateTag(String originalTag, String updatedTag, Map<String, model.TagType
 
 void _removeTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
   tagCollection.remove(tag);
-  if (!isEditable) _findActivePackageConfigurationById(selectedPackage).availableTags.addAll({tag : tagType});
+  if (!isEditable) model.activePackages[selectedPackage]['configurationData'].availableTags.addAll({tag : tagType});
 }
 
 void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.add:
-      _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasAllTags);
+      _addTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasAllTags);
       break;
     case TagOperation.update:
       break;
     case TagOperation.remove:
-      _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasAllTags);
+      _removeTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasAllTags);
       break;
   }
   loadPackageConfigurationView();
@@ -295,12 +291,12 @@ void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperat
 void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.add:
-      _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).containsLastInTurnTags);
+      _addTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].containsLastInTurnTags);
       break;
     case TagOperation.update:
       break;
     case TagOperation.remove:
-      _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).containsLastInTurnTags);
+      _removeTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].containsLastInTurnTags);
       break;
   }
   loadPackageConfigurationView();
@@ -309,12 +305,12 @@ void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperati
 void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.add:
-      _addTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasNoneTags);
+      _addTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasNoneTags);
       break;
     case TagOperation.update:
       break;
     case TagOperation.remove:
-      _removeTag(tag, tagType, _findActivePackageConfigurationById(selectedPackage).hasNoneTags);
+      _removeTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasNoneTags);
       break;
   }
   loadPackageConfigurationView();
@@ -323,13 +319,13 @@ void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOpera
 void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.add:
-      _addTag(updatedTag, tagType, _findActivePackageConfigurationById(selectedPackage).addsTags, true);
+      _addTag(updatedTag, tagType, model.activePackages[selectedPackage]['configurationData'].addsTags, true);
       break;
     case TagOperation.update:
-      _updateTag(originalTag, updatedTag, _findActivePackageConfigurationById(selectedPackage).addsTags);
+      _updateTag(originalTag, updatedTag, model.activePackages[selectedPackage]['configurationData'].addsTags);
       break;
     case TagOperation.remove:
-      _removeTag(originalTag, tagType, _findActivePackageConfigurationById(selectedPackage).addsTags, true);
+      _removeTag(originalTag, tagType, model.activePackages[selectedPackage]['configurationData'].addsTags, true);
       break;
   }
   loadPackageConfigurationView();
@@ -337,7 +333,7 @@ void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagTyp
 
 // Suggested Replies operations
 void addNewResponse() {
-  _findActivePackageConfigurationById(selectedPackage).suggestedReplies.add(
+  model.activePackages[selectedPackage]['configurationData'].suggestedReplies.add(
     {
       "messages":
         [
@@ -353,7 +349,7 @@ void addNewResponse() {
 }
 
 void updateResponse(int rowIndex, int colIndex, String response) {
-  _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['messages'][colIndex] = response;
+  model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['messages'][colIndex] = response;
   loadPackageConfigurationView();
 }
 
@@ -361,19 +357,19 @@ void reviewResponse(int rowIndex, bool reviewed) {
   if (reviewed) {
     var now = DateTime.now().toLocal();
     var reviewedDate = '${now.year}-${now.month}-${now.day}';
-    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed'] = true;
-    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
-    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
+    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed'] = true;
+    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
+    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
   } else {
-    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed'] = false;
-    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-by'] = '';
-    _findActivePackageConfigurationById(selectedPackage).suggestedReplies[rowIndex]['reviewed-date'] = '';
+    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed'] = false;
+    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-by'] = '';
+    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-date'] = '';
   }
   loadPackageConfigurationView();
 }
 
 void removeResponse(int rowIndex) {
-  _findActivePackageConfigurationById(selectedPackage).suggestedReplies.removeAt(rowIndex);
+  model.activePackages[selectedPackage]['configurationData'].suggestedReplies.removeAt(rowIndex);
   loadPackageConfigurationView();
 }
 
@@ -387,13 +383,5 @@ void saveProjectConfiguration(Map config) {
 void savePackageConfiguration() {}
 
 // Helper Mehods
-
-Map _findActivePackageById(String packageId) {
-  return model.activePackages[packageId];
-}
-
-model.Configuration _findActivePackageConfigurationById(String packageId) {
-  return model.activePackages[packageId]['configurationData'];
-}
 
 String get generatePackageId => 'package-${new Uuid().v4().split('-')[0]}';

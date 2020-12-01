@@ -20,10 +20,6 @@ void init() {
   contentView = new ContentView();
   headerElement.append(navView.navViewElement);
   mainElement.append(contentView.contentViewElement);
-  navView.navActions = {
-      controller.NavAction.allProjects: navView.setAllProjectsLinkVisibility,
-      controller.NavAction.dashboard: navView.setDashboardLinkVisibility
-  };
 }
 
 class NavView {
@@ -35,7 +31,6 @@ class NavView {
   AuthHeaderViewPartial authHeaderViewPartial;
   AnchorElement _dashboardLink;
   AnchorElement _allProjectsLink;
-  Map<controller.NavAction, void Function(bool)> navActions;
 
   NavView() {
     navViewElement = new DivElement()
@@ -71,9 +66,22 @@ class NavView {
     navViewElement.append(authHeaderViewPartial.authElement);
   }
 
-  void setDashboardLinkVisibility (bool show) => _dashboardLink.classes.toggle('nav-links__link--show', show);
-
-  void setAllProjectsLinkVisibility (bool show) => _allProjectsLink.classes.toggle('nav-links__link--show', show);
+  void showParent(controller.NavAction navAction) {
+    switch(navAction) {
+      case controller.NavAction.none:
+        _dashboardLink.classes.toggle('nav-links__link--show', false);
+        _allProjectsLink.classes.toggle('nav-links__link--show', false);
+        break;
+      case controller.NavAction.allProjects:
+        _allProjectsLink.classes.toggle('nav-links__link--show', true);
+        _dashboardLink.classes.toggle('nav-links__link--show', false);
+        break;
+      case controller.NavAction.dashboard:
+        _dashboardLink.classes.toggle('nav-links__link--show', true);
+        _allProjectsLink.classes.toggle('nav-links__link--show', false);
+        break;
+    }
+  }
 
   void set projectTitle(String projectName) => _projectTitle.text = projectName;
 
