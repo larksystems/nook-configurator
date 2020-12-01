@@ -199,7 +199,7 @@ loadProjectConfigurationView() {
 }
 
 void addPackage(String packageName) {
-  var id  = generatePackageId;
+  var id  = generatePackageId();
   model.activePackages[id] = {
     'id': id,
     'name': packageName,
@@ -213,7 +213,7 @@ void addPackage(String packageName) {
 
 void duplicatePackage(String packageId, String packageName) {
   var originalPackageConfiguration = model.activePackages[packageId]['configurationData'];
-  var newId = generatePackageId;
+  var newId = generatePackageId();
   model.activePackages[newId] = {
     'id': newId,
     'name': '$packageName [COPY]',
@@ -384,4 +384,4 @@ void savePackageConfiguration() {}
 
 // Helper Mehods
 
-String get generatePackageId => 'package-${new Uuid().v4().split('-')[0]}';
+String generatePackageId() => 'package-${new Uuid().v4().split('-')[0]}';
