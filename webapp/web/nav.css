@@ -13,30 +13,24 @@
 }
 
 .nav-links {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-self: center;
+  display: inline-grid;
+  grid-template-columns: repeat(auto-fill, minmax(0px, auto));
   justify-content: flex-start;
-  grid-gap: 5px;
+  margin-left: 10px;
 }
 
-.nav-links__back-btn {
-  height: 30px;
-  font-size: 1.5em;
-  color: #499398;
-  background: none;
-  border: none;
-  outline: none;
-  cursor: pointer;
-}
-
-.nav-links__all-projects-link {
+.nav-links__link {
+  margin: 0px 10px;
   align-self: center;
   color: #499398;
   text-decoration: none;
-  font-size: 1.5em;
+  font-size: 1.4em;
+  display: none;
 }
 
+.nav-links__link--show {
+  display: block;
+}
 
 .nav-project-details {
   display: grid;

@@ -29,7 +29,7 @@ class NavView {
   DivElement _projectTitle;
   DivElement _projectOrganizations;
   AuthHeaderViewPartial authHeaderViewPartial;
-  ButtonElement _backBtn;
+  AnchorElement _dashboardLink;
   AnchorElement _allProjectsLink;
 
   NavView() {
@@ -38,17 +38,17 @@ class NavView {
     _appLogos = new DivElement()
       ..classes.add('nav__app-logo')
       ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
-    _backBtn = new ButtonElement()
-      ..classes.add('nav-links__back-btn')
-      ..text = '< Back'
-      ..onClick.listen((_) => window.history.back());
+    _dashboardLink = new AnchorElement()
+      ..classes.add('nav-links__link')
+      ..href = '#/dashboard'
+      ..text = 'Dashboard';
     _allProjectsLink = new AnchorElement()
-      ..classes.add('nav-links__all-projects-link')
+      ..classes.add('nav-links__link')
       ..href = '#/project-selector'
       ..text = 'All projects';
     _navLinks = new DivElement()
       ..classes.add('nav-links')
-      ..append(_backBtn)
+      ..append(_dashboardLink)
       ..append(_allProjectsLink);
     _projectTitle = new DivElement()
       ..classes.add('nav-project-details__title');
@@ -66,9 +66,22 @@ class NavView {
     navViewElement.append(authHeaderViewPartial.authElement);
   }
 
-  Element get backBtn => _backBtn;
-
-  Element get allProjectsLink => _allProjectsLink;
+  void showParent(controller.NavAction navAction) {
+    switch(navAction) {
+      case controller.NavAction.none:
+        _dashboardLink.classes.toggle('nav-links__link--show', false);
+        _allProjectsLink.classes.toggle('nav-links__link--show', false);
+        break;
+      case controller.NavAction.allProjects:
+        _allProjectsLink.classes.toggle('nav-links__link--show', true);
+        _dashboardLink.classes.toggle('nav-links__link--show', false);
+        break;
+      case controller.NavAction.dashboard:
+        _dashboardLink.classes.toggle('nav-links__link--show', true);
+        _allProjectsLink.classes.toggle('nav-links__link--show', false);
+        break;
+    }
+  }
 
   void set projectTitle(String projectName) => _projectTitle.text = projectName;
 
@@ -480,16 +493,20 @@ class DashboardView extends BaseView {
 class ActivePackagesViewPartial {
   DivElement packageElement;
 
-  ActivePackagesViewPartial(String packageName, String conversationsLink, String configurationLink, String chartData) {
+  ActivePackagesViewPartial(String packageId, String packageName, String conversationsLink, String configurationLink, String chartData) {
     packageElement = new DivElement()
       ..classes.add('package');
-    var packageNameElement = new SpanElement()
+    var packageNameElement = new ParagraphElement();
+    packageNameElement
+      ..classes.add('active-package-title__text')
+      ..text = packageName
+      ..onBlur.listen((event) {
+        packageNameElement.contentEditable = 'false';
+        controller.command(controller.UIAction.editActivePackage, new controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
+      });
+    var packageNameContainer = new SpanElement()
       ..classes.add('active-package-title')
-      ..append(
-        new ParagraphElement()
-          ..classes.add('active-package-title__text')
-          ..text = packageName
-      );
+      ..append(packageNameElement);
     var packageActionsContainer = new DivElement()
       ..classes.add('active-package-actions')
       ..append(
@@ -512,7 +529,7 @@ class ActivePackagesViewPartial {
       );
     var packageMainContainer = new DivElement()
       ..classes.add('active-package-main-container')
-      ..append(packageNameElement)
+      ..append(packageNameContainer)
       ..append(packageActionsContainer);
     var packageChart = new DivElement()
       ..classes.add('active-package-chart')
@@ -526,8 +543,43 @@ class ActivePackagesViewPartial {
           ..classes.add('active-package-chart__description')
           ..text = chartData
       );
-    packageElement.append(packageMainContainer);
-    packageElement.append(packageChart);
+    packageElement
+      ..append(packageMainContainer)
+      ..append(packageChart)
+      ..append(
+        new SpanElement()
+          ..classes.add('active-package-menu')
+          ..onClick.listen((event) {
+            event.stopPropagation();
+            var selectedPackageDropdown = new Element.ul()
+              ..classes.addAll(['add-tag-dropdown', 'active-package-dropdown'])
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Rename'
+                  ..onClick.listen((event) {
+                    packageNameElement.contentEditable = 'true';
+                    packageNameElement.focus();
+                    _cursorToEnd(packageNameElement);
+                  })
+              )
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Duplicate'
+                  ..onClick.listen((event) {
+                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+                  })
+              );
+            packageElement.append(selectedPackageDropdown);
+            var documentOnClickSubscription;
+            documentOnClickSubscription = document.onClick.listen((event) {
+              event.stopPropagation();
+              selectedPackageDropdown.remove();
+              documentOnClickSubscription.cancel();
+            });
+          })
+      );
   }
 }
 
@@ -556,7 +608,7 @@ class AvailablePackagesViewPartial {
               ..text = 'Add $packageName package'
               ..href = '#/dashboard'
           )
-          ..onClick.listen((event) => controller.command(controller.UIAction.addPackage, new controller.PackageConfigurationData(packageName)))
+          ..onClick.listen((event) => controller.command(controller.UIAction.addPackage, new controller.PackageConfigurationData('', packageName)))
       )
       ..append(
         new SpanElement()
@@ -587,7 +639,7 @@ class PackageConfiguratorView extends BaseView {
   DivElement packageConfiguratorViewElement;
   DivElement _packageConfiguratorSidebar;
   DivElement _packageConfiguratorContent;
-  List<String> activePackages;
+  Map<String, String> activePackages;
   model.Configuration configurationData;
 
   PackageConfiguratorView(this.activePackages, this.configurationData) {
@@ -615,19 +667,62 @@ class PackageConfiguratorView extends BaseView {
     var packageList = new Element.ul()
       ..classes.add('selected-active-package-list');
 
-    for (var package in activePackages) {
-      packageList.append(
-        new DivElement()
-          ..classes.add('selected-active-package-list__item')
-          ..classes.toggle('selected-active-package-list__item--selected', (package == controller.selectedPackage))
-          ..append(
-            new Element.li()
-              ..classes.add('selected-active-package-list__item-text')
-              ..text = package
-          )
-          ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(package)))
-      );
-    };
+    activePackages.forEach((packageId, packageName) {
+      var packageListItem = new DivElement();
+      var packageListItemText = new Element.li();
+      packageListItemText
+        ..classes.add('selected-active-package-list__item-text')
+        ..text = packageName
+        ..onClick.listen((event) { if (event.target == document.activeElement) event.stopPropagation(); })
+        ..onBlur.listen((event) {
+          packageListItemText.contentEditable = 'false';
+          controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
+        });
+      packageListItem
+        ..dataset['id'] = packageId
+        ..classes.add('selected-active-package-list__item')
+        ..classes.toggle('selected-active-package-list__item--selected', (packageId == controller.selectedPackage))
+        ..append(packageListItemText)
+        ..append(
+          new SpanElement()
+          ..classes.add('selected-active-package-list__item-action')
+          ..classes.toggle('selected-active-package-list__item-action--show', (packageId == controller.selectedPackage))
+          ..onClick.listen((event) {
+            event.stopPropagation();
+            var selectedPackageDropdown = new Element.ul()
+              ..classes.addAll(['add-tag-dropdown', 'selected-package-dropdown'])
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Rename'
+                  ..onClick.listen((event) {
+                    event.stopImmediatePropagation();
+                    packageListItemText.contentEditable = 'true';
+                    packageListItemText.focus();
+                    _cursorToEnd(packageListItemText);
+                  })
+              )
+              ..append(
+                new Element.li()
+                  ..classes.add('add-tag-dropdown__item')
+                  ..text = 'Duplicate'
+                  ..onClick.listen((event) {
+                    event.stopImmediatePropagation();
+                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+                  })
+              );
+            packageListItem.append(selectedPackageDropdown);
+            var documentOnClickSubscription;
+            documentOnClickSubscription = document.onClick.listen((event) {
+              event.stopPropagation();
+              selectedPackageDropdown.remove();
+              documentOnClickSubscription.cancel();
+            });
+          })
+        )
+        ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(packageId, packageName)));
+      packageList.append(packageListItem);
+    });
 
     _packageConfiguratorSidebar.append(packageList);
   }
@@ -757,7 +852,8 @@ class PackageConfiguratorView extends BaseView {
     });
     var addsTagsContainer = new TagListView(addsTags, configurationData.availableTags, controller.addsTagsChanged, true).renderElement;
 
-    _packageConfiguratorContent.append(
+    _packageConfiguratorContent
+    ..append(
       new DivElement()
         ..classes.add('configure-package-labels')
         ..append(
@@ -766,6 +862,16 @@ class PackageConfiguratorView extends BaseView {
             ..text = 'What new labels would like to tag the message with?'
         )
         ..append(addsTagsContainer)
+    )
+    ..append(
+      new DivElement()
+        ..classes.add('configure-package-actions')
+        ..append(
+          new ButtonElement()
+            ..classes.add('save-configuration-btn')
+            ..text = 'Save Configuration'
+            ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration, null))
+        )
     );
   }
 }
@@ -815,7 +921,7 @@ class TagListView extends BaseView {
           ..text = tag
           ..onClick.listen((event) {
             if (tag == '--None--') return;
-            onTagChangedCallback(tag, tags[tag], controller.TagOperation.ADD);
+            onTagChangedCallback(tag, tags[tag], controller.TagOperation.add);
           })
       );
     }
@@ -866,16 +972,16 @@ class TagView extends BaseView {
           ..text = 'x'
           ..onClick.listen((_) {
             if (isEditableTag) {
-              onTagChangedCallback(tag, tag, tagType, controller.TagOperation.REMOVE);
+              onTagChangedCallback(tag, tag, tagType, controller.TagOperation.remove);
               return;
             }
-            onTagChangedCallback(tag, tagType, controller.TagOperation.REMOVE);
+            onTagChangedCallback(tag, tagType, controller.TagOperation.remove);
           })
       );
 
     if (isEditableTag) {
       _tagText.contentEditable = 'true';
-      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagType, controller.TagOperation.UPDATE));
+      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagType, controller.TagOperation.update));
     }
 
     return tagElement;
@@ -1263,4 +1369,15 @@ class ProjectConfigurationView extends BaseView{
           })
       );
   }
+}
+
+// Helpers
+
+_cursorToEnd(Element element) {
+  var range = document.createRange();
+  range.selectNodeContents(element);
+  range.collapse(false);
+  var selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 }

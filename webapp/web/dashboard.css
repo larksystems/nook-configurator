@@ -131,6 +131,7 @@
 .package {
     display: grid;
     grid-template-columns: auto auto;
+    position: relative;
     border: 2px solid #cacaca;
     border-bottom-style: none;
     padding: 11px;
@@ -164,6 +165,18 @@
   margin: 0px;
 }
 
+.active-package-title__text:focus {
+  padding: 0px 5px;
+}
+
+.active-package-title__edit-action {
+  margin-left: 10px;
+  font-size: 0.9em;
+  color: #499398;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .active-package-actions {
   margin: 10px 0px;
 }
@@ -182,6 +195,22 @@
 
 .active-package-chart__description {
   margin: 0px;
+}
+
+.active-package-menu {
+  position: absolute;
+  right: -3px;
+  cursor: pointer;
+}
+
+.active-package-menu:after {
+  content: '\2807';
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.active-package-dropdown {
+  left: 100% !important;
 }
 
 .available-package-name {
