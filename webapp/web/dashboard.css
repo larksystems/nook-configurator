@@ -201,6 +201,11 @@
   position: absolute;
   right: -3px;
   cursor: pointer;
+  border: none;
+  background-color: none;
+  background: none;
+  outline: none;
+  padding: 0px;
 }
 
 .active-package-menu:after {

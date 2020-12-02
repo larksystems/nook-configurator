@@ -58,6 +58,12 @@
   font-weight: bold;
   font-size: 1.2em;
   visibility: hidden;
+  border: none;
+  background-color: none;
+  background: none;
+  outline: none;
+  padding: 0px;
+  cursor: pointer;
 }
 
 .selected-active-package-list__item-action:after {

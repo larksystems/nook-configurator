@@ -547,38 +547,27 @@ class ActivePackagesViewPartial {
       ..append(packageMainContainer)
       ..append(packageChart)
       ..append(
-        new SpanElement()
-          ..classes.add('active-package-menu')
-          ..onClick.listen((event) {
-            event.stopPropagation();
-            var selectedPackageDropdown = new Element.ul()
-              ..classes.addAll(['add-tag-dropdown', 'active-package-dropdown'])
-              ..append(
-                new Element.li()
-                  ..classes.add('add-tag-dropdown__item')
-                  ..text = 'Rename'
-                  ..onClick.listen((event) {
-                    packageNameElement.contentEditable = 'true';
-                    packageNameElement.focus();
-                    _cursorToEnd(packageNameElement);
-                  })
-              )
-              ..append(
-                new Element.li()
-                  ..classes.add('add-tag-dropdown__item')
-                  ..text = 'Duplicate'
-                  ..onClick.listen((event) {
-                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
-                  })
-              );
-            packageElement.append(selectedPackageDropdown);
-            var documentOnClickSubscription;
-            documentOnClickSubscription = document.onClick.listen((event) {
-              event.stopPropagation();
-              selectedPackageDropdown.remove();
-              documentOnClickSubscription.cancel();
-            });
-          })
+        new AddActionElement(
+          packageElement,
+          '',
+          ['Rename', 'Duplicate'],
+          (MouseEvent event) {
+            var menuItem = (event.target as Element).dataset['item'];
+            switch(menuItem) {
+              case 'Rename':
+                packageNameElement.contentEditable = 'true';
+                packageNameElement.focus();
+                _cursorToEnd(packageNameElement);
+                break;
+              case 'Duplicate':
+                controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+                break;
+            }
+          },
+          ['active-package-menu'],
+          {},
+          ['add-tag-dropdown', 'active-package-dropdown']
+        ).renderElement
       );
   }
 }
@@ -684,43 +673,32 @@ class PackageConfiguratorView extends BaseView {
         ..classes.toggle('selected-active-package-list__item--selected', (packageId == controller.selectedPackage))
         ..append(packageListItemText)
         ..append(
-          new SpanElement()
-          ..classes.add('selected-active-package-list__item-action')
-          ..classes.toggle('selected-active-package-list__item-action--show', (packageId == controller.selectedPackage))
-          ..onClick.listen((event) {
-            event.stopPropagation();
-            var selectedPackageDropdown = new Element.ul()
-              ..classes.addAll(['add-tag-dropdown', 'selected-package-dropdown'])
-              ..append(
-                new Element.li()
-                  ..classes.add('add-tag-dropdown__item')
-                  ..text = 'Rename'
-                  ..onClick.listen((event) {
-                    event.stopImmediatePropagation();
-                    packageListItemText.contentEditable = 'true';
-                    packageListItemText.focus();
-                    _cursorToEnd(packageListItemText);
-                  })
-              )
-              ..append(
-                new Element.li()
-                  ..classes.add('add-tag-dropdown__item')
-                  ..text = 'Duplicate'
-                  ..onClick.listen((event) {
-                    event.stopImmediatePropagation();
-                    controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
-                  })
-              );
-            packageListItem.append(selectedPackageDropdown);
-            var documentOnClickSubscription;
-            documentOnClickSubscription = document.onClick.listen((event) {
-              event.stopPropagation();
-              selectedPackageDropdown.remove();
-              documentOnClickSubscription.cancel();
-            });
-          })
+          new AddActionElement(
+            packageListItem,
+            '',
+            ['Rename', 'Duplicate'],
+            (MouseEvent event) {
+              var menuItem = (event.target as Element).dataset['item'];
+              switch(menuItem) {
+                case 'Rename':
+                  packageListItemText.contentEditable = 'true';
+                  packageListItemText.focus();
+                  _cursorToEnd(packageListItemText);
+                  break;
+                case 'Duplicate':
+                  controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+                  break;
+              }
+            },
+            ['selected-active-package-list__item-action'],
+            {'selected-active-package-list__item-action--show': (packageId == controller.selectedPackage)},
+            ['add-tag-dropdown', 'selected-package-dropdown']
+          ).renderElement
         )
-        ..onClick.listen((_) => controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(packageId, packageName)));
+        ..onClick.listen((event) {
+          if (!(event.target == packageListItem)) return;
+          controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(packageId, packageName));
+        });
       packageList.append(packageListItem);
     });
 
@@ -886,22 +864,20 @@ class TagListView extends BaseView {
     _tagsContainer = new DivElement()
       ..classes.add('tags');
     _tagsActionContainer = new SpanElement()
-      ..classes.add('tags__actions')
-      ..append(
-        new ButtonElement()
-          ..classes.add('button-add-tag')
-          ..text = '+'
-          ..onClick.listen((event) {
-            event.stopPropagation();
-            if (tagsEditable) {
-              var tagElement = new TagView('', model.TagType.Normal, onTagChangedCallback, tagsEditable);
-              _tagsActionContainer.insertAdjacentElement('beforebegin', tagElement.renderElement);
-              tagElement.focus();
-              return;
-            }
-            _addTagDropdown(availableTags, onTagChangedCallback);
-          })
-      );
+      ..classes.add('tags__actions');
+    Function addAction;
+    if (tagsEditable) {
+      addAction = onTagChangedCallback;
+    } else {
+      addAction = (MouseEvent event) {
+        var tag = (event.target as Element).dataset['item'];
+        if (tag == '--None--') return;
+        onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add);
+      };
+    }
+    _tagsActionContainer.append(
+      new AddActionElement(_tagsActionContainer, '+', availableTags.keys.toList(), addAction, ['button-add-tag'], {}, ['add-tag-dropdown'], tagsEditable).renderElement
+    );
     _tagsContainer.append(_tagsActionContainer);
     tagElements.forEach((tag) {
       _tagsActionContainer.insertAdjacentElement('beforebegin', tag.renderElement);
@@ -909,30 +885,6 @@ class TagListView extends BaseView {
   }
 
   DivElement get renderElement => _tagsContainer;
-
-  void _addTagDropdown(Map<String, model.TagType> tags, Function onTagChangedCallback) {
-    var tagListDropdown = new Element.ul()
-      ..classes.add('add-tag-dropdown');
-    var tagsToShow = tags.isEmpty ? ['--None--'] : tags.keys;
-    for (var tag in tagsToShow) {
-      tagListDropdown.append(
-        new Element.li()
-          ..classes.add('add-tag-dropdown__item')
-          ..text = tag
-          ..onClick.listen((event) {
-            if (tag == '--None--') return;
-            onTagChangedCallback(tag, tags[tag], controller.TagOperation.add);
-          })
-      );
-    }
-    _tagsActionContainer.append(tagListDropdown);
-    var documentOnClickSubscription;
-    documentOnClickSubscription = document.onClick.listen((event) {
-      event.stopPropagation();
-      tagListDropdown.remove();
-     documentOnClickSubscription.cancel();
-    });
-  }
 }
 
 class TagView extends BaseView {
@@ -1369,6 +1321,67 @@ class ProjectConfigurationView extends BaseView{
           })
       );
   }
+}
+
+class AddActionElement {
+  ButtonElement _addAction;
+  Element container;
+  String addActionLabel;
+  List<String> dropdownItems;
+  List<String> actionClasses;
+  Map<String, bool> toggleActionClasses;
+  List<String> dropdownClasses;
+  Function onAddAction;
+  bool isEditableTag;
+
+
+  AddActionElement(this.container, this.addActionLabel, this.dropdownItems, this.onAddAction, this.actionClasses, this.toggleActionClasses, this.dropdownClasses, [this.isEditableTag = false]) {
+    _addAction = new ButtonElement()
+      ..classes.addAll(actionClasses)
+      ..text = addActionLabel
+      ..onClick.listen((_) {
+        if (isEditableTag) {
+          _createEditableTag();
+        } else {
+          _createDropdown();
+        }
+    });
+
+    if (toggleActionClasses != null) {
+      toggleActionClasses.keys.toList().forEach((clazz) => _addAction.classes.toggle(clazz, toggleActionClasses[clazz]));
+    }
+  }
+
+  void _createDropdown() {
+    var dropdown = new Element.ul()
+      ..classes.addAll(dropdownClasses);
+    var items = dropdownItems.isEmpty ? ['--None--'] : dropdownItems;
+    for (var item in items) {
+      dropdown.append(
+        new Element.li()
+          ..classes.add('add-tag-dropdown__item')
+          ..text = item
+          ..dataset['item'] = item
+          ..onClick.listen(onAddAction)
+      );
+    }
+    container.append(dropdown);
+    var documentOnClickSubscription;
+    documentOnClickSubscription = document.onClick.listen((event) {
+      if (event.target == document.activeElement) return;
+      event.stopPropagation();
+      dropdown.remove();
+     documentOnClickSubscription.cancel();
+    });
+  }
+
+  void _createEditableTag() {
+    var tagElement = new TagView('', model.TagType.Normal, onAddAction, isEditableTag);
+      container.insertAdjacentElement('beforebegin', tagElement.renderElement);
+      tagElement.focus();
+  }
+
+  Element get renderElement => _addAction;
 }
 
 // Helpers
