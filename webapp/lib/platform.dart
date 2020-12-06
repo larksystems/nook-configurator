@@ -69,6 +69,24 @@ void listenForSuggestedReplies(SuggestedReplyCollectionListener listener, [OnErr
     SuggestedReply.listen(_docStorage, listener, onErrorListener: onErrorListener);
 
 Future<void> updateSuggestedReplies(List<SuggestedReply> replies) {
-  print ("TODO: Set Suggeted");
-  return Future.value(0);
+
+  List<Future> futures = [];
+
+  for (SuggestedReply suggestedReply in replies) {
+    futures.add(
+      _pubsubInstance.publishAddOpinion('nook/set_suggested_reply',  {
+        "text" : suggestedReply.text,
+        "translation" : suggestedReply.translation,
+        "__id" : suggestedReply.suggestedReplyId,
+        "shortcut" : suggestedReply.shortcut,
+        "seq_no" : suggestedReply.seqNumber,
+        "category" : suggestedReply.category,
+        "group_id" : suggestedReply.groupId,
+        "group_description" : suggestedReply.groupDescription,
+        "index_in_group" : suggestedReply.indexInGroup
+    }));
+
+  }
+
+  return Future.wait(futures);
 }

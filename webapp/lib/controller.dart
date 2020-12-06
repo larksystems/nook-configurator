@@ -191,3 +191,7 @@ void removeSuggestedReply(int rowIndex) {
   model.packageConfigurationData[selectedPackage].suggestedReplies.removeAt(rowIndex);
   loadPackageConfigurationView();
 }
+
+Future<void> saveSuggestedReplies(List<new_model.SuggestedReply> suggestedReplies) {
+  return platform.updateSuggestedReplies(suggestedReplies);
+}
