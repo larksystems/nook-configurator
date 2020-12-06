@@ -7,6 +7,7 @@ import 'platform.dart' as platform;
 import 'view.dart' as view;
 import 'router.dart';
 import 'model.dart' as model;
+import 'new_model.dart' as new_model;
 
 Logger log = new Logger('controller.dart');
 Router router;
@@ -99,22 +100,13 @@ void loadPackageConfigurationView() {
 // Suggested Replies operations
 void addNewResponse() {
   model.packageConfigurationData[selectedPackage].suggestedReplies.add(
-    {
-      "messages":
-        [
-          "",
-          "",
-        ],
-      "reviewed": false,
-      "reviewed-by": "",
-      "reviewed-date": ""
-    },
-  );
+    new_model.SuggestedReply()
+    );
   loadPackageConfigurationView();
 }
 
 void updateResponse(int rowIndex, int colIndex, String response) {
-  model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['messages'][colIndex] = response;
+  model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex].text = response;
   loadPackageConfigurationView();
 }
 
@@ -122,13 +114,15 @@ void reviewResponse(int rowIndex, bool reviewed) {
   if (reviewed) {
     var now = DateTime.now().toLocal();
     var reviewedDate = '${now.year}-${now.month}-${now.day}';
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = true;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
+    // TODO
+    // model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = true;
+    // model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
+    // model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
   } else {
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = false;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = '';
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = '';
+    // TODO
+    // model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = false;
+    // model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = '';
+    // model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = '';
   }
   loadPackageConfigurationView();
 }
