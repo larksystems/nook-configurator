@@ -38,7 +38,7 @@ class UserData extends Data {
   }
 }
 
-List<String> configurationResponseLanguages;
+List<String> configurationSuggestedReplyLanguages;
 List<new_model.SuggestedReply> suggestedReplies;
 Map<String, List<new_model.SuggestedReply>> suggestedRepliesByCategory;
 
@@ -149,7 +149,7 @@ void loadPackageConfigurationView() {
 }
 
 // Suggested Replies operations
-void addNewResponse() {
+void addNewSuggestedReply() {
   model.packageConfigurationData[selectedPackage].suggestedReplies.add(
     {
       "messages":
@@ -165,12 +165,12 @@ void addNewResponse() {
   loadPackageConfigurationView();
 }
 
-void updateResponse(int rowIndex, int colIndex, String response) {
-  model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['messages'][colIndex] = response;
+void updateSuggestedReply(int rowIndex, int colIndex, String suggestedReply) {
+  model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['messages'][colIndex] = suggestedReply;
   loadPackageConfigurationView();
 }
 
-void reviewResponse(int rowIndex, bool reviewed) {
+void reviewSuggestedReply(int rowIndex, bool reviewed) {
   if (reviewed) {
     var now = DateTime.now().toLocal();
     var reviewedDate = '${now.year}-${now.month}-${now.day}';
@@ -185,7 +185,7 @@ void reviewResponse(int rowIndex, bool reviewed) {
   loadPackageConfigurationView();
 }
 
-void removeResponse(int rowIndex) {
+void removeSuggestedReply(int rowIndex) {
   model.packageConfigurationData[selectedPackage].suggestedReplies.removeAt(rowIndex);
   loadPackageConfigurationView();
 }

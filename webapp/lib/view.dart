@@ -198,15 +198,15 @@ class PackageConfiguratorView extends BaseView {
 
   void _buildContentPartial() {
     var suggestedRepliesContainer =
-      new ResponseListView(configurationData.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
+      new SuggestedRepliesView(configurationData.suggestedReplies, controller.addNewSuggestedReply, controller.updateSuggestedReply, controller.reviewSuggestedReply, controller.removeSuggestedReply).renderElement;
 
     _packageConfiguratorContent
       ..append(
         new DivElement()
-          ..classes.add('configure-package-responses')
+          ..classes.add('configure-package-suggested-replies')
           ..append(
             new DivElement()
-              ..classes.add('configure-package-responses-headers')
+              ..classes.add('configure-package-suggested-replies-headers')
               ..append(
                 new HeadingElement.h3()
                   ..text = 'What do you want to say?'
@@ -227,100 +227,100 @@ class PackageConfiguratorView extends BaseView {
   }
 }
 
-class ResponseView {
-  Element _responseElement;
-  Function onUpdateResponseCallback;
+class SuggestedReplyView {
+  Element _suggestedReplyElement;
+  Function onUpdateSuggestedReplyCallback;
 
-  ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback) {
-    var responseCounter = new SpanElement()
-      ..classes.add('conversation-response-language__text-count')
-      ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
-      ..text = '${responseCount}/160';
-    var responseText =  new ParagraphElement();
-    responseText
-      ..classes.add('conversation-response-language__text')
-      ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
-      ..text = response != null ? response : ''
+  SuggestedReplyView(int rowIndex, int colIndex, String suggestedReply, int suggestedReplyCount, this.onUpdateSuggestedReplyCallback) {
+    var suggestedReplyCounter = new SpanElement()
+      ..classes.add('conversation-suggested-reply-language__text-count')
+      ..classes.toggle('conversation-suggested-reply-language__text-count--alert', suggestedReplyCount > 160)
+      ..text = '${suggestedReplyCount}/160';
+    var suggestedReplyText =  new ParagraphElement();
+    suggestedReplyText
+      ..classes.add('conversation-suggested-reply-language__text')
+      ..classes.toggle('conversation-suggested-reply-language__text--alert', suggestedReplyCount > 160)
+      ..text = suggestedReply != null ? suggestedReply : ''
       ..contentEditable = 'true'
       ..dataset['index'] = '$colIndex'
-      ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text))
+      ..onBlur.listen((event) => onUpdateSuggestedReplyCallback(rowIndex, colIndex, (event.target as Element).text))
       ..onInput.listen((event) {
-        int count = responseText.text.split('').length;
-        responseCounter.text = '${count}/160';
-        responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
-        responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
+        int count = suggestedReplyText.text.split('').length;
+        suggestedReplyCounter.text = '${count}/160';
+        suggestedReplyText.classes.toggle('conversation-suggested-reply-language__text--alert', count > 160);
+        suggestedReplyCounter.classes.toggle('conversation-suggested-reply-language__text-count--alert', count > 160);
       });
-    _responseElement = new DivElement()
-      ..classes.add('conversation-response-language')
-      ..append(responseText)
-      ..append(responseCounter);
+    _suggestedReplyElement = new DivElement()
+      ..classes.add('conversation-suggested-reply-language')
+      ..append(suggestedReplyText)
+      ..append(suggestedReplyCounter);
   }
-    Element get renderElement => _responseElement;
+    Element get renderElement => _suggestedReplyElement;
 }
 
-class ResponseListView extends BaseView {
-  DivElement _responsesContainer;
-  Function onAddNewResponseCallback;
-  Function onUpdateResponseCallback;
-  Function onReviewResponseCallback;
-  Function onRemoveResponseCallback;
+class SuggestedRepliesView extends BaseView {
+  DivElement _suggestedRepliesContainer;
+  Function onAddNewSuggestedReplyCallback;
+  Function onUpdateSuggestedReplyCallback;
+  Function onReviewSuggestedReplyCallback;
+  Function onRemoveSuggestedReplyCallback;
 
-  ResponseListView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
-    _responsesContainer = new DivElement()
-      ..classes.add('conversation-responses');
+  SuggestedRepliesView(List<Map> suggestedReplies, this.onAddNewSuggestedReplyCallback, this.onUpdateSuggestedReplyCallback, this.onReviewSuggestedReplyCallback, this.onRemoveSuggestedReplyCallback) {
+    _suggestedRepliesContainer = new DivElement()
+      ..classes.add('conversation-suggested-replies');
     for (int i = 0; i < suggestedReplies.length; i++) {
-      _responsesContainer.append(_createResponseEntry(i, suggestedReplies[i]));
+      _suggestedRepliesContainer.append(_createSuggestedReplyEntry(i, suggestedReplies[i]));
     }
-    _responsesContainer.append(
+    _suggestedRepliesContainer.append(
       new ButtonElement()
-        ..classes.add('button-add-conversation-responses')
+        ..classes.add('button-add-conversation-suggested-replies')
         ..text = '+'
-        ..onClick.listen((event) => onAddNewResponseCallback())
+        ..onClick.listen((event) => onAddNewSuggestedReplyCallback())
     );
   }
 
-  DivElement get renderElement => _responsesContainer;
+  DivElement get renderElement => _suggestedRepliesContainer;
 
-  DivElement _createResponseEntry(int rowIndex, [Map response]) {
-    var responseEntry = new DivElement()
-      ..classes.add('conversation-response')
+  DivElement _createSuggestedReplyEntry(int rowIndex, [Map suggestedReply]) {
+    var suggestedReplyEntry = new DivElement()
+      ..classes.add('conversation-suggested-reply')
       ..dataset['index'] = '$rowIndex';
-    responseEntry.append(
+    suggestedReplyEntry.append(
         new ButtonElement()
-          ..classes.add('button-remove-conversation-responses')
+          ..classes.add('button-remove-conversation-suggested-replies')
           ..text = 'x'
           ..onClick.listen((_) {
-            var removeResponsesModal = new DivElement()
-              ..classes.add('remove-conversation-responses-modal');
-            removeResponsesModal
+            var removeSuggestedRepliesModal = new DivElement()
+              ..classes.add('remove-conversation-suggested-replies-modal');
+            removeSuggestedRepliesModal
               ..append(
                 new ParagraphElement()
-                  ..classes.add('remove-conversation-responses-modal__message')
+                  ..classes.add('remove-conversation-suggested-replies-modal__message')
                   ..text = 'Are you sure?'
               )
               ..append(
                 new DivElement()
-                  ..classes.add('remove-conversation-responses-modal-actions')
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions')
                   ..append(
                     new ButtonElement()
-                      ..classes.add('remove-conversation-responses-modal-actions__action')
+                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
                       ..text = 'Yes'
-                      ..onClick.listen((_) => onRemoveResponseCallback(rowIndex))
+                      ..onClick.listen((_) => onRemoveSuggestedReplyCallback(rowIndex))
                   )
                   ..append(
                     new ButtonElement()
-                      ..classes.add('remove-conversation-responses-modal-actions__action')
+                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
                       ..text = 'No'
-                      ..onClick.listen((_) => removeResponsesModal.remove())
+                      ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
                   )
               );
-            responseEntry.append(removeResponsesModal);
+            suggestedReplyEntry.append(removeSuggestedRepliesModal);
           })
       );
-    for (int i = 0; i < response['messages'].length; i++) {
-      int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
+    for (int i = 0; i < suggestedReply['messages'].length; i++) {
+      int suggestedReplyCount = suggestedReply['messages'][i] == null ? 0 : suggestedReply['messages'][i].split('').length;
+      suggestedReplyEntry.append(new SuggestedReplyView(rowIndex, i, suggestedReply['messages'][i], suggestedReplyCount, onUpdateSuggestedReplyCallback).renderElement);
     }
-    return responseEntry;
+    return suggestedReplyEntry;
   }
 }
