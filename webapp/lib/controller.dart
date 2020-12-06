@@ -54,6 +54,8 @@ void init() async {
 void initUI() {
   router.routeTo(window.location.hash);
 
+  suggestedReplies = [];
+
   // Listener inits
 
     platform.listenForSuggestedReplies(
