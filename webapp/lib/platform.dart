@@ -7,7 +7,7 @@ import 'platform_constants.dart' as platform_constants;
 
 Logger log = new Logger('platform.dart');
 
-firestore.Firestore firestoreInstance;
+firestore.Firestore _firestoreInstance;
 
 init() async {
   await platform_constants.init();
@@ -31,7 +31,7 @@ init() async {
     if (photoURL == null) {
       photoURL =  '/assets/user_image_placeholder.png';
     }
-    firestoreInstance = firebase.firestore();
+    _firestoreInstance = firebase.firestore();
     controller.command(controller.UIAction.userSignedIn, new controller.UserData(user.displayName, user.email, photoURL));
   });
 }

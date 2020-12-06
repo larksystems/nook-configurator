@@ -1,15 +1,9 @@
 import 'dart:html';
 
 import 'model.dart' as model;
-import 'new_model.dart' as new_model;
-
 
 import 'logger.dart';
 import 'controller.dart' as controller;
-
-import 'platform.dart' as platform;
-
-
 
 Logger log = new Logger('view.dart');
 
@@ -203,109 +197,8 @@ class PackageConfiguratorView extends BaseView {
   DivElement get renderElement => packageConfiguratorViewElement;
 
   void _buildContentPartial() {
-    List<TagView> hasAllTags = [];
-    configurationData.hasAllTags.forEach((tag, tagType) {
-      hasAllTags.add(new TagView(tag, tagType, controller.hasAllTagsChanged));
-    });
-    var hasAllTagsContainer = new TagListView(hasAllTags, configurationData.availableTags, controller.hasAllTagsChanged).renderElement;
-
-    List<TagView> containsLastInTurnTags = [];
-    configurationData.containsLastInTurnTags.forEach((tag, tagType) {
-      containsLastInTurnTags.add(new TagView(tag, tagType, controller.containsLastInTurnTagsChanged));
-    });
-    var containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, configurationData.availableTags, controller.containsLastInTurnTagsChanged).renderElement;
-
-    List<TagView> hasNoneTags = [];
-    configurationData.hasNoneTags.forEach((tag, tagType) {
-      hasNoneTags.add(new TagView(tag, tagType, controller.hasNoneTagsChanged));
-    });
-    var hasNoneTagsContainer = new TagListView(hasNoneTags, configurationData.availableTags, controller.hasNoneTagsChanged).renderElement;
-
-    _packageConfiguratorContent.append(
-      new DivElement()
-        ..classes.add('configure-package-tags')
-        ..append(
-          new DivElement()
-            ..classes.add('conversation-tags')
-            ..append(
-              new DivElement()
-                ..classes.add('conversation-tags__row')
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-tags__title')
-                    ..text = 'Who do you want to talk to'
-                )
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-tags__sub-title')
-                    ..text = 'Conversations has tags'
-                )
-                ..append(hasAllTagsContainer)
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-tags__text--center')
-                    ..text = 'and'
-                )
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-tags__sub-title')
-                    ..text = 'Last in turn contains ...'
-                )
-                ..append(containsLastInTurnTagsContainer)
-            )
-            ..append(
-              new DivElement()
-                ..classes.add('conversation-tags__row')
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-tags__title')
-                    ..text = 'Who do you NOT want to talk to?'
-                )
-                ..append(
-                  new ParagraphElement()
-                    ..classes.add('conversation-tags__sub-title')
-                    ..text = 'Conversation has tags'
-                )
-                ..append(hasNoneTagsContainer)
-            )
-        )
-        ..append(
-          new DivElement()
-            ..classes.add('conversation-charts')
-            ..append(
-              new DivElement()
-                ..classes.add('configure-package-charts')
-                ..append(
-                   new ImageElement()
-                    ..classes.add('configure-package-charts__chart')
-                    ..src = 'assets/sample-chart.png'
-                )
-            )
-            ..append(
-              new DivElement()
-                ..classes.add('configure-package-actions')
-                ..append(
-                  new AnchorElement()
-                    ..classes.add('configure-package-actions__action')
-                    ..href = '#'
-                    ..text = 'Go to Conversations'
-                )
-                ..append(
-                  new AnchorElement()
-                    ..classes.add('configure-package-actions__action')
-                    ..href = '#'
-                    ..text = 'Explore'
-                )
-            )
-        )
-    );
-
-
-
-    var suggestedRepliesView =
-      new ResponseListView(configurationData.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse);
-
-    var suggestedRepliesContainer = suggestedRepliesView.renderElement;
+    var suggestedRepliesContainer =
+      new ResponseListView(configurationData.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
 
     _packageConfiguratorContent
       ..append(
@@ -372,7 +265,7 @@ class ResponseListView extends BaseView {
   Function onReviewResponseCallback;
   Function onRemoveResponseCallback;
 
-  ResponseListView(List<new_model.SuggestedReply> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
+  ResponseListView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
     _responsesContainer = new DivElement()
       ..classes.add('conversation-responses');
     for (int i = 0; i < suggestedReplies.length; i++) {
@@ -388,7 +281,7 @@ class ResponseListView extends BaseView {
 
   DivElement get renderElement => _responsesContainer;
 
-  DivElement _createResponseEntry(int rowIndex, [new_model.SuggestedReply response]) {
+  DivElement _createResponseEntry(int rowIndex, [Map response]) {
     var responseEntry = new DivElement()
       ..classes.add('conversation-response')
       ..dataset['index'] = '$rowIndex';
@@ -424,38 +317,10 @@ class ResponseListView extends BaseView {
             responseEntry.append(removeResponsesModal);
           })
       );
-
-      responseEntry.append(
-        new ResponseView(rowIndex, 0, response.text, 1, onUpdateResponseCallback).renderElement);
-
-      responseEntry.append(
-        new ResponseView(rowIndex, 1, response.translation, 1, onUpdateResponseCallback).renderElement);
-
-    // for (int i = 0; i < response ['messages'].length; i++) {
-      // int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-      // responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
-    // }
-    responseEntry.append(
-      DivElement()
-        ..classes.add('conversation-response__reviewed')
-        ..append(
-          new CheckboxInputElement()
-              ..classes.add('conversation-response__reviewed-state')
-              ..checked = false
-              ..onClick.listen((event) => onReviewResponseCallback(rowIndex, (event.target as CheckboxInputElement).checked))
-        )
-        ..append(
-          new ParagraphElement()
-            ..classes.add('conversation-response__reviewed-description')
-            ..text = ''//response != null ? '${response['reviewed-by']}, ${response['reviewed-date']}' : ''
-        )
-    );
-//=======
-//    for (int i = 0; i < response['messages'].length; i++) {
-//      int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-//      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
-//    }
-//>>>>>>> master-prod
+    for (int i = 0; i < response['messages'].length; i++) {
+      int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
+      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
+    }
     return responseEntry;
   }
 }

@@ -1,7 +1,3 @@
-import 'new_model.dart' as new_model;
-import 'sample_data.dart' as sample_data;
-
-
 // TODO To be replaced with real models. Just dumping dummy data here to keep controller.dart clean
 Map<String, List<String>> projectData = {
   'COVID IMAQAL' : ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
@@ -121,60 +117,58 @@ Map<String, TagType> tags = {
   'other tag 3': TagType.Normal
 };
 
+List<Map> changeCommunicationsSuggestedReplies = [
+  {
+    "messages":
+      [
+        "Greetings to you dear listener! Thanks for the beautiful way you are sharing your thoughts with us",
+        "Saalan, quruz badan nage guddoon dhagaystaha sharafta leh, waad ku mahadsantahay sida quruxda badana ee aad noola wadageyso fikradahaada",
+      ],
+    "reviewed": true,
+    "reviewed-by": "nancy@whatworks.co.ke",
+    "reviewed-date": "2020-10-10"
+  },
+  {
+    "messages":
+      [
+        "Thanks, we hear you and appreciate. We think it is really important to tell you what we know from trusted sources",
+        "Mahadsanid, waan ku maqalnaa waanan kuu mahadnaqaynaa. Waxaa muhiim ah inaan kula wadaagno waxaa aan ognahay oo ka yimid ilo lagu kalsoon yahay",
+      ],
+    "reviewed": false,
+    "reviewed-by": "",
+    "reviewed-date": ""
+  }
+];
 
-
-// List<Map> changeCommunicationsSuggestedReplies = [
-//   {
-//     "messages":
-//       [
-//         "Greetings to you dear listener! Thanks for the beautiful way you are sharing your thoughts with us",
-//         "Saalan, quruz badan nage guddoon dhagaystaha sharafta leh, waad ku mahadsantahay sida quruxda badana ee aad noola wadageyso fikradahaada",
-//       ],
-//     "reviewed": true,
-//     "reviewed-by": "nancy@whatworks.co.ke",
-//     "reviewed-date": "2020-10-10"
-//   },
-//   {
-//     "messages":
-//       [
-//         "Thanks, we hear you and appreciate. We think it is really important to tell you what we know from trusted sources",
-//         "Mahadsanid, waan ku maqalnaa waanan kuu mahadnaqaynaa. Waxaa muhiim ah inaan kula wadaagno waxaa aan ognahay oo ka yimid ilo lagu kalsoon yahay",
-//       ],
-//     "reviewed": false,
-//     "reviewed-by": "",
-//     "reviewed-date": ""
-//   }
-// ];
-
-// List<Map> escalatesSuggestedReplies = [
-//   {
-//     "messages":
-//       [
-//         "Do you need information regarding Coronavirus?",
-//         "Ma u baahantahay macluumaad ku saabsan xanuunka Koroona fayraska?",
-//       ],
-//     "reviewed": false,
-//     "reviewed-by": "",
-//     "reviewed-date": ""
-//   },
-//   {
-//     "messages":
-//       [
-//         "Thanks for your message. Unfortunately we only provide information on coronavirus.a",
-//         "Waad ku mahadsantahay farriintaada. Nasiib darro kaliye waxaan bixinaa macluumaad ku saabsan Koronafayraska.",
-//       ],
-//     "reviewed": false,
-//     "reviewed-by": "",
-//     "reviewed-date": ""
-//   }
-// ];
+List<Map> escalatesSuggestedReplies = [
+  {
+    "messages":
+      [
+        "Do you need information regarding Coronavirus?",
+        "Ma u baahantahay macluumaad ku saabsan xanuunka Koroona fayraska?",
+      ],
+    "reviewed": false,
+    "reviewed-by": "",
+    "reviewed-date": ""
+  },
+  {
+    "messages":
+      [
+        "Thanks for your message. Unfortunately we only provide information on coronavirus.a",
+        "Waad ku mahadsantahay farriintaada. Nasiib darro kaliye waxaan bixinaa macluumaad ku saabsan Koronafayraska.",
+      ],
+    "reviewed": false,
+    "reviewed-by": "",
+    "reviewed-date": ""
+  }
+];
 
 class Configuration {
   Map<String, TagType> availableTags = {};
   Map<String, TagType> hasAllTags = {};
   Map<String, TagType> containsLastInTurnTags = {};
   Map<String, TagType> hasNoneTags = {};
-  List<new_model.SuggestedReply> suggestedReplies = [];
+  List<Map> suggestedReplies = [];
   Map<String, TagType> addsTags = {};
 }
 
@@ -188,13 +182,13 @@ Map<String, Configuration> packageConfigurationData = {
     ..availableTags = tags
     ..containsLastInTurnTags = {'denial': TagType.Normal , 'rumour': TagType.Normal}
     ..hasNoneTags = {'escalate': TagType.Normal, 'STOP': TagType.Normal}
-    ..suggestedReplies = sample_data.changeCommsSuggestedReplies
+    ..suggestedReplies = changeCommunicationsSuggestedReplies
     ..addsTags = {'Organic conversation appreciation': TagType.Normal, 'Organic conversation hostility': TagType.Normal,
       'RP Substance appreciation': TagType.Normal, 'RP Substance hostility': TagType.Normal},
   'Urgent conversations': new Configuration()
     ..availableTags = tags
     ..hasAllTags = {'escalate': TagType.Important}
-    ..suggestedReplies = sample_data.escalatesSuggestedReplies
+    ..suggestedReplies = escalatesSuggestedReplies
     ..addsTags = {'de-escalate': TagType.Normal, 'no-escalate': TagType.Normal},
   'Open conversations': new Configuration(),
 };
