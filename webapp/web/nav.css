@@ -5,6 +5,8 @@
   width: 100%;
   border-bottom: 1px solid #ddd;
   box-shadow: 0px 1px #ddd;
+  position: fixed;
+  background: #ffffff;
 }
 
 .nav__app-logo {
