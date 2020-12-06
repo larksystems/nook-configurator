@@ -176,31 +176,31 @@
   grid-template-rows: 90% auto;
 }
 
-.configure-package-responses {
+.configure-package-suggested-replies {
   border-bottom: 1px solid #ddd;
   padding: 20px;
 }
 
-.configure-package-responses-headers {
+.configure-package-suggested-replies-headers {
   display: flex;
   justify-content: space-between;
   padding-right: 185px;
 }
 
-.conversation-responses {}
+.conversation-suggested-replies {}
 
-.conversation-response {
+.conversation-suggested-reply {
   display: grid;
   grid-template-columns: 3% auto auto;
   grid-gap: 10px;
   position: relative;
 }
 
-.conversation-response-language {
+.conversation-suggested-reply-language {
   display: grid;
 }
 
-.conversation-response-language__text {
+.conversation-suggested-reply-language__text {
   overflow-y: scroll;
   border: 1px solid #ddd;
   border-radius: .5rem;
@@ -209,39 +209,39 @@
   margin-bottom: 0px;
 }
 
-.conversation-response-language__text--alert {
+.conversation-suggested-reply-language__text--alert {
   border-color: #fa8072;
   outline-color: #fa8072;
 }
 
-.conversation-response-language__text-count {
+.conversation-suggested-reply-language__text-count {
   justify-self: flex-end;
   font-size: 0.8em;
 }
 
-.conversation-response-language__text-count--alert {
+.conversation-suggested-reply-language__text-count--alert {
   color: #fa8072;
   outline-color: #fa8072;
 }
 
-.conversation-response__reviewed {
+.conversation-suggested-reply__reviewed {
   display: flex;
   justify-content: flex-start;
   align-self: center;
   flex-wrap: nowrap;
 }
 
-.conversation-response__reviewed-state {}
+.conversation-suggested-reply__reviewed-state {}
 
-.conversation-response__reviewed-state:hover {
+.conversation-suggested-reply__reviewed-state:hover {
   cursor: pointer;
 }
 
-.conversation-response__reviewed-description {
+.conversation-suggested-reply__reviewed-description {
   margin-top: 0px;
 }
 
-.button-remove-conversation-responses {
+.button-remove-conversation-suggested-replies {
   height: 22px;
   width: 20px;
   align-self: center;
@@ -250,11 +250,11 @@
   border-radius: .5rem;
 }
 
-.button-remove-conversation-responses:hover {
+.button-remove-conversation-suggested-replies:hover {
   cursor: pointer;
 }
 
-.remove-conversation-responses-modal {
+.remove-conversation-suggested-replies-modal {
   display: grid;
   position: absolute;
   width: 100%;
@@ -263,7 +263,7 @@
   border-radius: .5rem;
 }
 
-.remove-conversation-responses-modal__message {
+.remove-conversation-suggested-replies-modal__message {
   justify-self: center;
   font-size: 1.2em;
   font-weight: 400;
@@ -272,22 +272,22 @@
   text-shadow: 0 0 1px black;
 }
 
-.remove-conversation-responses-modal-actions {
+.remove-conversation-suggested-replies-modal-actions {
   justify-self: center;
 }
 
-.remove-conversation-responses-modal-actions__action {
+.remove-conversation-suggested-replies-modal-actions__action {
   width: 50px;
   height: 25px;
   justify-self: center;
   margin-right: 20px;
 }
 
-.button-add-conversation-responses {
+.button-add-conversation-suggested-replies {
   margin-left: 20px;
 }
 
-.button-add-conversation-responses:hover {
+.button-add-conversation-suggested-replies:hover {
   cursor: pointer;
 }
 
