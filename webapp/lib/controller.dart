@@ -55,6 +55,8 @@ void initUI() {
   router.routeTo(window.location.hash);
 
   // Listener inits
+  suggestedReplies = [];
+
 
     platform.listenForSuggestedReplies(
     (added, modified, removed) {
