@@ -3,7 +3,7 @@ import 'package:firebase/firestore.dart' as firestore;
 
 import 'controller.dart' as controller;
 import 'logger.dart';
-import 'platform_constants.dart' as platform_constants;
+import 'package:nook/platform_constants.dart' as platform_constants;
 
 Logger log = new Logger('platform.dart');
 
