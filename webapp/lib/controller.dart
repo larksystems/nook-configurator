@@ -22,6 +22,15 @@ enum UIAction {
   signInButtonClicked,
   signOutButtonClicked,
   savePackageConfiguration,
+
+  // Handling suggested replies
+  addSuggestedReply,
+  addSuggestedReplyGroup,
+  updateSuggestedReply,
+  updateSuggestedReplyGroup,
+  removeSuggestedReply,
+  removeSuggestedReplyGroup,
+  changeSuggestedRepliesCategory,
 }
 
 class Data {}
@@ -38,9 +47,46 @@ class UserData extends Data {
   }
 }
 
+class SuggestedReplyData extends Data {
+  String id;
+  String text;
+  String translation;
+  SuggestedReplyData(this.id, {this.text, this.translation});
+
+  @override
+  String toString() {
+    return "SuggestedReplyData($id, '$text', '$translation')";
+  }
+}
+
+class SuggestedReplyGroupData extends Data {
+  String name;
+  String newName;
+  SuggestedReplyGroupData(this.name, {this.newName});
+
+  @override
+  String toString() {
+    return "SuggestedReplyGroupData($name, $newName)";
+  }
+}
+
+
+class SuggestedRepliesCategoryData extends Data {
+  String category;
+  SuggestedRepliesCategoryData(this.category);
+
+  @override
+  String toString() {
+    return "SuggestedRepliesCategoryData($category)";
+  }
+}
+
+
+
 List<String> configurationSuggestedReplyLanguages;
-List<new_model.SuggestedReply> suggestedReplies;
-Map<String, List<new_model.SuggestedReply>> suggestedRepliesByCategory;
+List<new_model.SuggestedReply> suggestedReplies = [];
+Map<String, List<new_model.SuggestedReply>> suggestedRepliesByCategory = {};
+String selectedSuggestedRepliesCategory;
 
 model.User signedInUser;
 final String selectedPackage = 'Change communications';
@@ -55,50 +101,47 @@ void initUI() {
   router.routeTo(window.location.hash);
 
   // Listener inits
-  suggestedReplies = [];
 
+  platform.listenForSuggestedReplies(
+  (added, modified, removed) {
+    var updatedIds = new Set()
+      ..addAll(added.map((r) => r.suggestedReplyId))
+      ..addAll(modified.map((r) => r.suggestedReplyId))
+      ..addAll(removed.map((r) => r.suggestedReplyId));
+    suggestedReplies.removeWhere((suggestedReply) => updatedIds.contains(suggestedReply.suggestedReplyId));
+    suggestedReplies
+      ..addAll(added)
+      ..addAll(modified);
 
-    platform.listenForSuggestedReplies(
-    (added, modified, removed) {
-      var updatedIds = new Set()
-        ..addAll(added.map((r) => r.suggestedReplyId))
-        ..addAll(modified.map((r) => r.suggestedReplyId))
-        ..addAll(removed.map((r) => r.suggestedReplyId));
-      suggestedReplies.removeWhere((suggestedReply) => updatedIds.contains(suggestedReply.suggestedReplyId));
-      suggestedReplies
-        ..addAll(added)
-        ..addAll(modified);
+    // Update the replies by category map
+    suggestedRepliesByCategory = _groupRepliesIntoCategories(suggestedReplies);
+    // Empty sublist if there are no replies to show
+    if (suggestedRepliesByCategory.isEmpty) {
+      suggestedRepliesByCategory[''] = [];
+    }
+    // Sort by sequence number
+    for (var replies in suggestedRepliesByCategory.values) {
+      replies.sort((r1, r2) {
+        var seqNo1 = r1.seqNumber == null ? double.nan : r1.seqNumber;
+        var seqNo2 = r2.seqNumber == null ? double.nan : r2.seqNumber;
+        return seqNo1.compareTo(seqNo2);
+      });
+    }
+    List<String> categories = suggestedRepliesByCategory.keys.toList();
+    categories.sort((c1, c2) => c1.compareTo(c2));
 
-      // Update the replies by category map
-      suggestedRepliesByCategory = _groupRepliesIntoCategories(suggestedReplies);
-      // Empty sublist if there are no replies to show
-      if (suggestedRepliesByCategory.isEmpty) {
-        suggestedRepliesByCategory[''] = [];
-      }
-      // Sort by sequence number
-      for (var replies in suggestedRepliesByCategory.values) {
-        replies.sort((r1, r2) {
-          var seqNo1 = r1.seqNumber == null ? double.nan : r1.seqNumber;
-          var seqNo2 = r2.seqNumber == null ? double.nan : r2.seqNumber;
-          return seqNo1.compareTo(seqNo2);
-        });
-      }
-      List<String> categories = suggestedRepliesByCategory.keys.toList();
-      categories.sort((c1, c2) => c1.compareTo(c2));
+    // TODO: Do something with this, code from Nook below for reference
 
-      // TODO: Do something with this, code from Nook below for reference
-
-      // Replace list of categories in the UI selector
-      // view.replyPanelView.categories = categories;
-      // If the categories have changed under us and the selected one no longer exists,
-      // default to the first category, whichever it is
-      // if (!categories.contains(selectedSuggestedRepliesCategory)) {
-        // selectedSuggestedRepliesCategory = categories.first;
-      // }
-      // Select the selected category in the UI and add the suggested replies for it
-      // view.replyPanelView.selectedCategory = selectedSuggestedRepliesCategory;
-      // _populateReplyPanelView(suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
-    // }, showAndLogError);
+    // Replace list of categories in the UI selector
+    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.categories = categories;
+    // If the categories have changed under us and the selected one no longer exists,
+    // default to the first category, whichever it is
+    if (!categories.contains(selectedSuggestedRepliesCategory)) {
+      selectedSuggestedRepliesCategory = categories.first;
+    }
+    // Select the selected category in the UI and add the suggested replies for it
+    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.selectedCategory = selectedSuggestedRepliesCategory;
+    _populateReplyPanelView(suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
   });
 }
 
@@ -109,7 +152,7 @@ void setupRoutes() {
     ..listen();
 }
 
-void command(UIAction action, Data actionData) {
+void command(UIAction action, [Data actionData]) {
   log.verbose('command => $action : $actionData');
   switch (action) {
     case UIAction.userSignedIn:
@@ -135,6 +178,29 @@ void command(UIAction action, Data actionData) {
     case UIAction.savePackageConfiguration:
       savePackageConfiguration();
       break;
+
+    case UIAction.addSuggestedReply:
+      // TODO
+      break;
+    case UIAction.updateSuggestedReply:
+      // TODO
+      break;
+    case UIAction.removeSuggestedReply:
+      // TODO
+      break;
+    case UIAction.addSuggestedReplyGroup:
+      // TODO
+      break;
+    case UIAction.updateSuggestedReplyGroup:
+      // TODO
+      break;
+    case UIAction.removeSuggestedReplyGroup:
+      // TODO
+      break;
+    case UIAction.changeSuggestedRepliesCategory:
+      SuggestedRepliesCategoryData data = actionData;
+      selectedSuggestedRepliesCategory = data.category;
+      _populateReplyPanelView(suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
   }
 }
 
@@ -143,10 +209,11 @@ void loadAuthView() {
 }
 
 void savePackageConfiguration() {
+  saveSuggestedReplies(suggestedReplies);
 }
 
 void loadPackageConfigurationView() {
-  var configuratorView = new view.PackageConfiguratorView(model.packageConfigurationData[selectedPackage]);
+  var configuratorView = new view.PackageConfiguratorView();
   view.contentView.renderView(configuratorView);
 }
 

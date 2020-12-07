@@ -189,6 +189,24 @@
 
 .conversation-suggested-replies {}
 
+.conversation-suggested-reply-group {
+  padding: 15px;
+  margin: 15px 0;
+  border: 1px solid #ddd;
+}
+
+.conversation-suggested-reply-group__title {
+  font-weight: 600;
+  display: inline-block;
+  padding: 0 1px;
+}
+
+.conversation-suggested-reply-group__title:empty:not(:focus):before {
+  content: attr(title);
+  font-weight: 300;
+  font-style: italic;
+}
+
 .conversation-suggested-reply {
   display: grid;
   grid-template-columns: 3% auto auto;
@@ -283,9 +301,7 @@
   margin-right: 20px;
 }
 
-.button-add-conversation-suggested-replies {
-  margin-left: 20px;
-}
+.button-add-conversation-suggested-replies {}
 
 .button-add-conversation-suggested-replies:hover {
   cursor: pointer;
