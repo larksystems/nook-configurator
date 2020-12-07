@@ -53,34 +53,6 @@
   padding: 0px 5px;
 }
 
-.selected-active-package-list__item-action {
-  justify-self: center;
-  font-weight: bold;
-  font-size: 1.2em;
-  visibility: hidden;
-  border: none;
-  background-color: none;
-  background: none;
-  outline: none;
-  padding: 0px;
-  cursor: pointer;
-}
-
-.selected-active-package-list__item-action:after {
-  content: '\2807';
-  font-size: 1.2em;
-}
-
-.selected-active-package-list__item-action--show {
-  visibility: visible;
-}
-
-.selected-package-dropdown {
-  top: 33px !important;
-  left: 238px !important;
-}
-
-
 .configure-package-content {
   display: grid;
 }
@@ -178,8 +150,8 @@
   align-self: flex-start;
   background-color: #f9f9f9;
   position: absolute;
-  top: 0px;
-  left: 16px;
+  top: 0%;
+  left: 99%;
   padding: 0px;
   border: 1px solid #ddd;
   margin-left: 10px;

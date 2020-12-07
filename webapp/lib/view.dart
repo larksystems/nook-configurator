@@ -543,32 +543,24 @@ class ActivePackagesViewPartial {
           ..classes.add('active-package-chart__description')
           ..text = chartData
       );
+    var menuElement = new MenuElement(packageElement, ['Rename', 'Duplicate'], (MouseEvent event) {
+      var menuItem = (event.target as Element).dataset['item'];
+      switch(menuItem) {
+        case 'Rename':
+          packageNameElement.contentEditable = 'true';
+          packageNameElement.focus();
+          _cursorToEnd(packageNameElement);
+          break;
+        case 'Duplicate':
+          controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+          break;
+      }
+    }).renderElement;
+    menuElement.classes.add('active-package-menu--show');
     packageElement
       ..append(packageMainContainer)
       ..append(packageChart)
-      ..append(
-        new AddActionElement(
-          packageElement,
-          '',
-          ['Rename', 'Duplicate'],
-          (MouseEvent event) {
-            var menuItem = (event.target as Element).dataset['item'];
-            switch(menuItem) {
-              case 'Rename':
-                packageNameElement.contentEditable = 'true';
-                packageNameElement.focus();
-                _cursorToEnd(packageNameElement);
-                break;
-              case 'Duplicate':
-                controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
-                break;
-            }
-          },
-          ['active-package-menu'],
-          {},
-          ['add-tag-dropdown', 'active-package-dropdown']
-        ).renderElement
-      );
+      ..append(menuElement);
   }
 }
 
@@ -667,36 +659,30 @@ class PackageConfiguratorView extends BaseView {
           packageListItemText.contentEditable = 'false';
           controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
         });
+        var menuElement = new MenuElement(packageListItem, ['Rename', 'Duplicate'], (MouseEvent event) {
+          var menuItem = (event.target as Element).dataset['item'];
+          switch(menuItem) {
+            case 'Rename':
+              packageListItemText.contentEditable = 'true';
+              packageListItemText.focus();
+              _cursorToEnd(packageListItemText);
+              break;
+            case 'Duplicate':
+              controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+              break;
+          }
+        }).renderElement;
+        menuElement
+          ..classes.add('active-package-menu--sidebar')
+          ..classes.toggle('active-package-menu--show', (packageId == controller.selectedPackage));
       packageListItem
         ..dataset['id'] = packageId
         ..classes.add('selected-active-package-list__item')
         ..classes.toggle('selected-active-package-list__item--selected', (packageId == controller.selectedPackage))
         ..append(packageListItemText)
-        ..append(
-          new AddActionElement(
-            packageListItem,
-            '',
-            ['Rename', 'Duplicate'],
-            (MouseEvent event) {
-              var menuItem = (event.target as Element).dataset['item'];
-              switch(menuItem) {
-                case 'Rename':
-                  packageListItemText.contentEditable = 'true';
-                  packageListItemText.focus();
-                  _cursorToEnd(packageListItemText);
-                  break;
-                case 'Duplicate':
-                  controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
-                  break;
-              }
-            },
-            ['selected-active-package-list__item-action'],
-            {'selected-active-package-list__item-action--show': (packageId == controller.selectedPackage)},
-            ['add-tag-dropdown', 'selected-package-dropdown']
-          ).renderElement
-        )
+        ..append(menuElement)
         ..onClick.listen((event) {
-          if (!(event.target == packageListItem)) return;
+          if ((event.target == document.activeElement)) return;
           controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(packageId, packageName));
         });
       packageList.append(packageListItem);
@@ -865,18 +851,20 @@ class TagListView extends BaseView {
       ..classes.add('tags');
     _tagsActionContainer = new SpanElement()
       ..classes.add('tags__actions');
-    Function addAction;
-    if (tagsEditable) {
-      addAction = onTagChangedCallback;
-    } else {
-      addAction = (MouseEvent event) {
-        var tag = (event.target as Element).dataset['item'];
-        if (tag == '--None--') return;
-        onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add);
-      };
-    }
     _tagsActionContainer.append(
-      new AddActionElement(_tagsActionContainer, '+', availableTags.keys.toList(), addAction, ['button-add-tag'], {}, ['add-tag-dropdown'], tagsEditable).renderElement
+      new AddButtonElement((MouseEvent event) {
+        if (tagsEditable) {
+          var editableTag = new EditableTagElement(onTagChangedCallback);
+          _tagsActionContainer.insertAdjacentElement('beforebegin',editableTag.renderElement);
+          editableTag.focus();
+        } else {
+          _tagsActionContainer.append(new DropdownElement(availableTags.keys.toList(), (MouseEvent event) {
+            var tag = (event.target as Element).dataset['item'];
+            if (tag == '--None--') return;
+            onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add);
+          }).renderElement);
+        };
+      }).renderElement
     );
     _tagsContainer.append(_tagsActionContainer);
     tagElements.forEach((tag) {
@@ -989,12 +977,7 @@ class ResponseListView extends BaseView {
     for (int i = 0; i < suggestedReplies.length; i++) {
       _responsesContainer.append(_createResponseEntry(i, suggestedReplies[i]));
     }
-    _responsesContainer.append(
-      new ButtonElement()
-        ..classes.add('button-add-conversation-responses')
-        ..text = '+'
-        ..onClick.listen((event) => onAddNewResponseCallback())
-    );
+    _responsesContainer.append(new AddButtonElement((_)=> onAddNewResponseCallback()).renderElement);
   }
 
   DivElement get renderElement => _responsesContainer;
@@ -1323,65 +1306,79 @@ class ProjectConfigurationView extends BaseView{
   }
 }
 
-class AddActionElement {
-  ButtonElement _addAction;
-  Element container;
-  String addActionLabel;
-  List<String> dropdownItems;
-  List<String> actionClasses;
-  Map<String, bool> toggleActionClasses;
-  List<String> dropdownClasses;
-  Function onAddAction;
-  bool isEditableTag;
+abstract class BaseElement {
+  Element get renderElement;
+}
 
+class DropdownElement extends BaseElement {
+  Element _dropdown;
 
-  AddActionElement(this.container, this.addActionLabel, this.dropdownItems, this.onAddAction, this.actionClasses, this.toggleActionClasses, this.dropdownClasses, [this.isEditableTag = false]) {
-    _addAction = new ButtonElement()
-      ..classes.addAll(actionClasses)
-      ..text = addActionLabel
-      ..onClick.listen((_) {
-        if (isEditableTag) {
-          _createEditableTag();
-        } else {
-          _createDropdown();
-        }
-    });
-
-    if (toggleActionClasses != null) {
-      toggleActionClasses.keys.toList().forEach((clazz) => _addAction.classes.toggle(clazz, toggleActionClasses[clazz]));
-    }
-  }
-
-  void _createDropdown() {
-    var dropdown = new Element.ul()
-      ..classes.addAll(dropdownClasses);
+  DropdownElement(List<String> dropdownItems, Function onItemSelected) {
+    _dropdown = new Element.ul()
+      ..classes.add('add-tag-dropdown');
     var items = dropdownItems.isEmpty ? ['--None--'] : dropdownItems;
     for (var item in items) {
-      dropdown.append(
+      _dropdown.append(
         new Element.li()
           ..classes.add('add-tag-dropdown__item')
           ..text = item
           ..dataset['item'] = item
-          ..onClick.listen(onAddAction)
+          ..onClick.listen(onItemSelected)
       );
     }
-    container.append(dropdown);
+
     var documentOnClickSubscription;
     documentOnClickSubscription = document.onClick.listen((event) {
       if (event.target == document.activeElement) return;
       event.stopPropagation();
-      dropdown.remove();
+      _dropdown.remove();
      documentOnClickSubscription.cancel();
+  });
+}
+
+  Element get renderElement => _dropdown;
+}
+
+class EditableTagElement extends BaseElement {
+  TagView _editableTag;
+
+  EditableTagElement(Function onEditTag) {
+    _editableTag = new TagView('', model.TagType.Normal, onEditTag, true);
+  }
+
+  void focus() {
+    _editableTag.focus();
+  }
+
+  Element get renderElement => _editableTag.renderElement;
+}
+
+class MenuElement extends BaseElement {
+  ButtonElement _menu;
+
+  MenuElement(Element container, List<String> dropdownItems, Function onItemSelected) {
+    _menu = new ButtonElement()
+      ..classes.add('active-package-menu')
+      ..text = ''
+      ..onClick.listen((_) {
+        container.append(new DropdownElement(dropdownItems, onItemSelected).renderElement);
     });
   }
 
-  void _createEditableTag() {
-    var tagElement = new TagView('', model.TagType.Normal, onAddAction, isEditableTag);
-      container.insertAdjacentElement('beforebegin', tagElement.renderElement);
-      tagElement.focus();
+  Element get renderElement => _menu;
+}
+
+class AddButtonElement extends BaseElement {
+  ButtonElement _addButton;
+
+  AddButtonElement(Function onClick) {
+    _addButton = new ButtonElement()
+      ..classes.add('button-add-tag')
+      ..text = '+'
+      ..onClick.listen(onClick);
   }
 
-  Element get renderElement => _addAction;
+  Element get renderElement => _addButton;
 }
 
 // Helpers
