@@ -188,6 +188,15 @@ void command(UIAction action, [Data actionData]) {
     case UIAction.removeSuggestedReply:
       // TODO
       break;
+    case UIAction.addSuggestedReplyGroup:
+      // TODO
+      break;
+    case UIAction.updateSuggestedReplyGroup:
+      // TODO
+      break;
+    case UIAction.removeSuggestedReplyGroup:
+      // TODO
+      break;
     case UIAction.changeSuggestedRepliesCategory:
       SuggestedRepliesCategoryData data = actionData;
       selectedSuggestedRepliesCategory = data.category;
