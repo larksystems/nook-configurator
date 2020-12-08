@@ -26,7 +26,6 @@
   display: grid;
   grid-template-columns: 90% 10%;
   border-bottom: 1px solid #ddd;
-  padding: 15px 10px;
   cursor: pointer;
 }
 
@@ -46,6 +45,7 @@
 .selected-active-package-list__item-text {
   list-style-type: none;
   font-size: 1.15em;
+  padding: 15px 10px;
 }
 
 .selected-active-package-list__item-text:focus {
@@ -136,13 +136,10 @@
   background-color: #efefef;
 }
 
-.button-add-tag {
+.add-tag-button {
   align-self: flex-start;
   margin-top: 5px;
   position: relative;
-}
-
-.button-add-tag:hover {
   cursor: pointer;
 }
 

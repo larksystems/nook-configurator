@@ -543,19 +543,17 @@ class ActivePackagesViewPartial {
           ..classes.add('active-package-chart__description')
           ..text = chartData
       );
-    var menuElement = new MenuElement(packageElement, ['Rename', 'Duplicate'], (MouseEvent event) {
-      var menuItem = (event.target as Element).dataset['item'];
-      switch(menuItem) {
-        case 'Rename':
-          packageNameElement.contentEditable = 'true';
-          packageNameElement.focus();
-          _cursorToEnd(packageNameElement);
-          break;
-        case 'Duplicate':
-          controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
-          break;
-      }
-    }).renderElement;
+    Map<String, Function> dropdownItems = {
+          'Rename': (_) {
+            packageNameElement.contentEditable = 'true';
+            packageNameElement.focus();
+            _cursorToEnd(packageNameElement);
+          },
+          'Duplicate': (_) {
+            controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
+          }
+        };
+    var menuElement = new MenuElement(packageElement, dropdownItems).renderElement;
     menuElement.classes.add('active-package-menu--show');
     packageElement
       ..append(packageMainContainer)
@@ -659,19 +657,18 @@ class PackageConfiguratorView extends BaseView {
           packageListItemText.contentEditable = 'false';
           controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
         });
-        var menuElement = new MenuElement(packageListItem, ['Rename', 'Duplicate'], (MouseEvent event) {
-          var menuItem = (event.target as Element).dataset['item'];
-          switch(menuItem) {
-            case 'Rename':
-              packageListItemText.contentEditable = 'true';
-              packageListItemText.focus();
-              _cursorToEnd(packageListItemText);
-              break;
-            case 'Duplicate':
-              controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
-              break;
+        Map<String, Function> dropdownItems = {
+          'Rename': (_) {
+            //print('here');
+            packageListItemText.contentEditable = 'true';
+            packageListItemText.focus();
+            _cursorToEnd(packageListItemText);
+          },
+          'Duplicate': (_) {
+            controller.command(controller.UIAction.duplicatePackage, controller.PackageConfigurationData(packageId, packageName));
           }
-        }).renderElement;
+        };
+        var menuElement = new MenuElement(packageListItem, dropdownItems).renderElement;
         menuElement
           ..classes.add('active-package-menu--sidebar')
           ..classes.toggle('active-package-menu--show', (packageId == controller.selectedPackage));
@@ -682,7 +679,9 @@ class PackageConfiguratorView extends BaseView {
         ..append(packageListItemText)
         ..append(menuElement)
         ..onClick.listen((event) {
-          if ((event.target == document.activeElement)) return;
+          print(event.target);
+          print(document.activeElement);
+          if (!(event.target as Element).classes.contains('selected-active-package-list__item-text')) return;
           controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(packageId, packageName));
         });
       packageList.append(packageListItem);
@@ -852,18 +851,18 @@ class TagListView extends BaseView {
     _tagsActionContainer = new SpanElement()
       ..classes.add('tags__actions');
     _tagsActionContainer.append(
-      new AddButtonElement((MouseEvent event) {
+      new AddTagButtonElement((MouseEvent event) {
         if (tagsEditable) {
           var editableTag = new EditableTagElement(onTagChangedCallback);
           _tagsActionContainer.insertAdjacentElement('beforebegin',editableTag.renderElement);
           editableTag.focus();
-        } else {
-          _tagsActionContainer.append(new DropdownElement(availableTags.keys.toList(), (MouseEvent event) {
-            var tag = (event.target as Element).dataset['item'];
-            if (tag == '--None--') return;
-            onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add);
-          }).renderElement);
-        };
+          return;
+        }
+        Map<String, Function> dropdownItems =
+          new Map.fromIterable(availableTags.keys.toList(),
+            key: (tag) => tag,
+            value:(tag) => (_) => onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add));
+        _tagsActionContainer.append(new DropdownElement(dropdownItems).renderElement);
       }).renderElement
     );
     _tagsContainer.append(_tagsActionContainer);
@@ -977,7 +976,7 @@ class ResponseListView extends BaseView {
     for (int i = 0; i < suggestedReplies.length; i++) {
       _responsesContainer.append(_createResponseEntry(i, suggestedReplies[i]));
     }
-    _responsesContainer.append(new AddButtonElement((_)=> onAddNewResponseCallback()).renderElement);
+    _responsesContainer.append(new AddTagButtonElement((_) => onAddNewResponseCallback()).renderElement);
   }
 
   DivElement get renderElement => _responsesContainer;
@@ -1313,17 +1312,17 @@ abstract class BaseElement {
 class DropdownElement extends BaseElement {
   Element _dropdown;
 
-  DropdownElement(List<String> dropdownItems, Function onItemSelected) {
+  DropdownElement(Map<String, Function> dropdownItems) {
     _dropdown = new Element.ul()
       ..classes.add('add-tag-dropdown');
-    var items = dropdownItems.isEmpty ? ['--None--'] : dropdownItems;
+    var items = dropdownItems.isEmpty ? ['--None--'] : dropdownItems.keys;
     for (var item in items) {
       _dropdown.append(
         new Element.li()
           ..classes.add('add-tag-dropdown__item')
           ..text = item
           ..dataset['item'] = item
-          ..onClick.listen(onItemSelected)
+          ..onClick.listen(dropdownItems[item])
       );
     }
 
@@ -1356,24 +1355,24 @@ class EditableTagElement extends BaseElement {
 class MenuElement extends BaseElement {
   ButtonElement _menu;
 
-  MenuElement(Element container, List<String> dropdownItems, Function onItemSelected) {
+  MenuElement(Element container, Map<String, Function> dropdownItems) {
     _menu = new ButtonElement()
       ..classes.add('active-package-menu')
       ..text = ''
       ..onClick.listen((_) {
-        container.append(new DropdownElement(dropdownItems, onItemSelected).renderElement);
+        container.append(new DropdownElement(dropdownItems).renderElement);
     });
   }
 
   Element get renderElement => _menu;
 }
 
-class AddButtonElement extends BaseElement {
+class AddTagButtonElement extends BaseElement {
   ButtonElement _addButton;
 
-  AddButtonElement(Function onClick) {
+  AddTagButtonElement(Function onClick) {
     _addButton = new ButtonElement()
-      ..classes.add('button-add-tag')
+      ..classes.add('add-tag-button')
       ..text = '+'
       ..onClick.listen(onClick);
   }
