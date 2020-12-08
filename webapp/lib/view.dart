@@ -296,6 +296,7 @@ class SuggestedReplyView {
                       ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
                   )
               );
+            _suggestedReplyElement.append(removeSuggestedRepliesModal);
           })
         )
       ..append(new SuggestedReplyMessageView(0, text, (index, text) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, text: text))).renderElement)
@@ -308,19 +309,53 @@ class SuggestedReplyView {
 class SuggestedReplyGroupView {
   DivElement _suggestedRepliesGroupElement;
   DivElement _suggestedRepliesContainer;
+  SpanElement _title;
 
-  SuggestedReplyGroupView(String groupName) {
+  Map<String, SuggestedReplyView> replies = {};
+
+  SuggestedReplyGroupView(String id, String name) {
     _suggestedRepliesGroupElement = new DivElement()
-      ..classes.add('conversation-suggested-reply-group');
+      ..classes.add('conversation-suggested-reply-group')
+      ..append(
+        new ButtonElement()
+          ..classes.add('button-remove-conversation-suggested-replies')
+          ..text = 'x'
+          ..onClick.listen((_) {
+            var removeSuggestedRepliesModal = new DivElement()
+              ..classes.add('remove-conversation-suggested-replies-modal');
+            removeSuggestedRepliesModal
+              ..append(
+                new ParagraphElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal__message')
+                  ..text = 'Are you sure?'
+              )
+              ..append(
+                new DivElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions')
+                  ..append(
+                    new ButtonElement()
+                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                      ..text = 'Yes'
+                      ..onClick.listen((_) => controller.command(controller.UIAction.removeSuggestedReplyGroup, new controller.SuggestedReplyGroupData(id)))
+                  )
+                  ..append(
+                    new ButtonElement()
+                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                      ..text = 'No'
+                      ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
+                  )
+              );
+            _suggestedRepliesGroupElement.append(removeSuggestedRepliesModal);
+          })
+        );
 
-    var title = new SpanElement();
-    title
+    _title = new SpanElement()
       ..classes.add('conversation-suggested-reply-group__title')
-      ..text = groupName
+      ..text = name
       ..title = '<group name>'
       ..contentEditable = 'true'
-      ..onBlur.listen((event) => controller.command(controller.UIAction.updateSuggestedReplyGroup, new controller.SuggestedReplyGroupData(groupName, newName: title.text)));
-    _suggestedRepliesGroupElement.append(title);
+      ..onBlur.listen((event) => controller.command(controller.UIAction.updateSuggestedReplyGroup, new controller.SuggestedReplyGroupData(id, groupName: name, newGroupName: _title.text)));
+    _suggestedRepliesGroupElement.append(_title);
 
     _suggestedRepliesContainer = new DivElement()
       ..classes.add('conversation-suggested-reply-container');
@@ -330,14 +365,22 @@ class SuggestedReplyGroupView {
       ..classes.add('button-add-conversation-suggested-replies')
       ..text = '+'
       ..title = 'Add new suggested reply'
-      ..onClick.listen((event) => controller.command(controller.UIAction.addSuggestedReply));
+      ..onClick.listen((event) => controller.command(controller.UIAction.addSuggestedReply, new controller.SuggestedReplyData(null, groupId: id)));
     _suggestedRepliesGroupElement.append(addButton);
   }
 
   Element get renderElement => _suggestedRepliesGroupElement;
 
-  void addReply(SuggestedReplyView suggestedReplyView) {
+  void set name(String name) => _title.text = name;
+
+  void addReply(String id, SuggestedReplyView suggestedReplyView) {
     _suggestedRepliesContainer.append(suggestedReplyView.renderElement);
+    replies[id] = suggestedReplyView;
+  }
+
+  void removeReply(String id) {
+    replies[id].renderElement.remove();
+    replies.remove(id);
   }
 }
 
@@ -345,6 +388,8 @@ class SuggestedRepliesView extends BaseView {
   DivElement _suggestedRepliesElement;
   DivElement _suggestedRepliesContainer;
   SelectElement _replyCategories;
+
+  Map<String, SuggestedReplyGroupView> groups = {};
 
   SuggestedRepliesView() {
     _suggestedRepliesElement = new DivElement()
@@ -367,8 +412,14 @@ class SuggestedRepliesView extends BaseView {
 
   DivElement get renderElement => _suggestedRepliesElement;
 
-  void addReplyGroup(SuggestedReplyGroupView suggestedReplyGroupView) {
+  void addReplyGroup(String id, SuggestedReplyGroupView suggestedReplyGroupView) {
     _suggestedRepliesContainer.append(suggestedReplyGroupView.renderElement);
+    groups[id] = suggestedReplyGroupView;
+  }
+
+  void removeReplyGroup(String id) {
+    groups[id].renderElement.remove();
+    groups.remove(id);
   }
 
   set selectedCategory(String category) {
@@ -398,5 +449,6 @@ class SuggestedRepliesView extends BaseView {
       _suggestedRepliesContainer.firstChild.remove();
     }
     assert(_suggestedRepliesContainer.children.length == 0);
+    groups.clear();
   }
 }

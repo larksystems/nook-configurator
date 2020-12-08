@@ -8,25 +8,13 @@ void _populateReplyPanelView(List<new_model.SuggestedReply> replies) {
     var repliesInGroup = repliesByGroups[groupId];
     if (repliesInGroup.isEmpty) continue;
     var groupDescription = repliesInGroup.first.groupDescription;
-    view.SuggestedReplyGroupView group = new view.SuggestedReplyGroupView(groupDescription);
+    view.SuggestedReplyGroupView group = new view.SuggestedReplyGroupView(groupId, groupDescription);
     for (var reply in repliesInGroup) {
       var replyView = new view.SuggestedReplyView(reply.docId, reply.text, reply.translation);
-      group.addReply(replyView);
+      group.addReply(reply.docId, replyView);
     }
-    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.addReplyGroup(group);
+    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.addReplyGroup(groupId, group);
   }
-}
-
-Map<String, List<new_model.SuggestedReply>> _groupRepliesIntoCategories(List<new_model.SuggestedReply> replies) {
-  Map<String, List<new_model.SuggestedReply>> result = {};
-  for (new_model.SuggestedReply reply in replies) {
-    String category = reply.category ?? '';
-    if (!result.containsKey(category)) {
-      result[category] = [];
-    }
-    result[category].add(reply);
-  }
-  return result;
 }
 
 Map<String, List<new_model.SuggestedReply>> _groupRepliesIntoGroups(List<new_model.SuggestedReply> replies) {

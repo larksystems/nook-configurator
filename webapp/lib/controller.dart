@@ -12,6 +12,7 @@ import 'router.dart';
 import 'model.dart' as model;
 
 part 'controller_view_helper.dart';
+part 'controller_suggested_replies_helper.dart';
 
 Logger log = new Logger('controller.dart');
 Router router;
@@ -51,22 +52,24 @@ class SuggestedReplyData extends Data {
   String id;
   String text;
   String translation;
-  SuggestedReplyData(this.id, {this.text, this.translation});
+  String groupId;
+  SuggestedReplyData(this.id, {this.text, this.translation, this.groupId});
 
   @override
   String toString() {
-    return "SuggestedReplyData($id, '$text', '$translation')";
+    return "SuggestedReplyData($id, '$text', '$translation', $groupId)";
   }
 }
 
 class SuggestedReplyGroupData extends Data {
-  String name;
-  String newName;
-  SuggestedReplyGroupData(this.name, {this.newName});
+  String groupId;
+  String groupName;
+  String newGroupName;
+  SuggestedReplyGroupData(this.groupId, {this.groupName, this.newGroupName});
 
   @override
   String toString() {
-    return "SuggestedReplyGroupData($name, $newName)";
+    return "SuggestedReplyGroupData($groupName, $newGroupName)";
   }
 }
 
@@ -84,8 +87,7 @@ class SuggestedRepliesCategoryData extends Data {
 
 
 List<String> configurationSuggestedReplyLanguages;
-List<new_model.SuggestedReply> suggestedReplies = [];
-Map<String, List<new_model.SuggestedReply>> suggestedRepliesByCategory = {};
+SuggestedRepliesManager suggestedRepliesManager = new SuggestedRepliesManager();
 String selectedSuggestedRepliesCategory;
 
 model.User signedInUser;
@@ -104,44 +106,20 @@ void initUI() {
 
   platform.listenForSuggestedReplies(
   (added, modified, removed) {
-    var updatedIds = new Set()
-      ..addAll(added.map((r) => r.suggestedReplyId))
-      ..addAll(modified.map((r) => r.suggestedReplyId))
-      ..addAll(removed.map((r) => r.suggestedReplyId));
-    suggestedReplies.removeWhere((suggestedReply) => updatedIds.contains(suggestedReply.suggestedReplyId));
-    suggestedReplies
-      ..addAll(added)
-      ..addAll(modified);
-
-    // Update the replies by category map
-    suggestedRepliesByCategory = _groupRepliesIntoCategories(suggestedReplies);
-    // Empty sublist if there are no replies to show
-    if (suggestedRepliesByCategory.isEmpty) {
-      suggestedRepliesByCategory[''] = [];
-    }
-    // Sort by sequence number
-    for (var replies in suggestedRepliesByCategory.values) {
-      replies.sort((r1, r2) {
-        var seqNo1 = r1.seqNumber == null ? double.nan : r1.seqNumber;
-        var seqNo2 = r2.seqNumber == null ? double.nan : r2.seqNumber;
-        return seqNo1.compareTo(seqNo2);
-      });
-    }
-    List<String> categories = suggestedRepliesByCategory.keys.toList();
-    categories.sort((c1, c2) => c1.compareTo(c2));
-
-    // TODO: Do something with this, code from Nook below for reference
+    suggestedRepliesManager.addSuggestedReplies(added);
+    suggestedRepliesManager.updateSuggestedReplies(modified);
+    suggestedRepliesManager.removeSuggestedReplies(removed);
 
     // Replace list of categories in the UI selector
-    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.categories = categories;
+    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.categories = suggestedRepliesManager.categories;
     // If the categories have changed under us and the selected one no longer exists,
     // default to the first category, whichever it is
-    if (!categories.contains(selectedSuggestedRepliesCategory)) {
-      selectedSuggestedRepliesCategory = categories.first;
+    if (!suggestedRepliesManager.categories.contains(selectedSuggestedRepliesCategory)) {
+      selectedSuggestedRepliesCategory = suggestedRepliesManager.categories.first;
     }
     // Select the selected category in the UI and add the suggested replies for it
     (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.selectedCategory = selectedSuggestedRepliesCategory;
-    _populateReplyPanelView(suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+    _populateReplyPanelView(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
   });
 }
 
@@ -180,27 +158,58 @@ void command(UIAction action, [Data actionData]) {
       break;
 
     case UIAction.addSuggestedReply:
-      // TODO
+      SuggestedReplyData data = actionData;
+      var newSuggestedReply = new_model.SuggestedReply()
+        ..docId = suggestedRepliesManager.nextSuggestedReplyId
+        ..text = ''
+        ..translation = ''
+        ..shortcut = ''
+        ..seqNumber = suggestedRepliesManager.lastSuggestedReplySeqNo
+        ..category = selectedSuggestedRepliesCategory
+        ..groupId = data.groupId
+        ..groupDescription = suggestedRepliesManager.groups[data.groupId]
+        ..indexInGroup = suggestedRepliesManager.getNextIndexInGroup(data.groupId);
+      suggestedRepliesManager.addSuggestedReply(newSuggestedReply);
+
+      var newSuggestedReplyView = new view.SuggestedReplyView(newSuggestedReply.docId, newSuggestedReply.text, newSuggestedReply.translation);
+      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[data.groupId].addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
       break;
     case UIAction.updateSuggestedReply:
-      // TODO
+      SuggestedReplyData data = actionData;
+      var suggestedReply = suggestedRepliesManager.getSuggestedReplyById(data.id);
+      if (data.text != null) {
+        suggestedReply.text = data.text;
+      }
+      if (data.translation != null) {
+        suggestedReply.translation = data.translation;
+      }
       break;
     case UIAction.removeSuggestedReply:
-      // TODO
+      SuggestedReplyData data = actionData;
+      var suggestedReply = suggestedRepliesManager.getSuggestedReplyById(data.id);
+      suggestedRepliesManager.removeSuggestedReply(suggestedReply);
+      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[suggestedReply.groupId].removeReply(suggestedReply.suggestedReplyId);
       break;
     case UIAction.addSuggestedReplyGroup:
-      // TODO
+      var newGroupId = suggestedRepliesManager.nextSuggestedReplyGroupId;
+      suggestedRepliesManager.emptyGroups[newGroupId] = '';
+      var suggestedReplyGroupView = new view.SuggestedReplyGroupView(newGroupId, suggestedRepliesManager.emptyGroups[newGroupId]);
+      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.addReplyGroup(newGroupId, suggestedReplyGroupView);
       break;
     case UIAction.updateSuggestedReplyGroup:
-      // TODO
+      SuggestedReplyGroupData data = actionData;
+      suggestedRepliesManager.updateSuggestedRepliesGroupDescription(data.groupId, data.newGroupName);
+      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[data.groupId].name = data.newGroupName;
       break;
     case UIAction.removeSuggestedReplyGroup:
-      // TODO
+      SuggestedReplyGroupData data = actionData;
+      suggestedRepliesManager.removeSuggestedRepliesGroup(data.groupId);
+      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.removeReplyGroup(data.groupId);
       break;
     case UIAction.changeSuggestedRepliesCategory:
       SuggestedRepliesCategoryData data = actionData;
       selectedSuggestedRepliesCategory = data.category;
-      _populateReplyPanelView(suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+      _populateReplyPanelView(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
   }
 }
 
@@ -209,54 +218,12 @@ void loadAuthView() {
 }
 
 void savePackageConfiguration() {
-  saveSuggestedReplies(suggestedReplies);
+  saveSuggestedReplies(suggestedRepliesManager.suggestedReplies);
 }
 
 void loadPackageConfigurationView() {
   var configuratorView = new view.PackageConfiguratorView();
   view.contentView.renderView(configuratorView);
-}
-
-// Suggested Replies operations
-void addNewSuggestedReply() {
-  model.packageConfigurationData[selectedPackage].suggestedReplies.add(
-    {
-      "messages":
-        [
-          "",
-          "",
-        ],
-      "reviewed": false,
-      "reviewed-by": "",
-      "reviewed-date": ""
-    },
-  );
-  loadPackageConfigurationView();
-}
-
-void updateSuggestedReply(int rowIndex, int colIndex, String suggestedReply) {
-  model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['messages'][colIndex] = suggestedReply;
-  loadPackageConfigurationView();
-}
-
-void reviewSuggestedReply(int rowIndex, bool reviewed) {
-  if (reviewed) {
-    var now = DateTime.now().toLocal();
-    var reviewedDate = '${now.year}-${now.month}-${now.day}';
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = true;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
-  } else {
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed'] = false;
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-by'] = '';
-    model.packageConfigurationData[selectedPackage].suggestedReplies[rowIndex]['reviewed-date'] = '';
-  }
-  loadPackageConfigurationView();
-}
-
-void removeSuggestedReply(int rowIndex) {
-  model.packageConfigurationData[selectedPackage].suggestedReplies.removeAt(rowIndex);
-  loadPackageConfigurationView();
 }
 
 Future<void> saveSuggestedReplies(List<new_model.SuggestedReply> suggestedReplies) {
