@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html';
 
 import 'logger.dart';
@@ -187,6 +188,8 @@ class PackageConfiguratorView extends BaseView {
   DivElement _packageConfiguratorViewElement;
   DivElement _packageConfiguratorContent;
 
+  SpanElement _saveStatusElement;
+
   PackageConfiguratorView() {
     suggestedRepliesView = new SuggestedRepliesView();
 
@@ -201,30 +204,50 @@ class PackageConfiguratorView extends BaseView {
   DivElement get renderElement => _packageConfiguratorViewElement;
 
   void _buildContentPartial(DivElement packageConfiguratorContent) {
-    packageConfiguratorContent
+    var suggestedRepliesViewWrapper = new DivElement()
+      ..classes.add('configure-package-suggested-replies')
       ..append(
         new DivElement()
-          ..classes.add('configure-package-suggested-replies')
+          ..classes.add('configure-package-suggested-replies-headers')
           ..append(
-            new DivElement()
-              ..classes.add('configure-package-suggested-replies-headers')
-              ..append(
-                new HeadingElement.h3()
-                  ..text = 'What do you want to say?'
-              )
+            new HeadingElement.h3()
+              ..text = 'What do you want to say?'
           )
-          ..append(suggestedRepliesView.renderElement)
       )
-      ..append(
-        new DivElement()
-          ..classes.add('configure-package-actions')
-          ..append(
-            new ButtonElement()
-              ..classes.add('save-configuration-btn')
-              ..text = 'Save Configuration'
-              ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration))
-          )
-      );
+      ..append(suggestedRepliesView.renderElement);
+    packageConfiguratorContent.append(suggestedRepliesViewWrapper);
+
+    var packageActionsWrapper = new DivElement()
+      ..classes.add('configure-package-actions');
+    var saveConfigurationButton = new ButtonElement()
+      ..classes.add('configure-package-actions__save-action')
+      ..text = 'Save Configuration'
+      ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration));
+    _saveStatusElement = new SpanElement()
+      ..classes.add('configure-package-actions__save-action__status');
+    packageActionsWrapper
+      ..append(saveConfigurationButton)
+      ..append(_saveStatusElement);
+    packageConfiguratorContent.append(packageActionsWrapper);
+  }
+
+  /// How many seconds the save status will be displayed on screen before disappearing.
+  static const _SECONDS_ON_SCREEN = 5;
+
+  /// The length of the animation in milliseconds.
+  /// This must match the animation length set in snackbar.css
+  static const _ANIMATION_LENGTH_MS = 200;
+
+  void showSaveStatus(String status) {
+    _saveStatusElement.text = status;
+    _saveStatusElement.classes.remove('hidden');
+    new Timer(new Duration(seconds: _SECONDS_ON_SCREEN), () => hideSaveStatus());
+  }
+
+  hideSaveStatus() {
+    _saveStatusElement.classes.toggle('hidden', true);
+    // Remove the contents after the animation ends
+    new Timer(new Duration(milliseconds: _ANIMATION_LENGTH_MS), () => _saveStatusElement.text = '');
   }
 }
 
