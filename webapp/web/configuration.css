@@ -1,10 +1,12 @@
 .configure-package-view {
   display: grid;
   grid-template-columns: 20% auto;
+  overflow: hidden;
 }
 
 .configure-package-sidebar {
   border-right: 1px solid #ddd;
+  overflow-y: scroll;
 }
 
 .configure-package-sidebar__title {
@@ -77,6 +79,7 @@
 
 .configure-package-content {
   display: grid;
+  overflow-y: scroll;
 }
 
 .configure-package-tags {
@@ -197,7 +200,7 @@
   grid-template-rows: 90% auto;
 }
 
-.configure-package-responses{
+.configure-package-responses {
   display: grid;
   grid-template-rows: auto auto;
   border-bottom: 1px solid #ddd;
@@ -293,6 +296,7 @@
   font-weight: 400;
   color: #fff;
   margin-bottom: 0px;
+  text-shadow: 0 0 1px black;
 }
 
 .remove-conversation-responses-modal-actions {
@@ -316,8 +320,7 @@
 
 .configure-package-labels {
   display: grid;
-  padding-left: 20px;
-  margin-bottom: 100px;
+  padding: 20px;
 }
 
 .configure-package-actions {
