@@ -266,39 +266,41 @@ class SuggestedReplyView {
   SuggestedReplyView(String id, String text, String translation) {
     _suggestedReplyElement = new DivElement()
       ..classes.add('conversation-suggested-reply')
-      ..dataset['id'] = '$id'
-      ..append(
-        new ButtonElement()
-          ..classes.add('button-remove-conversation-suggested-replies')
-          ..text = 'x'
-          ..onClick.listen((_) {
-            var removeSuggestedRepliesModal = new DivElement()
-              ..classes.add('remove-conversation-suggested-replies-modal');
-            removeSuggestedRepliesModal
+      ..dataset['id'] = '$id';
+
+    var removeButton = new ButtonElement()
+      ..classes.add('button-remove-conversation-suggested-replies')
+      ..text = 'x'
+      ..onClick.listen((_) {
+        var removeSuggestedRepliesModal = new DivElement()
+          ..classes.add('remove-conversation-suggested-replies-modal');
+        removeSuggestedRepliesModal
+          ..append(
+            new ParagraphElement()
+              ..classes.add('remove-conversation-suggested-replies-modal__message')
+              ..text = 'Are you sure?'
+          )
+          ..append(
+            new DivElement()
+              ..classes.add('remove-conversation-suggested-replies-modal-actions')
               ..append(
-                new ParagraphElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal__message')
-                  ..text = 'Are you sure?'
+                new ButtonElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                  ..text = 'Yes'
+                  ..onClick.listen((_) => controller.command(controller.UIAction.removeSuggestedReply, new controller.SuggestedReplyData(id)))
               )
               ..append(
-                new DivElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal-actions')
-                  ..append(
-                    new ButtonElement()
-                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                      ..text = 'Yes'
-                      ..onClick.listen((_) => controller.command(controller.UIAction.removeSuggestedReply, new controller.SuggestedReplyData(id)))
-                  )
-                  ..append(
-                    new ButtonElement()
-                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                      ..text = 'No'
-                      ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
-                  )
-              );
-            _suggestedReplyElement.append(removeSuggestedRepliesModal);
-          })
-        )
+                new ButtonElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                  ..text = 'No'
+                  ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
+              )
+          );
+        _suggestedReplyElement.append(removeSuggestedRepliesModal);
+      });
+    removeButton.style.visibility = 'hidden';
+    _suggestedReplyElement
+      ..append(removeButton)
       ..append(new SuggestedReplyMessageView(0, text, (index, text) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, text: text))).renderElement)
       ..append(new SuggestedReplyMessageView(0, translation, (index, translation) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, translation: translation))).renderElement);
   }
@@ -315,39 +317,39 @@ class SuggestedReplyGroupView {
 
   SuggestedReplyGroupView(String id, String name) {
     _suggestedRepliesGroupElement = new DivElement()
-      ..classes.add('conversation-suggested-reply-group')
-      ..append(
-        new ButtonElement()
-          ..classes.add('button-remove-conversation-suggested-replies')
-          ..text = 'x'
-          ..onClick.listen((_) {
-            var removeSuggestedRepliesModal = new DivElement()
-              ..classes.add('remove-conversation-suggested-replies-modal');
-            removeSuggestedRepliesModal
+      ..classes.add('conversation-suggested-reply-group');
+    var removeButton = new ButtonElement()
+      ..classes.add('button-remove-conversation-suggested-replies')
+      ..text = 'x'
+      ..onClick.listen((_) {
+        var removeSuggestedRepliesModal = new DivElement()
+          ..classes.add('remove-conversation-suggested-replies-modal');
+        removeSuggestedRepliesModal
+          ..append(
+            new ParagraphElement()
+              ..classes.add('remove-conversation-suggested-replies-modal__message')
+              ..text = 'Are you sure?'
+          )
+          ..append(
+            new DivElement()
+              ..classes.add('remove-conversation-suggested-replies-modal-actions')
               ..append(
-                new ParagraphElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal__message')
-                  ..text = 'Are you sure?'
+                new ButtonElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                  ..text = 'Yes'
+                  ..onClick.listen((_) => controller.command(controller.UIAction.removeSuggestedReplyGroup, new controller.SuggestedReplyGroupData(id)))
               )
               ..append(
-                new DivElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal-actions')
-                  ..append(
-                    new ButtonElement()
-                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                      ..text = 'Yes'
-                      ..onClick.listen((_) => controller.command(controller.UIAction.removeSuggestedReplyGroup, new controller.SuggestedReplyGroupData(id)))
-                  )
-                  ..append(
-                    new ButtonElement()
-                      ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                      ..text = 'No'
-                      ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
-                  )
-              );
-            _suggestedRepliesGroupElement.append(removeSuggestedRepliesModal);
-          })
-        );
+                new ButtonElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                  ..text = 'No'
+                  ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
+              )
+          );
+        _suggestedRepliesGroupElement.append(removeSuggestedRepliesModal);
+      });
+    removeButton.style.visibility = 'hidden';
+    _suggestedRepliesGroupElement.append(removeButton);
 
     _title = new SpanElement()
       ..classes.add('conversation-suggested-reply-group__title')
@@ -366,6 +368,7 @@ class SuggestedReplyGroupView {
       ..text = '+'
       ..title = 'Add new suggested reply'
       ..onClick.listen((event) => controller.command(controller.UIAction.addSuggestedReply, new controller.SuggestedReplyData(null, groupId: id)));
+    addButton.style.visibility = 'hidden';
     _suggestedRepliesGroupElement.append(addButton);
   }
 
@@ -407,6 +410,7 @@ class SuggestedRepliesView extends BaseView {
       ..text = '+'
       ..title = 'Add a new group of suggested replies'
       ..onClick.listen((event) => controller.command(controller.UIAction.addSuggestedReplyGroup));
+    addButton.style.visibility = 'hidden';
     _suggestedRepliesElement.append(addButton);
   }
 
