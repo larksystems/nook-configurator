@@ -659,7 +659,6 @@ class PackageConfiguratorView extends BaseView {
         });
         Map<String, Function> dropdownItems = {
           'Rename': (_) {
-            //print('here');
             packageListItemText.contentEditable = 'true';
             packageListItemText.focus();
             _cursorToEnd(packageListItemText);
