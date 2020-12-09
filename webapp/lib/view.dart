@@ -1122,46 +1122,29 @@ class ProjectConfigurationView extends BaseView{
     });
     var addConfigurationLanguage = new DivElement()
       ..classes.add('form-group-item-action-add');
+    Function onAddConfigurationLanguage = (MouseEvent ev) {
+      ev.preventDefault();
+      Map<String, Function> dropdownItems =
+        new Map.fromIterable(additionalProjectLanguages,
+          key: (d) => d,
+          value: (d) => (MouseEvent event) {
+            var language = (event.target as Element).dataset['item'];
+            _formData['project-languages'][language] = {
+              'send': {'label': 'can send', 'value': false},
+              'receive': {'label': 'can receive', 'value': false}
+            };
+            additionalProjectLanguages.removeWhere((l) => l == language);
+           _buildForm();
+          });
+      addConfigurationLanguage.append(new DropdownElement(dropdownItems).renderElement);
+    };
     addConfigurationLanguage
-      ..append(
-        new SpanElement()
-          ..classes.add('form-group-item-action-add__icon')
-          ..text = '+'
-      )
       ..append(
         new LabelElement()
           ..classes.add('form-group-item-action-add__label')
           ..text = 'Add new language'
       )
-      ..onClick.listen((event) {
-        event.stopPropagation();
-        var additionalLanguageDropdown = new Element.ul()
-          ..classes.add('add-language-dropdown');
-        var languagesToAdd = additionalProjectLanguages.isEmpty ? ['--None--'] : additionalProjectLanguages;
-        for (var language in languagesToAdd) {
-          additionalLanguageDropdown.append(
-            new Element.li()
-              ..classes.add('add-language-dropdown__item')
-              ..text = language
-              ..onClick.listen((event) {
-                if (language == '--None--') return;
-                _formData['project-languages'][language] = {
-                  'send': {'label': 'can send', 'value': false},
-                  'receive': {'label': 'can receive', 'value': false}
-                };
-                additionalProjectLanguages.removeWhere((l) => l == language);
-                _buildForm();
-              })
-          );
-        }
-        var documentOnClickSubscription;
-          documentOnClickSubscription = document.onClick.listen((event) {
-            event.stopPropagation();
-            additionalLanguageDropdown.remove();
-          documentOnClickSubscription.cancel();
-        });
-        addConfigurationLanguage.append(additionalLanguageDropdown);
-      });
+      ..append(new AddTagButtonElement(onAddConfigurationLanguage).renderElement);
     projectLanguages.append(addConfigurationLanguage);
     _projectConfigurationForm
       ..append(projectLanguages)

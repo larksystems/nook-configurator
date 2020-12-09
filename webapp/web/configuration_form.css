@@ -63,18 +63,11 @@
 
 .form-group-item-action-add {
   position: relative;
-}
-
-.form-group-item-action-add__icon {
-  font-size: 1.5em;
-  padding: 5px;
-  cursor: pointer;
-  color: #499398;
+  width: fit-content;
 }
 
 .form-group-item-action-add__label {
-  cursor: pointer;
-  padding-left: 5px;
+  padding-right: 5px;
   color: #499398;
 }
 
