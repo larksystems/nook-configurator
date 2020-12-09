@@ -223,6 +223,7 @@ void loadAuthView() {
 
 void savePackageConfiguration() {
   List<new_model.SuggestedReply> repliesToSave = editedSuggestedReplies.map((suggestedReplyId) => suggestedRepliesManager.getSuggestedReplyById(suggestedReplyId)).toList();
+  (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Saving...');
   saveSuggestedReplies(repliesToSave).then((value) {
     (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Saved!');
   }, onError: (error, stacktrace) {
