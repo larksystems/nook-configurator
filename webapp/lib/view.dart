@@ -858,7 +858,7 @@ class TagListView extends BaseView {
         Map<String, Function> dropdownItems =
           new Map.fromIterable(availableTags.keys.toList(),
             key: (tag) => tag,
-            value:(tag) => (_) => onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add));
+            value: (tag) => (_) => onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add));
         _tagsActionContainer.append(new DropdownElement(dropdownItems).renderElement);
       }).renderElement
     );
