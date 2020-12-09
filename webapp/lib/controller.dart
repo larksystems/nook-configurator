@@ -227,7 +227,7 @@ void savePackageConfiguration() {
   saveSuggestedReplies(repliesToSave).then((value) {
     (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Saved!');
   }, onError: (error, stacktrace) {
-    (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Unable to save. Please check your connection and try again.');
+    (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
   });
 }
 

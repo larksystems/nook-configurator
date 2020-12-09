@@ -75,6 +75,7 @@
 .configure-package-actions {
   display: flex;
   margin: 20px 0;
+  align-items: center;
 }
 
 .configure-package-actions__save-action {
@@ -87,9 +88,6 @@
 }
 
 .configure-package-actions__save-action__status {
-  height: 40px;
-  line-height: 40px;
-  font-size: 1.1em;
   font-weight: 400;
   border: none;
   display: inline-block;
