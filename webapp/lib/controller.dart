@@ -44,10 +44,11 @@ class UserData extends Data {
   }
 }
 class ProjectData extends Data {
+  String projectId;
   String projectName;
   List<String> projectMembers;
 
-  ProjectData(this.projectName, this.projectMembers);
+  ProjectData(this.projectId, this.projectName, this.projectMembers);
 }
 
 class ProjectConfigurationData extends Data {
@@ -66,7 +67,8 @@ List<String> configurationResponseLanguages;
 
 model.User signedInUser;
 ProjectData project;
-String selectedPackage;
+String selectedPackageId;
+String selectedProjectId;
 
 void init() async {
   setupRoutes();
@@ -113,11 +115,11 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.viewProject:
       project = actionData;
-      router.routeTo('#/dashboard');
+      router.routeTo('#/dashboard?project=${project.projectId}');
       break;
     case UIAction.configureProject:
       project = actionData;
-      router.routeTo('#/project-configuration');
+      router.routeTo('#/project-configuration?project=${project.projectId}');
       break;
     case UIAction.addPackage:
       PackageConfigurationData packageConfigurationData = actionData;
@@ -168,14 +170,19 @@ void loadProjectSelectorView() {
 }
 
 void loadDashboardView() {
+  selectedProjectId = selectedProjectId ?? router.routeParams['project'];
+  if (selectedProjectId == null) {
+    router.routeTo("#/project-selector");
+    return;
+  }
   view.navView.showParent(NavAction.allProjects);
-  view.navView.projectTitle = project?.projectName;
+  view.navView.projectTitle = model.projectData[selectedProjectId]['name'];
   view.navView.projectOrganizations = [''];
-  var dashboardView = new view.DashboardView(model.conversationData);
-  for (var package in model.activePackages.values) {
+  var dashboardView = new view.DashboardView(model.projectData[selectedProjectId]['conversationData']);
+  for (var package in model.projectData[selectedProjectId]['activePackages'].values) {
     dashboardView.activePackages.add(new view.ActivePackagesViewPartial(package['id'], package['name'], package['conversationsLink'], package['configurationLink'], package['chartData']));
   }
-  for (var package in model.availablePackages) {
+  for (var package in model.projectData[selectedProjectId]['availablePackages']) {
     dashboardView.availablepackages.add(new view.AvailablePackagesViewPartial(package['name'], package['description'], package['details']));
   }
   dashboardView.renderActivePackages();
@@ -184,23 +191,32 @@ void loadDashboardView() {
 }
 
 void loadPackageConfigurationView() {
+  selectedPackageId = router.routeParams['package'];
+  if (selectedProjectId == null && selectedPackageId == null) {
+    router.routeTo("#/project-selector");
+    return;
+  }
   view.navView.showParent(NavAction.dashboard);
-  var packages = new Map<String, String>.fromIterable(model.activePackages.values, key: (package) => package['id'], value: (package) => package['name']);
-  selectedPackage = router.routeParams['package'];
-  var configuratorView = new view.PackageConfiguratorView(packages, model.activePackages[selectedPackage]['configurationData']);
+  var packages = new Map<String, String>.fromIterable(model.projectData[selectedProjectId]['activePackages'].values, key: (package) => package['id'], value: (package) => package['name']);
+  var configuratorView = new view.PackageConfiguratorView(packages, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData']);
   view.contentView.renderView(configuratorView);
 }
 
-loadProjectConfigurationView() {
+void loadProjectConfigurationView() {
+  selectedProjectId = router.routeParams['project'];
+  if (selectedProjectId == null) {
+    router.routeTo("#/project-selector");
+    return;
+  }
   view.navView.showParent(NavAction.dashboard);
   view.navView.projectTitle = project?.projectName;
   view.navView.projectOrganizations = [''];
-  view.contentView.renderView(new view.ProjectConfigurationView(model.projectConfigurationFormData, model.additionalProjectConfigurationLanguages));
+  view.contentView.renderView(new view.ProjectConfigurationView(model.projectData[selectedProjectId]['projectConfiguration'], model.additionalProjectConfigurationLanguages));
 }
 
 void addPackage(String packageName) {
   var id  = generatePackageId();
-  model.activePackages[id] = {
+  model.projectData[selectedProjectId]['activePackages'][id] = {
     'id': id,
     'name': packageName,
     'conversationsLink': '#/conversations',
@@ -208,13 +224,13 @@ void addPackage(String packageName) {
     'chartData': '',
     'configurationData': new model.Configuration()..availableTags = model.tags
   };
-  model.availablePackages.removeWhere((package) => package['name'] == packageName);
+  model.projectData[selectedProjectId]['availablePackages'].removeWhere((package) => package['name'] == packageName);
 }
 
 void duplicatePackage(String packageId, String packageName) {
-  var originalPackageConfiguration = model.activePackages[packageId]['configurationData'];
+  var originalPackageConfiguration = model.projectData[selectedProjectId]['activePackages'][packageId]['configurationData'];
   var newId = generatePackageId();
-  model.activePackages[newId] = {
+  model.projectData[selectedProjectId]['activePackages'][newId] = {
     'id': newId,
     'name': '$packageName [COPY]',
     'conversationsLink': '#/conversations',
@@ -233,7 +249,7 @@ void duplicatePackage(String packageId, String packageName) {
 
 void editActivePackage(String packageId, String originalPackageName, updatedPackageName) {
   if (originalPackageName == updatedPackageName) return;
-  var package = model.activePackages[packageId];
+  var package = model.projectData[selectedProjectId]['activePackages'][packageId];
   package['name'] = updatedPackageName;
   router.routeTo(window.location.hash);
 }
@@ -247,7 +263,7 @@ enum TagOperation {
 
 void _addTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
   tagCollection.addAll({tag: tagType});
-  if (!isEditable) model.activePackages[selectedPackage]['configurationData'].availableTags.remove(tag);
+  if (!isEditable) model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].availableTags.remove(tag);
 }
 
 void _updateTag(String originalTag, String updatedTag, Map<String, model.TagType> tagCollection) {
@@ -271,69 +287,69 @@ void _updateTag(String originalTag, String updatedTag, Map<String, model.TagType
 
 void _removeTag(String tag, model.TagType tagType, Map<String, model.TagType> tagCollection, [bool isEditable = false]) {
   tagCollection.remove(tag);
-  if (!isEditable) model.activePackages[selectedPackage]['configurationData'].availableTags.addAll({tag : tagType});
+  if (!isEditable) model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].availableTags.addAll({tag : tagType});
 }
 
 void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.add:
-      _addTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasAllTags);
+      _addTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasAllTags);
       break;
     case TagOperation.update:
       break;
     case TagOperation.remove:
-      _removeTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasAllTags);
+      _removeTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasAllTags);
       break;
   }
-  loadPackageConfigurationView();
+  router.routeTo('#/package-configuration');
 }
 
 void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.add:
-      _addTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].containsLastInTurnTags);
+      _addTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].containsLastInTurnTags);
       break;
     case TagOperation.update:
       break;
     case TagOperation.remove:
-      _removeTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].containsLastInTurnTags);
+      _removeTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].containsLastInTurnTags);
       break;
   }
-  loadPackageConfigurationView();
+  router.routeTo('#/package-configuration');
 }
 
 void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
    switch(tagOperation) {
     case TagOperation.add:
-      _addTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasNoneTags);
+      _addTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasNoneTags);
       break;
     case TagOperation.update:
       break;
     case TagOperation.remove:
-      _removeTag(tag, tagType, model.activePackages[selectedPackage]['configurationData'].hasNoneTags);
+      _removeTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasNoneTags);
       break;
   }
-  loadPackageConfigurationView();
+  router.routeTo('#/package-configuration');
 }
 
 void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagType, TagOperation tagOperation) {
   switch(tagOperation) {
     case TagOperation.add:
-      _addTag(updatedTag, tagType, model.activePackages[selectedPackage]['configurationData'].addsTags, true);
+      _addTag(updatedTag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].addsTags, true);
       break;
     case TagOperation.update:
-      _updateTag(originalTag, updatedTag, model.activePackages[selectedPackage]['configurationData'].addsTags);
+      _updateTag(originalTag, updatedTag, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].addsTags);
       break;
     case TagOperation.remove:
-      _removeTag(originalTag, tagType, model.activePackages[selectedPackage]['configurationData'].addsTags, true);
+      _removeTag(originalTag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].addsTags, true);
       break;
   }
-  loadPackageConfigurationView();
+  router.routeTo('#/package-configuration');
 }
 
 // Suggested Replies operations
 void addNewResponse() {
-  model.activePackages[selectedPackage]['configurationData'].suggestedReplies.add(
+  model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies.add(
     {
       "messages":
         [
@@ -345,43 +361,45 @@ void addNewResponse() {
       "reviewed-date": ""
     },
   );
-  loadPackageConfigurationView();
+  router.routeTo('#/package-configuration');
 }
 
 void updateResponse(int rowIndex, int colIndex, String response) {
-  model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['messages'][colIndex] = response;
-  loadPackageConfigurationView();
+  model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['messages'][colIndex] = response;
+  router.routeTo('#/package-configuration');
 }
 
 void reviewResponse(int rowIndex, bool reviewed) {
   if (reviewed) {
     var now = DateTime.now().toLocal();
     var reviewedDate = '${now.year}-${now.month}-${now.day}';
-    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed'] = true;
-    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
-    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed'] = true;
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed-by'] = signedInUser.userEmail;
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed-date'] = reviewedDate;
   } else {
-    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed'] = false;
-    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-by'] = '';
-    model.activePackages[selectedPackage]['configurationData'].suggestedReplies[rowIndex]['reviewed-date'] = '';
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed'] = false;
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed-by'] = '';
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed-date'] = '';
   }
-  loadPackageConfigurationView();
+  router.routeTo('#/package-configuration');
 }
 
 void removeResponse(int rowIndex) {
-  model.activePackages[selectedPackage]['configurationData'].suggestedReplies.removeAt(rowIndex);
-  loadPackageConfigurationView();
+  model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies.removeAt(rowIndex);
+  router.routeTo('#/package-configuration');
 }
 
 void saveProjectConfiguration(Map config) {
-  model.projectConfigurationFormData = config;
+  model.projectData[selectedProjectId]['projectConfiguration'] = config;
   List<String> languagesAdded = config['project-languages'].keys.toList();
   model.additionalProjectConfigurationLanguages.removeWhere((l) => languagesAdded.contains(l));
-  loadProjectConfigurationView();
+  router.routeTo('#/project-configuration');
 }
 
 void savePackageConfiguration() {}
 
 // Helper Mehods
+
+String generateProjectId() => 'project-${new Uuid().v4().split('-')[0]}';
 
 String generatePackageId() => 'package-${new Uuid().v4().split('-')[0]}';

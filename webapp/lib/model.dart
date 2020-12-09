@@ -1,8 +1,28 @@
 // TODO To be replaced with real models. Just dumping dummy data here to keep controller.dart clean
-Map<String, List<String>> projectData = {
-  'COVID IMAQAL' : ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
-  'COVID Kenya': ['Team Member 1', 'Team Member 3']
-  };
+Map<String, Map> projectData = {
+  'project-4f729d35': {
+    'id': 'project-4f729d35',
+    'name': 'COVID IMAQAL',
+    'members': ['Team Member 1', 'Team Member 2', 'Team Member 3', 'Team Member 4', 'Team Member 5'],
+    'conversationData': covidImaqalConversationData,
+    'activePackages': covidImaqalActivePackages,
+    'availablePackages': covidImaqalAvailablePackages,
+    'projectConfiguration': covidImaqalProjectConfigurationFormData
+  },
+  'project-38aac3ae': {
+    'id': 'project-38aac3ae',
+    'name': 'COVID Kenya',
+    'members': ['Team Member 1', 'Team Member 3'],
+    'conversationData': {
+      'needs-urgent-intervention': 0,
+    'awaiting-reply': 0,
+    'conversations': []
+    },
+    'activePackages': {},
+    'availablePackages': [],
+    'projectConfiguration': covidKenyaProjectConfigurationFormData
+  }
+};
 
 Map<String, String> teamMembers  = {
   'Team Member 1' : 'email1@organization.org',
@@ -10,7 +30,7 @@ Map<String, String> teamMembers  = {
   'Team Member 3': 'email3@organization.org'
 };
 
-Map conversationData = {
+Map covidImaqalConversationData = {
     'needs-urgent-intervention': 3,
     'awaiting-reply': 20,
     'conversations': [
@@ -29,9 +49,9 @@ Map conversationData = {
     ]
 };
 
-List<String> projectOrganizations;
+List<String> projectOrganizations  = [];
 
-Map projectConfigurationFormData = {
+Map covidImaqalProjectConfigurationFormData = {
   'project-languages': {
     'English': {
       'send': {'label': 'can send', 'value': true},
@@ -90,6 +110,69 @@ Map projectConfigurationFormData = {
     'workspace-token': {
       'label': 'Workspace token',
       'value': 'cmFuZG9tIHN0cmluZw'
+    }
+  }
+};
+
+Map covidKenyaProjectConfigurationFormData = {
+  'project-languages': {
+    'English': {
+      'send': {'label': 'can send', 'value': false},
+      'receive': {'label': 'can receive', 'value': false}
+    },
+    'Somali': {
+      'send': {'label': 'can send', 'value': false},
+      'receive': {'label': 'can receive', 'value': false}
+    }
+  },
+  'automated-translations': {
+    'label': 'Automated translations enabled',
+    'value': false
+  },
+  'user-configuration': {
+      'read-conversations': {
+        'label': 'can read conversations',
+        'value': ''
+      },
+      'perform-translations': {
+        'label': 'can perform translations',
+        'value': ''
+      },
+      'send-messages': {
+        'label': 'can send messages',
+        'value': ''
+      },
+      'send-custom-messages': {
+        'label': 'can send custom messages',
+        'value': ''
+      },
+      'approve-actions': {
+        'label': 'can approve actions',
+        'value': ''
+      },
+      'configure-project': {
+        'label': 'can configure the project',
+        'value': ''
+      }
+  },
+  'coda-integration': {
+    'dataset-regex': {
+      'label': 'Dataset regex',
+      'value': ''
+    },
+    'firebase-token': {
+      'label': 'Firebase auth token',
+      'value': ''
+    }
+  },
+  'rapidpro-integration': {
+    'start-timestamp': {
+      'label': 'Start timestamp',
+      'value': new DateTime.now().toIso8601String()
+    },
+    'workspace-token': {
+      'label': 'Workspace token',
+      'value': ''
     }
   }
 };
@@ -165,13 +248,13 @@ enum TagType {
   Important,
 }
 
-Map<String, Map> activePackages = {
+Map<String, Map> covidImaqalActivePackages = {
   'package-439c41b9': {
     'id': 'package-439c41b9',
     'name': 'Urgent conversations',
     'conversationsLink': '#/conversations',
     'configurationLink': '#/package-configuration?package=package-439c41b9',
-    'chartData': '${conversationData["needs-urgent-intervention"]} awaiting reply',
+    'chartData': '${covidImaqalConversationData["needs-urgent-intervention"]} awaiting reply',
     'configurationData': new Configuration()
       ..availableTags = tags
       ..hasAllTags = {'escalate': TagType.Important}
@@ -202,7 +285,7 @@ Map<String, Map> activePackages = {
     },
 };
 
-List<Map> availablePackages = [
+List<Map> covidImaqalAvailablePackages = [
   {'name': 'Quick Poll', 'description': 'Ask a question with fixed answers', 'details': {'Needs': 'Q/A, Labelling team, Safeguarding response', 'Produces': 'Dashboard for distribution of answers'}},
   {'name': 'Information Service', 'description': 'Answer people\'s questions', 'details': {'Needs' : 'Response protocol, Labelling team, Safeguarding response', 'Produces' : 'Thematic distribution, work rate tracker'}},
   {'name': 'Bulk Message', 'description': 'Send set of people a once off message', 'details': {'Needs' : 'Definition of who. Safeguarding response', 'Produces' : 'Success/Fail tracker'}},

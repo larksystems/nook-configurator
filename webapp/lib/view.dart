@@ -85,7 +85,7 @@ class NavView {
 
   void set projectTitle(String projectName) => _projectTitle.text = projectName;
 
-  void set projectOrganizations(List<String> organizations) => _projectOrganizations.text = organizations?.first;
+  void set projectOrganizations(List<String> organizations) => _projectOrganizations.text = organizations.isNotEmpty ? organizations.first : '';
 }
 
 class AuthHeaderViewPartial {
@@ -197,7 +197,7 @@ class AuthMainView extends BaseView {
 class ProjectSelectorView extends BaseView {
   DivElement projectListViewElement;
 
-  ProjectSelectorView (Map<String, List<String>> projectData, Map<String, String> teamMembers) {
+  ProjectSelectorView (Map<String, Map> projectData, Map<String, String> teamMembers) {
     projectListViewElement = new DivElement()
       ..classes.add('project-list-view');
     projectListViewElement.append(
@@ -216,18 +216,19 @@ class ProjectSelectorView extends BaseView {
 
   DivElement get renderElement => projectListViewElement;
 
-  DivElement _createProjectList(Map<String, List<String>> projectData) {
+  DivElement _createProjectList(Map<String, Map> projectData) {
     var projectList = new DivElement()
       ..classes.add('list-view');
-    projectData.forEach((project, members) {
-      var membersList = members.length <= 2 ?
-        members.take(2).join(', ') : '${members.take(2).join(", ")} & ${members.length - 2} others';
+    projectData.forEach((id, project) {
+      var membersList = project['members'].length <= 2 ?
+        project['members'].take(2).join(', ') : '${project['members'].take(2).join(", ")} & ${project['members'].length - 2} others';
       var projectListItem = new DivElement()
         ..classes.add('list-view-item')
+        ..dataset['id'] = id
         ..append(
           new SpanElement()
             ..classes.add('list-view-item__details')
-            ..innerHtml = '$project&emsp;$membersList'
+            ..innerHtml = '${project['name']}&emsp;$membersList'
         )
         ..append(
           new SpanElement()
@@ -237,14 +238,14 @@ class ProjectSelectorView extends BaseView {
                 ..classes.add('list-view-item__action-link')
                 ..text = 'View'
                 ..onClick.listen((_) =>
-                    controller.command(controller.UIAction.viewProject, new controller.ProjectData(project, members)))
+                    controller.command(controller.UIAction.viewProject, new controller.ProjectData(project['id'], project['name'], project['members'])))
             )
             ..append(
               new AnchorElement()
                 ..classes.add('list-view-item__action-link')
                 ..text = 'Configure'
                 ..onClick.listen((_) =>
-                    controller.command(controller.UIAction.configureProject, new controller.ProjectData(project, members)))
+                    controller.command(controller.UIAction.configureProject, new controller.ProjectData(project['id'], project['name'], project['members'])))
             )
         );
       projectList.append(projectListItem);
@@ -330,7 +331,7 @@ class DashboardView extends BaseView {
                   new AnchorElement()
                     ..classes.add('project-actions__action-link')
                     ..text = "Configure project"
-                    ..href = "#/project-configuration"
+                    ..href = "#/project-configuration?project=${controller.selectedProjectId}"
                 )
                 ..append(
                   new SpanElement()
@@ -681,12 +682,12 @@ class PackageConfiguratorView extends BaseView {
       packageListItem
         ..dataset['id'] = packageId
         ..classes.add('selected-active-package-list__item')
-        ..classes.toggle('selected-active-package-list__item--selected', (packageId == controller.selectedPackage))
+        ..classes.toggle('selected-active-package-list__item--selected', (packageId == controller.selectedPackageId))
         ..append(packageListItemText)
         ..append(
           new SpanElement()
           ..classes.add('selected-active-package-list__item-action')
-          ..classes.toggle('selected-active-package-list__item-action--show', (packageId == controller.selectedPackage))
+          ..classes.toggle('selected-active-package-list__item-action--show', (packageId == controller.selectedPackageId))
           ..onClick.listen((event) {
             event.stopPropagation();
             var selectedPackageDropdown = new Element.ul()
