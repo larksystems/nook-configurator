@@ -679,8 +679,6 @@ class PackageConfiguratorView extends BaseView {
         ..append(packageListItemText)
         ..append(menuElement)
         ..onClick.listen((event) {
-          print(event.target);
-          print(document.activeElement);
           if (!(event.target as Element).classes.contains('selected-active-package-list__item-text')) return;
           controller.command(controller.UIAction.loadPackageConfigurationView, new controller.PackageConfigurationData(packageId, packageName));
         });
