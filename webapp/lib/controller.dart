@@ -89,6 +89,7 @@ class SuggestedRepliesCategoryData extends Data {
 List<String> configurationSuggestedReplyLanguages;
 SuggestedRepliesManager suggestedRepliesManager = new SuggestedRepliesManager();
 String selectedSuggestedRepliesCategory;
+List<String> editedSuggestedReplies = [];
 
 model.User signedInUser;
 final String selectedPackage = 'Change communications';
@@ -173,6 +174,7 @@ void command(UIAction action, [Data actionData]) {
 
       var newSuggestedReplyView = new view.SuggestedReplyView(newSuggestedReply.docId, newSuggestedReply.text, newSuggestedReply.translation);
       (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[data.groupId].addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
+      editedSuggestedReplies.add(newSuggestedReply.docId);
       break;
     case UIAction.updateSuggestedReply:
       SuggestedReplyData data = actionData;
@@ -183,12 +185,14 @@ void command(UIAction action, [Data actionData]) {
       if (data.translation != null) {
         suggestedReply.translation = data.translation;
       }
+      editedSuggestedReplies.add(data.id);
       break;
     case UIAction.removeSuggestedReply:
       SuggestedReplyData data = actionData;
       var suggestedReply = suggestedRepliesManager.getSuggestedReplyById(data.id);
       suggestedRepliesManager.removeSuggestedReply(suggestedReply);
       (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[suggestedReply.groupId].removeReply(suggestedReply.suggestedReplyId);
+      // TODO: queue suggested replies for removal once the backend infrastructure can handle removing them
       break;
     case UIAction.addSuggestedReplyGroup:
       var newGroupId = suggestedRepliesManager.nextSuggestedReplyGroupId;
@@ -218,7 +222,12 @@ void loadAuthView() {
 }
 
 void savePackageConfiguration() {
-  saveSuggestedReplies(suggestedRepliesManager.suggestedReplies);
+  List<new_model.SuggestedReply> repliesToSave = editedSuggestedReplies.map((suggestedReplyId) => suggestedRepliesManager.getSuggestedReplyById(suggestedReplyId)).toList();
+  saveSuggestedReplies(repliesToSave).then((value) {
+    (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Saved!');
+  }, onError: (error, stacktrace) {
+    (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Unable to save. Please check your connection and try again.');
+  });
 }
 
 void loadPackageConfigurationView() {

@@ -73,12 +73,34 @@
 }
 
 .configure-package-actions {
+  display: flex;
+  margin: 20px 0;
 }
 
-.configure-package-actions__action {
-  margin-left: 60px;
-  color: #6ea9ac;
-  text-decoration: none;
+.configure-package-actions__save-action {
+  width: 130px;
+  height: 40px;
+  font-size: 1.1em;
+  background-color: #499398;
+  color: #ffffff;
+  border: none;
+}
+
+.configure-package-actions__save-action__status {
+  height: 40px;
+  line-height: 40px;
+  font-size: 1.1em;
+  font-weight: 400;
+  border: none;
+  display: inline-block;
+  box-sizing: border-box;
+  text-align: center;
+  color: #666;
+  margin-left: 10px;
+
+  /* A little animation on hide and show */
+  visibility: visible;
+  transition: all 0.2s;
 }
 
 .conversation-tags {
