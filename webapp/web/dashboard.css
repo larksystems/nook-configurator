@@ -201,12 +201,26 @@
   position: absolute;
   right: -3px;
   cursor: pointer;
+  border: none;
+  background-color: none;
+  background: none;
+  outline: none;
+  padding: 0px;
+  visibility: hidden;
 }
 
 .active-package-menu:after {
   content: '\2807';
   font-size: 1.5em;
   font-weight: bold;
+}
+
+.active-package-menu--sidebar {
+  position: static;
+}
+
+.active-package-menu--show {
+  visibility: visible;
 }
 
 .active-package-dropdown {
