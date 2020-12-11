@@ -65,6 +65,7 @@ class Router {
     }
     if (pathUri.hasQuery) {
       desiredRoute.params = pathUri.queryParameters;
+      desiredRoute.path = '${desiredRoute.path.split('?')[0]}?${pathUri.query}';
     }
     _setRouteAndLoad(desiredRoute);
   }

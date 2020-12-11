@@ -253,7 +253,7 @@ Map<String, Map> covidImaqalActivePackages = {
     'id': 'package-439c41b9',
     'name': 'Urgent conversations',
     'conversationsLink': '#/conversations',
-    'configurationLink': '#/package-configuration?package=package-439c41b9',
+    'configurationLink': '#/package-configuration?project=project-4f729d35&package=package-439c41b9',
     'chartData': '${covidImaqalConversationData["needs-urgent-intervention"]} awaiting reply',
     'configurationData': new Configuration()
       ..availableTags = tags
@@ -265,7 +265,7 @@ Map<String, Map> covidImaqalActivePackages = {
     'id': 'package-1f895432',
     'name': 'Open conversations',
     'conversationsLink': '#/conversations',
-    'configurationLink': '#/package-configuration?package=package-1f895432',
+    'configurationLink': '#/package-configuration?project=project-4f729d35&package=package-1f895432',
     'chartData': '30 open conversations',
     'configurationData': new Configuration()..availableTags = tags
   },
@@ -273,7 +273,7 @@ Map<String, Map> covidImaqalActivePackages = {
     'id': 'package-0aef7d7e',
     'name': 'Change communications',
     'conversationsLink': '#/conversations',
-    'configurationLink': '#/package-configuration?package=package-0aef7d7e',
+    'configurationLink': '#/package-configuration?project=project-4f729d35&package=package-0aef7d7e',
     'chartData': '',
     'configurationData': new Configuration()
       ..availableTags = tags
