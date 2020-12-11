@@ -170,7 +170,7 @@ void loadProjectSelectorView() {
 }
 
 void loadDashboardView() {
-  selectedProjectId = selectedProjectId ?? router.routeParams['project'];
+  selectedProjectId = router.routeParams['project'];
   if (selectedProjectId == null) {
     router.routeTo("#/project-selector");
     return;
