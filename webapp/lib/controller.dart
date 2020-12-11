@@ -191,6 +191,7 @@ void loadDashboardView() {
 }
 
 void loadPackageConfigurationView() {
+  selectedProjectId = router.routeParams['project'];
   selectedPackageId = router.routeParams['package'];
   if (selectedProjectId == null && selectedPackageId == null) {
     router.routeTo("#/project-selector");
