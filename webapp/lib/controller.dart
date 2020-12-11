@@ -221,7 +221,7 @@ void addPackage(String packageName) {
     'id': id,
     'name': packageName,
     'conversationsLink': '#/conversations',
-    'configurationLink': '#/package-configuration?package=$id',
+    'configurationLink': '#/package-configuration?project=${selectedProjectId}&package=$id',
     'chartData': '',
     'configurationData': new model.Configuration()..availableTags = model.tags
   };
