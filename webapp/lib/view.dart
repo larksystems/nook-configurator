@@ -40,8 +40,12 @@ class NavView {
       ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
     _dashboardLink = new AnchorElement()
       ..classes.add('nav-links__link')
-      ..href = '#/dashboard'
-      ..text = 'Dashboard';
+      ..href = '#'
+      ..text = 'Dashboard'
+      ..onClick.listen((event) {
+        event.preventDefault();
+        controller.command(controller.UIAction.viewProject, null);
+      });
     _allProjectsLink = new AnchorElement()
       ..classes.add('nav-links__link')
       ..href = '#/project-selector'

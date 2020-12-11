@@ -115,7 +115,7 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.viewProject:
       project = actionData;
-      router.routeTo('#/dashboard?project=${project.projectId}');
+      router.routeTo('#/dashboard?project=${project?.projectId ?? selectedProjectId}');
       break;
     case UIAction.configureProject:
       project = actionData;
