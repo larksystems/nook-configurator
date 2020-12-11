@@ -135,7 +135,7 @@ void command(UIAction action, Data actionData) {
       break;
     case UIAction.loadPackageConfigurationView:
       PackageConfigurationData packageConfigurationData = actionData;
-      router.routeTo('#/package-configuration?package=${packageConfigurationData.packageId}');
+      router.routeTo('#/package-configuration?project=${selectedProjectId}&package=${packageConfigurationData.packageId}');
       break;
     case UIAction.addProject:
       break;
