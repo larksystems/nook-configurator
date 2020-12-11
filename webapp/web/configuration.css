@@ -200,6 +200,7 @@
 
 .conversation-response-language {
   display: grid;
+  grid-auto-rows: 100%;
 }
 
 .conversation-response-language__text {
