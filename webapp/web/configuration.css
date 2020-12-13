@@ -238,6 +238,7 @@
 
 .conversation-suggested-reply-language {
   display: grid;
+  grid-auto-rows: 100%;
 }
 
 .conversation-suggested-reply-language__text {
@@ -247,6 +248,7 @@
   padding: 2px;
   min-height: 70px;
   margin-bottom: 0px;
+  width: 95%;
 }
 
 .conversation-suggested-reply-language__text--alert {
