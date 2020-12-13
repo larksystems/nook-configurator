@@ -200,13 +200,15 @@
 
 .conversation-response-language {
   display: grid;
+  grid-auto-rows: 100%;
 }
 
 .conversation-response-language__text {
   overflow-y: scroll;
   border: 1px solid #ddd;
   border-radius: .5rem;
-  padding: 2px;
+  padding: 3px;
+  width: 95%;
   min-height: 70px;
   margin-bottom: 0px;
 }
