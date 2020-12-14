@@ -231,13 +231,14 @@
 
 .conversation-suggested-reply {
   display: grid;
-  grid-template-columns: 3% auto auto;
-  grid-gap: 10px;
+  grid-template-columns: 3% 47% 47%;
+  grid-gap: 1.5%;
   position: relative;
 }
 
 .conversation-suggested-reply-language {
   display: grid;
+  grid-auto-rows: 100%;
 }
 
 .conversation-suggested-reply-language__text {
@@ -247,6 +248,7 @@
   padding: 2px;
   min-height: 70px;
   margin-bottom: 0px;
+  width: 95%;
 }
 
 .conversation-suggested-reply-language__text--alert {
