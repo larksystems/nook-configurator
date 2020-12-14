@@ -64,7 +64,7 @@
 
 .configure-package-tags {
   display: grid;
-  grid-template-columns: 40% 60%;
+  grid-template-columns: 60% 40%;
   padding: 20px;
   border-bottom: 1px solid #ddd;
 }
