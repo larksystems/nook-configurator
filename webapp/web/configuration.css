@@ -201,6 +201,7 @@
 .conversation-response-language {
   display: grid;
   grid-auto-rows: 100%;
+  margin-bottom: 20px;
 }
 
 .conversation-response-language__text {
@@ -208,9 +209,12 @@
   border: 1px solid #ddd;
   border-radius: .5rem;
   padding: 3px;
-  width: 95%;
   min-height: 70px;
   margin-bottom: 0px;
+  background-color: inherit;
+  font-family: inherit;
+  font-weight: lighter;
+  resize: vertical;
 }
 
 .conversation-response-language__text--alert {
@@ -221,6 +225,7 @@
 .conversation-response-language__text-count {
   justify-self: flex-end;
   font-size: 0.8em;
+  margin-right: 10px;
 }
 
 .conversation-response-language__text-count--alert {

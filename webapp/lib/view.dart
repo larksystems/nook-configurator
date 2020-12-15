@@ -943,16 +943,16 @@ class ResponseView {
       ..classes.add('conversation-response-language__text-count')
       ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
       ..text = '${responseCount}/160';
-    var responseText =  new ParagraphElement();
+    var responseText =  new TextAreaElement();
     responseText
       ..classes.add('conversation-response-language__text')
       ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
       ..text = response != null ? response : ''
       ..contentEditable = 'true'
       ..dataset['index'] = '$colIndex'
-      ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text))
+      ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as TextAreaElement).value))
       ..onInput.listen((event) {
-        int count = responseText.text.split('').length;
+        int count = responseText.value.length;
         responseCounter.text = '${count}/160';
         responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
         responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
