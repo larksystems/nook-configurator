@@ -1,8 +1,7 @@
 .project-list-view {
-  width: 60vw;
-  display: flex;
-  flex-flow: column nowrap;
-  margin-left: 20vw;
+  display: grid;
+  justify-self: center;
+  width: 750px;
 }
 
 .list-view-title {
