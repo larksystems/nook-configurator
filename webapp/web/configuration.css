@@ -198,11 +198,17 @@
   grid-gap: 10px;
   position: relative;
   padding-left: 20px;
+  margin-bottom: 10px;
 }
 
 .conversation-response-language {
   display: grid;
   grid-auto-rows: 100%;
+}
+
+.conversation-response-language__details {
+  display: grid;
+  grid-template-columns: auto auto;
 }
 
 .conversation-response-language__text {
@@ -218,6 +224,17 @@
 .conversation-response-language__text--alert {
   border-color: #fa8072;
   outline-color: #fa8072;
+}
+
+.conversation-response-language__text-update {
+  margin-left: 5px;
+  visibility: hidden;
+  color: #fa8072;
+  font-size: 0.8em;
+}
+
+.conversation-response-language__text-update--show {
+  visibility: visible;
 }
 
 .conversation-response-language__text-count {
