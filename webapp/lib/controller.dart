@@ -70,6 +70,8 @@ ProjectData project;
 String selectedPackageId;
 String selectedProjectId;
 
+view.PackageConfiguratorView configuratorView;
+
 void init() async {
   setupRoutes();
   view.init();
@@ -199,7 +201,7 @@ void loadPackageConfigurationView() {
   }
   view.navView.showParent(NavAction.dashboard);
   var packages = new Map<String, String>.fromIterable(model.projectData[selectedProjectId]['activePackages'].values, key: (package) => package['id'], value: (package) => package['name']);
-  var configuratorView = new view.PackageConfiguratorView(packages, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData']);
+  configuratorView = new view.PackageConfiguratorView(packages, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData']);
   view.contentView.renderView(configuratorView);
 }
 
@@ -302,11 +304,13 @@ void hasAllTagsChanged(String tag, model.TagType tagType, TagOperation tagOperat
       _removeTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasAllTags);
       break;
   }
-  router.routeTo('#/package-configuration');
+  configuratorView.hasAllTagsView.setTags(
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasAllTags,
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].availableTags);
 }
 
 void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
-   switch(tagOperation) {
+  switch(tagOperation) {
     case TagOperation.add:
       _addTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].containsLastInTurnTags);
       break;
@@ -316,11 +320,13 @@ void containsLastInTurnTagsChanged(String tag, model.TagType tagType, TagOperati
       _removeTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].containsLastInTurnTags);
       break;
   }
-  router.routeTo('#/package-configuration');
+  configuratorView.containsLastInTurnTagsView.setTags(
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].containsLastInTurnTags,
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].availableTags);
 }
 
 void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOperation) {
-   switch(tagOperation) {
+  switch(tagOperation) {
     case TagOperation.add:
       _addTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasNoneTags);
       break;
@@ -330,7 +336,9 @@ void hasNoneTagsChanged(String tag, model.TagType tagType, TagOperation tagOpera
       _removeTag(tag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasNoneTags);
       break;
   }
-  router.routeTo('#/package-configuration');
+  configuratorView.hasNoneTagsView.setTags(
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].hasNoneTags,
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].availableTags);
 }
 
 void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagType, TagOperation tagOperation) {
@@ -345,12 +353,14 @@ void addsTagsChanged(String originalTag, String updatedTag, model.TagType tagTyp
       _removeTag(originalTag, tagType, model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].addsTags, true);
       break;
   }
-  router.routeTo('#/package-configuration');
+  configuratorView.addsTagsView.setTags(
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].addsTags,
+    model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].availableTags);
 }
 
 // Suggested Replies operations
 void addNewResponse() {
-  model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies.add(
+  var newSuggestedReply =
     {
       "messages":
         [
@@ -360,14 +370,13 @@ void addNewResponse() {
       "reviewed": false,
       "reviewed-by": "",
       "reviewed-date": ""
-    },
-  );
-  router.routeTo('#/package-configuration');
+    };
+  model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies.add(newSuggestedReply);
+  configuratorView.suggestedRepliesView.setSuggestedReplies(model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies);
 }
 
 void updateResponse(int rowIndex, int colIndex, String response) {
   model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['messages'][colIndex] = response;
-  router.routeTo('#/package-configuration');
 }
 
 void reviewResponse(int rowIndex, bool reviewed) {
@@ -382,12 +391,11 @@ void reviewResponse(int rowIndex, bool reviewed) {
     model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed-by'] = '';
     model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies[rowIndex]['reviewed-date'] = '';
   }
-  router.routeTo('#/package-configuration');
 }
 
 void removeResponse(int rowIndex) {
   model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies.removeAt(rowIndex);
-  router.routeTo('#/package-configuration');
+  configuratorView.suggestedRepliesView.setSuggestedReplies(model.projectData[selectedProjectId]['activePackages'][selectedPackageId]['configurationData'].suggestedReplies);
 }
 
 void saveProjectConfiguration(Map config) {

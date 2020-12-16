@@ -626,6 +626,12 @@ class PackageConfiguratorView extends BaseView {
   Map<String, String> activePackages;
   model.Configuration configurationData;
 
+  TagListView hasAllTagsView;
+  TagListView containsLastInTurnTagsView;
+  TagListView hasNoneTagsView;
+  ResponseListView suggestedRepliesView;
+  TagListView addsTagsView;
+
   PackageConfiguratorView(this.activePackages, this.configurationData) {
     packageConfiguratorViewElement = new DivElement()
       ..classes.add('configure-package-view');
@@ -693,23 +699,9 @@ class PackageConfiguratorView extends BaseView {
   }
 
   void _buildContentPartial() {
-    List<TagView> hasAllTags = [];
-    configurationData.hasAllTags.forEach((tag, tagType) {
-      hasAllTags.add(new TagView(tag, tagType, controller.hasAllTagsChanged));
-    });
-    var hasAllTagsContainer = new TagListView(hasAllTags, configurationData.availableTags, controller.hasAllTagsChanged).renderElement;
-
-    List<TagView> containsLastInTurnTags = [];
-    configurationData.containsLastInTurnTags.forEach((tag, tagType) {
-      containsLastInTurnTags.add(new TagView(tag, tagType, controller.containsLastInTurnTagsChanged));
-    });
-    var containsLastInTurnTagsContainer = new TagListView(containsLastInTurnTags, configurationData.availableTags, controller.containsLastInTurnTagsChanged).renderElement;
-
-    List<TagView> hasNoneTags = [];
-    configurationData.hasNoneTags.forEach((tag, tagType) {
-      hasNoneTags.add(new TagView(tag, tagType, controller.hasNoneTagsChanged));
-    });
-    var hasNoneTagsContainer = new TagListView(hasNoneTags, configurationData.availableTags, controller.hasNoneTagsChanged).renderElement;
+    hasAllTagsView = new TagListView(configurationData.hasAllTags, configurationData.availableTags, controller.hasAllTagsChanged);
+    containsLastInTurnTagsView = new TagListView(configurationData.containsLastInTurnTags, configurationData.availableTags, controller.containsLastInTurnTagsChanged);
+    hasNoneTagsView = new TagListView(configurationData.hasNoneTags, configurationData.availableTags, controller.hasNoneTagsChanged);
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -730,7 +722,7 @@ class PackageConfiguratorView extends BaseView {
                     ..classes.add('conversation-tags__sub-title')
                     ..text = 'Conversations has tags'
                 )
-                ..append(hasAllTagsContainer)
+                ..append(hasAllTagsView.renderElement)
                 ..append(
                   new ParagraphElement()
                     ..classes.add('conversation-tags__text--center')
@@ -741,7 +733,7 @@ class PackageConfiguratorView extends BaseView {
                     ..classes.add('conversation-tags__sub-title')
                     ..text = 'Last in turn contains ...'
                 )
-                ..append(containsLastInTurnTagsContainer)
+                ..append(containsLastInTurnTagsView.renderElement)
             )
             ..append(
               new DivElement()
@@ -756,7 +748,7 @@ class PackageConfiguratorView extends BaseView {
                     ..classes.add('conversation-tags__sub-title')
                     ..text = 'Conversation has tags'
                 )
-                ..append(hasNoneTagsContainer)
+                ..append(hasNoneTagsView.renderElement)
             )
         )
         ..append(
@@ -790,8 +782,7 @@ class PackageConfiguratorView extends BaseView {
         )
     );
 
-    var suggestedRepliesContainer =
-      new ResponseListView(configurationData.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse).renderElement;
+    suggestedRepliesView = new ResponseListView(configurationData.suggestedReplies, controller.addNewResponse, controller.updateResponse, controller.reviewResponse, controller.removeResponse);
 
     _packageConfiguratorContent.append(
       new DivElement()
@@ -808,14 +799,10 @@ class PackageConfiguratorView extends BaseView {
                 ..text = '3rd Party reviews'
             )
         )
-        ..append(suggestedRepliesContainer)
+        ..append(suggestedRepliesView.renderElement)
     );
 
-    List<TagView> addsTags = [];
-    configurationData.addsTags.forEach((tag, tagType) {
-      addsTags.add(new TagView(tag, tagType, controller.addsTagsChanged, true));
-    });
-    var addsTagsContainer = new TagListView(addsTags, configurationData.availableTags, controller.addsTagsChanged, true).renderElement;
+    addsTagsView = new TagListView(configurationData.addsTags, configurationData.availableTags, controller.addsTagsChanged, true);
 
     _packageConfiguratorContent
     ..append(
@@ -826,7 +813,7 @@ class PackageConfiguratorView extends BaseView {
             ..classes.add('conversation-tags__title')
             ..text = 'What new labels would like to tag the message with?'
         )
-        ..append(addsTagsContainer)
+        ..append(addsTagsView.renderElement)
     )
     ..append(
       new DivElement()
@@ -842,12 +829,15 @@ class PackageConfiguratorView extends BaseView {
 }
 
 class TagListView extends BaseView {
-  List<TagView> tagElements;
   DivElement _tagsContainer;
   SpanElement _tagsActionContainer;
   Function onTagChangedCallback;
 
-  TagListView(this.tagElements, Map<String, model.TagType> availableTags, this.onTagChangedCallback, [bool tagsEditable = false]) {
+  Map<String, model.TagType> tags;
+  Map<String, model.TagType> availableTags;
+  bool tagsEditable;
+
+  TagListView(this.tags, this.availableTags, this.onTagChangedCallback, [this.tagsEditable = false]) {
     _tagsContainer = new DivElement()
       ..classes.add('tags');
     _tagsActionContainer = new SpanElement()
@@ -856,7 +846,7 @@ class TagListView extends BaseView {
       new AddTagButtonElement((MouseEvent event) {
         if (tagsEditable) {
           var editableTag = new EditableTagElement(onTagChangedCallback);
-          _tagsActionContainer.insertAdjacentElement('beforebegin',editableTag.renderElement);
+          _tagsActionContainer.insertAdjacentElement('beforebegin', editableTag.renderElement);
           editableTag.focus();
           return;
         }
@@ -867,10 +857,18 @@ class TagListView extends BaseView {
         _tagsActionContainer.append(new DropdownElement(dropdownItems).renderElement);
       }).renderElement
     );
+    setTags(tags, availableTags);
     _tagsContainer.append(_tagsActionContainer);
-    tagElements.forEach((tag) {
-      _tagsActionContainer.insertAdjacentElement('beforebegin', tag.renderElement);
+  }
+
+  void setTags(Map<String, model.TagType> tags, Map<String, model.TagType> availableTags) {
+    this.tags = tags;
+    this.availableTags = availableTags;
+    _tagsContainer.children.clear();
+    tags.forEach((tag, tagType) {
+      _tagsContainer.append(new TagView(tag, tagType, onTagChangedCallback, tagsEditable).renderElement);
     });
+    _tagsContainer.append(_tagsActionContainer);
   }
 
   DivElement get renderElement => _tagsContainer;
@@ -975,6 +973,11 @@ class ResponseListView extends BaseView {
   ResponseListView(List<Map> suggestedReplies, this.onAddNewResponseCallback, this.onUpdateResponseCallback, this.onReviewResponseCallback, this.onRemoveResponseCallback) {
     _responsesContainer = new DivElement()
       ..classes.add('conversation-responses');
+    setSuggestedReplies(suggestedReplies);
+  }
+
+  void setSuggestedReplies(List<Map> suggestedReplies) {
+    _responsesContainer.children.clear();
     for (int i = 0; i < suggestedReplies.length; i++) {
       _responsesContainer.append(_createResponseEntry(i, suggestedReplies[i]));
     }
