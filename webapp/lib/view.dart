@@ -934,15 +934,23 @@ class TagView extends BaseView {
 
 class ResponseView {
   Element _responseElement;
+  Element _responseCounter;
+  Element _updateAlertText;
+  Element _responseText;
   Function onUpdateResponseCallback;
+  bool updated;
 
-  ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback) {
-    var responseCounter = new SpanElement()
+  ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback, Function updateResponseEntriesState) {
+    updated = false;
+    _updateAlertText = new SpanElement()
+      ..classes.add('conversation-response-language__text-update')
+      ..text = 'Remember to update this too';
+    _responseCounter = new SpanElement()
       ..classes.add('conversation-response-language__text-count')
       ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
       ..text = '${responseCount}/160';
-    var responseText =  new ParagraphElement();
-    responseText
+    _responseText =  new ParagraphElement();
+    _responseText
       ..classes.add('conversation-response-language__text')
       ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
       ..text = response != null ? response : ''
@@ -950,17 +958,29 @@ class ResponseView {
       ..dataset['index'] = '$colIndex'
       ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text))
       ..onInput.listen((event) {
-        int count = responseText.text.split('').length;
-        responseCounter.text = '${count}/160';
-        responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
-        responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
+        int count = _responseText.text.split('').length;
+        _responseCounter.text = '${count}/160';
+        _responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
+        _responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
+        updated = true;
+        updateResponseEntriesState();
       });
+    var responseElementDetails = new DivElement()
+      ..classes.add('conversation-response-language__details')
+      ..append(_updateAlertText)
+      ..append(_responseCounter);
+
     _responseElement = new DivElement()
       ..classes.add('conversation-response-language')
-      ..append(responseText)
-      ..append(responseCounter);
+      ..append(_responseText)
+      ..append(responseElementDetails);
   }
-    Element get renderElement => _responseElement;
+  Element get renderElement => _responseElement;
+
+  void toggleNeedsUpdateAlert() {
+    _responseText.classes.toggle('conversation-response-language__text--alert', !updated);
+    _updateAlertText.classes.toggle('conversation-response-language__text-update--show', !updated);
+  }
 }
 
 class ResponseListView extends BaseView {
@@ -1022,9 +1042,13 @@ class ResponseListView extends BaseView {
             responseEntry.append(removeResponsesModal);
           })
       );
+    List<ResponseView> responseEntrySet = [];
+    var updateResponseEntriesState = () => { responseEntrySet.forEach((entry) => entry.toggleNeedsUpdateAlert()) };
     for (int i = 0; i < response['messages'].length; i++) {
       int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
+      var singleResponseEntry = new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback, updateResponseEntriesState);
+      responseEntrySet.add(singleResponseEntry);
+      responseEntry.append(singleResponseEntry.renderElement);
     }
     responseEntry.append(
       DivElement()
