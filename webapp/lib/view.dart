@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
@@ -934,33 +935,65 @@ class TagView extends BaseView {
 
 class ResponseView {
   Element _responseElement;
+  TextAreaElement _responseText;
   Function onUpdateResponseCallback;
+  Function onTextareaHeightChangeCallback;
 
   ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback) {
     var responseCounter = new SpanElement()
       ..classes.add('conversation-response-language__text-count')
       ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
       ..text = '${responseCount}/160';
-    var responseText =  new TextAreaElement();
-    responseText
+    _responseText = new TextAreaElement()
       ..classes.add('conversation-response-language__text')
       ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
       ..text = response != null ? response : ''
-      ..contentEditable = 'true'
       ..dataset['index'] = '$colIndex'
       ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as TextAreaElement).value))
       ..onInput.listen((event) {
-        int count = responseText.value.length;
+        int count = _responseText.value.length;
         responseCounter.text = '${count}/160';
-        responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
+        _responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
         responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
+        _handleTextareaHeightChange();
       });
     _responseElement = new DivElement()
       ..classes.add('conversation-response-language')
-      ..append(responseText)
+      ..append(_responseText)
       ..append(responseCounter);
+    finaliseRenderAsync();
   }
-    Element get renderElement => _responseElement;
+
+  Element get renderElement => _responseElement;
+
+  void set textareaHeight(int height) => _responseText.style.height = '${height - 6}px';
+
+  /// Returns the height of the content text in the textarea element.
+  int get textareaScrollHeight {
+    var height = _responseText.style.height;
+    _responseText.style.height = '0';
+    var scrollHeight = _responseText.scrollHeight;
+    _responseText.style.height = height;
+    return scrollHeight;
+  }
+
+  /// This method reports the height of the content text (if the callback is set).
+  void _handleTextareaHeightChange() {
+    if (onTextareaHeightChangeCallback == null) return;
+    onTextareaHeightChangeCallback(textareaScrollHeight);
+  }
+
+  /// The response view is added to the DOM at some later point, outside this class.
+  /// This method periodically polls until the element has been added to the DOM (height > 0)
+  /// and then triggers the first [_handleTextareaHeightChange] so that the parent can
+  /// synchronise the height between this reply and it's sibling(s).
+  void finaliseRenderAsync() {
+    Timer.periodic(new Duration(milliseconds: 10), (timer) {
+      if (_responseText.scrollHeight == 0) return;
+      _handleTextareaHeightChange();
+      timer.cancel();
+    });
+  }
 }
 
 class ResponseListView extends BaseView {
@@ -1022,10 +1055,16 @@ class ResponseListView extends BaseView {
             responseEntry.append(removeResponsesModal);
           })
       );
+
+    List<ResponseView> responseViews = [];
     for (int i = 0; i < response['messages'].length; i++) {
       int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-      responseEntry.append(new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback).renderElement);
+      var responseView = new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback);
+      responseViews.add(responseView);
+      responseEntry.append(responseView.renderElement);
     }
+    _makeResponseViewTextareasSynchronisable(responseViews);
+
     responseEntry.append(
       DivElement()
         ..classes.add('conversation-response__reviewed')
@@ -1377,4 +1416,23 @@ _cursorToEnd(Element element) {
   var selection = window.getSelection();
   selection.removeAllRanges();
   selection.addRange(range);
+}
+
+_makeResponseViewTextareasSynchronisable(List<ResponseView> responseViews) {
+  var onTextareaHeightChangeCallback = (int height) {
+    var maxHeight = height;
+    for (var responseView in responseViews) {
+      var textareaScrollHeight = responseView.textareaScrollHeight;
+      if (textareaScrollHeight > maxHeight) {
+        maxHeight = textareaScrollHeight;
+      }
+    }
+    for (var responseView in responseViews) {
+      responseView.textareaHeight = maxHeight;
+    }
+  };
+
+  for (var responseView in responseViews) {
+    responseView.onTextareaHeightChangeCallback = onTextareaHeightChangeCallback;
+  }
 }
