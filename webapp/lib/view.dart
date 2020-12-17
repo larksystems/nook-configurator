@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
@@ -936,8 +937,9 @@ class ResponseView {
   Element _responseElement;
   Element _responseCounter;
   Element _updateAlertText;
-  Element _responseText;
+  TextAreaElement _responseText;
   Function onUpdateResponseCallback;
+  Function onTextareaHeightChangeCallback;
   bool updated;
 
   ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback, Function updateResponseEntriesState) {
@@ -949,21 +951,20 @@ class ResponseView {
       ..classes.add('conversation-response-language__text-count')
       ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
       ..text = '${responseCount}/160';
-    _responseText =  new ParagraphElement();
-    _responseText
+    _responseText = new TextAreaElement()
       ..classes.add('conversation-response-language__text')
       ..classes.toggle('conversation-response-language__text--alert', responseCount > 160)
       ..text = response != null ? response : ''
-      ..contentEditable = 'true'
       ..dataset['index'] = '$colIndex'
-      ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as Element).text))
+      ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as TextAreaElement).value))
       ..onInput.listen((event) {
-        int count = _responseText.text.split('').length;
+        int count = _responseText.value.length;
         _responseCounter.text = '${count}/160';
         _responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
         _responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
         updated = true;
         updateResponseEntriesState();
+        _handleTextareaHeightChange();
       });
     var responseElementDetails = new DivElement()
       ..classes.add('conversation-response-language__details')
@@ -974,8 +975,39 @@ class ResponseView {
       ..classes.add('conversation-response-language')
       ..append(_responseText)
       ..append(responseElementDetails);
+    finaliseRenderAsync();
   }
+
   Element get renderElement => _responseElement;
+
+  void set textareaHeight(int height) => _responseText.style.height = '${height - 6}px';
+
+  /// Returns the height of the content text in the textarea element.
+  int get textareaScrollHeight {
+    var height = _responseText.style.height;
+    _responseText.style.height = '0';
+    var scrollHeight = _responseText.scrollHeight;
+    _responseText.style.height = height;
+    return scrollHeight;
+  }
+
+  /// This method reports the height of the content text (if the callback is set).
+  void _handleTextareaHeightChange() {
+    if (onTextareaHeightChangeCallback == null) return;
+    onTextareaHeightChangeCallback(textareaScrollHeight);
+  }
+
+  /// The response view is added to the DOM at some later point, outside this class.
+  /// This method periodically polls until the element has been added to the DOM (height > 0)
+  /// and then triggers the first [_handleTextareaHeightChange] so that the parent can
+  /// synchronise the height between this reply and it's sibling(s).
+  void finaliseRenderAsync() {
+    Timer.periodic(new Duration(milliseconds: 10), (timer) {
+      if (_responseText.scrollHeight == 0) return;
+      _handleTextareaHeightChange();
+      timer.cancel();
+    });
+  }
 
   void toggleNeedsUpdateAlert() {
     _responseText.classes.toggle('conversation-response-language__text--alert', !updated);
@@ -1047,17 +1079,20 @@ class ResponseListView extends BaseView {
             responseEntry.append(removeResponsesModal);
           })
       );
-    List<ResponseView> responseEntrySet = [];
+
+    List<ResponseView> responseViews = [];
     var updateResponseEntriesState = () {
-      responseEntrySet.forEach((entry) => entry.toggleNeedsUpdateAlert());
+      responseViews.forEach((entry) => entry.toggleNeedsUpdateAlert());
       unsavedIndicator.classes.toggle('conversation-response-unsaved-indicator--show', true);
     };
     for (int i = 0; i < response['messages'].length; i++) {
       int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-      var singleResponseEntry = new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback, updateResponseEntriesState);
-      responseEntrySet.add(singleResponseEntry);
-      responseEntry.append(singleResponseEntry.renderElement);
+      var responseView = new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback, updateResponseEntriesState);
+      responseViews.add(responseView);
+      responseEntry.append(responseView.renderElement);
     }
+    _makeResponseViewTextareasSynchronisable(responseViews);
+
     responseEntry.append(
       DivElement()
         ..classes.add('conversation-response__reviewed')
@@ -1409,4 +1444,23 @@ _cursorToEnd(Element element) {
   var selection = window.getSelection();
   selection.removeAllRanges();
   selection.addRange(range);
+}
+
+_makeResponseViewTextareasSynchronisable(List<ResponseView> responseViews) {
+  var onTextareaHeightChangeCallback = (int height) {
+    var maxHeight = height;
+    for (var responseView in responseViews) {
+      var textareaScrollHeight = responseView.textareaScrollHeight;
+      if (textareaScrollHeight > maxHeight) {
+        maxHeight = textareaScrollHeight;
+      }
+    }
+    for (var responseView in responseViews) {
+      responseView.textareaHeight = maxHeight;
+    }
+  };
+
+  for (var responseView in responseViews) {
+    responseView.onTextareaHeightChangeCallback = onTextareaHeightChangeCallback;
+  }
 }

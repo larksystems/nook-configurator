@@ -72,7 +72,12 @@ class Router {
 
   void _setRouteAndLoad(Route route) {
     _currentRoute = route;
-    window.location.hash = _currentRoute.path;
+    if (window.location.hash != _currentRoute.path) {
+      // when the location hash is changed, the current route will be loaded again anyway
+      // no need to duplicate it, so set the new has and return
+      window.location.hash = _currentRoute.path;
+      return;
+    }
     _currentRoute.handler();
   }
 }
