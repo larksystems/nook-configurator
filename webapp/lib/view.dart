@@ -935,12 +935,19 @@ class TagView extends BaseView {
 
 class ResponseView {
   Element _responseElement;
+  Element _responseCounter;
+  Element _updateAlertText;
   TextAreaElement _responseText;
   Function onUpdateResponseCallback;
   Function onTextareaHeightChangeCallback;
+  bool updated;
 
-  ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback) {
-    var responseCounter = new SpanElement()
+  ResponseView(int rowIndex, int colIndex, String response, int responseCount, this.onUpdateResponseCallback, Function updateResponseEntriesState) {
+    updated = false;
+    _updateAlertText = new SpanElement()
+      ..classes.add('conversation-response-language__text-update')
+      ..text = 'Remember to update this too';
+    _responseCounter = new SpanElement()
       ..classes.add('conversation-response-language__text-count')
       ..classes.toggle('conversation-response-language__text-count--alert', responseCount > 160)
       ..text = '${responseCount}/160';
@@ -952,15 +959,22 @@ class ResponseView {
       ..onBlur.listen((event) => onUpdateResponseCallback(rowIndex, colIndex, (event.target as TextAreaElement).value))
       ..onInput.listen((event) {
         int count = _responseText.value.length;
-        responseCounter.text = '${count}/160';
+        _responseCounter.text = '${count}/160';
+        _responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
         _responseText.classes.toggle('conversation-response-language__text--alert', count > 160);
-        responseCounter.classes.toggle('conversation-response-language__text-count--alert', count > 160);
+        updated = true;
+        updateResponseEntriesState();
         _handleTextareaHeightChange();
       });
+    var responseElementDetails = new DivElement()
+      ..classes.add('conversation-response-language__details')
+      ..append(_updateAlertText)
+      ..append(_responseCounter);
+
     _responseElement = new DivElement()
       ..classes.add('conversation-response-language')
       ..append(_responseText)
-      ..append(responseCounter);
+      ..append(responseElementDetails);
     finaliseRenderAsync();
   }
 
@@ -994,6 +1008,11 @@ class ResponseView {
       timer.cancel();
     });
   }
+
+  void toggleNeedsUpdateAlert() {
+    _responseText.classes.toggle('conversation-response-language__text--alert', !updated);
+    _updateAlertText.classes.toggle('conversation-response-language__text-update--show', !updated);
+  }
 }
 
 class ResponseListView extends BaseView {
@@ -1020,10 +1039,15 @@ class ResponseListView extends BaseView {
   DivElement get renderElement => _responsesContainer;
 
   DivElement _createResponseEntry(int rowIndex, [Map response]) {
-    var responseEntry = new DivElement()
+    var unsavedIndicator = new SpanElement()
+      ..classes.add('conversation-response-unsaved-indicator')
+      ..text = 'unsaved';
+    var responseEntry = new DivElement();
+    responseEntry
       ..classes.add('conversation-response')
-      ..dataset['index'] = '$rowIndex';
-    responseEntry.append(
+      ..dataset['index'] = '$rowIndex'
+      ..append(unsavedIndicator)
+      ..append(
         new ButtonElement()
           ..classes.add('button-remove-conversation-responses')
           ..text = 'x'
@@ -1057,9 +1081,13 @@ class ResponseListView extends BaseView {
       );
 
     List<ResponseView> responseViews = [];
+    var updateResponseEntriesState = () {
+      responseViews.forEach((entry) => entry.toggleNeedsUpdateAlert());
+      unsavedIndicator.classes.toggle('conversation-response-unsaved-indicator--show', true);
+    };
     for (int i = 0; i < response['messages'].length; i++) {
       int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
-      var responseView = new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback);
+      var responseView = new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback, updateResponseEntriesState);
       responseViews.add(responseView);
       responseEntry.append(responseView.renderElement);
     }
