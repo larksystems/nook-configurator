@@ -1007,10 +1007,15 @@ class ResponseListView extends BaseView {
   DivElement get renderElement => _responsesContainer;
 
   DivElement _createResponseEntry(int rowIndex, [Map response]) {
-    var responseEntry = new DivElement()
+    var unsavedIndicator = new SpanElement()
+      ..classes.add('conversation-response-unsaved-indicator')
+      ..text = 'unsaved';
+    var responseEntry = new DivElement();
+    responseEntry
       ..classes.add('conversation-response')
-      ..dataset['index'] = '$rowIndex';
-    responseEntry.append(
+      ..dataset['index'] = '$rowIndex'
+      ..append(unsavedIndicator)
+      ..append(
         new ButtonElement()
           ..classes.add('button-remove-conversation-responses')
           ..text = 'x'
@@ -1043,7 +1048,10 @@ class ResponseListView extends BaseView {
           })
       );
     List<ResponseView> responseEntrySet = [];
-    var updateResponseEntriesState = () => { responseEntrySet.forEach((entry) => entry.toggleNeedsUpdateAlert()) };
+    var updateResponseEntriesState = () {
+      responseEntrySet.forEach((entry) => entry.toggleNeedsUpdateAlert());
+      unsavedIndicator.classes.toggle('conversation-response-unsaved-indicator--show', true);
+    };
     for (int i = 0; i < response['messages'].length; i++) {
       int responseCount = response['messages'][i] == null ? 0 : response['messages'][i].split('').length;
       var singleResponseEntry = new ResponseView(rowIndex, i, response['messages'][i], responseCount, onUpdateResponseCallback, updateResponseEntriesState);
