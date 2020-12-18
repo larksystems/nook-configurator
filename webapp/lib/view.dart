@@ -656,7 +656,7 @@ class PackageConfiguratorView extends BaseView {
 
     window.onBeforeUnload.listen((event) {
       if (_unsaved == false) return false;
-      return "You have unsaved changes. Do you still want to exit?";
+      (event as BeforeUnloadEvent).returnValue = "You have unsaved changes. Do you still want to exit?";
     });
   }
 
