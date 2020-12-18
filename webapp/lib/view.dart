@@ -624,8 +624,11 @@ class PackageConfiguratorView extends BaseView {
   DivElement packageConfiguratorViewElement;
   DivElement _packageConfiguratorSidebar;
   DivElement _packageConfiguratorContent;
+  Element _unsavedPackageIndicator;
   Map<String, String> activePackages;
   model.Configuration configurationData;
+  static  StreamController _savedStateListener;
+  bool _unsaved;
 
   TagListView hasAllTagsView;
   TagListView containsLastInTurnTagsView;
@@ -634,6 +637,7 @@ class PackageConfiguratorView extends BaseView {
   TagListView addsTagsView;
 
   PackageConfiguratorView(this.activePackages, this.configurationData) {
+    _unsaved = false;
     packageConfiguratorViewElement = new DivElement()
       ..classes.add('configure-package-view');
     _packageConfiguratorSidebar = new DivElement()
@@ -644,7 +648,19 @@ class PackageConfiguratorView extends BaseView {
     _buildContentPartial();
     packageConfiguratorViewElement.append(_packageConfiguratorSidebar);
     packageConfiguratorViewElement.append(_packageConfiguratorContent);
+    _savedStateListener = new StreamController();
+    _savedStateListener.stream.listen((state) {
+      _unsaved = state;
+      _unsavedPackageIndicator.classes.toggle('unsaved-package-indicator--show', _unsaved);
+    });
+
+    window.onBeforeUnload.listen((event) {
+      if (_unsaved == false) return false;
+      return "You have unsaved changes. Do you still want to exit?";
+    });
   }
+
+  static void toggleUnsavedState(bool state) => _savedStateListener.sink.add(state);
 
   DivElement get renderElement => packageConfiguratorViewElement;
 
@@ -668,6 +684,7 @@ class PackageConfiguratorView extends BaseView {
         ..onBlur.listen((event) {
           packageListItemText.contentEditable = 'false';
           controller.command(controller.UIAction.editActivePackage, controller.PackageConfigurationData(packageId, packageName, (event.target as Element).text));
+          PackageConfiguratorView.toggleUnsavedState(true);
         });
         Map<String, Function> dropdownItems = {
           'Rename': (_) {
@@ -805,6 +822,10 @@ class PackageConfiguratorView extends BaseView {
 
     addsTagsView = new TagListView(configurationData.addsTags, configurationData.availableTags, controller.addsTagsChanged, true);
 
+    _unsavedPackageIndicator = new SpanElement()
+      ..classes.add('unsaved-package-indicator')
+      ..text = 'Unsaved';
+
     _packageConfiguratorContent
     ..append(
       new DivElement()
@@ -823,8 +844,12 @@ class PackageConfiguratorView extends BaseView {
           new ButtonElement()
             ..classes.add('save-configuration-btn')
             ..text = 'Save Configuration'
-            ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration, null))
+            ..onClick.listen((_) {
+              controller.command(controller.UIAction.savePackageConfiguration, null);
+              PackageConfiguratorView.toggleUnsavedState(false);
+            })
         )
+        ..append(_unsavedPackageIndicator)
     );
   }
 }
@@ -854,7 +879,10 @@ class TagListView extends BaseView {
         Map<String, Function> dropdownItems =
           new Map.fromIterable(availableTags.keys.toList(),
             key: (tag) => tag,
-            value: (tag) => (_) => onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add));
+            value: (tag) => (_) {
+              onTagChangedCallback(tag, availableTags[tag], controller.TagOperation.add);
+              PackageConfiguratorView.toggleUnsavedState(true);
+            });
         _tagsActionContainer.append(new DropdownElement(dropdownItems).renderElement);
       }).renderElement
     );
@@ -913,15 +941,20 @@ class TagView extends BaseView {
           ..onClick.listen((_) {
             if (isEditableTag) {
               onTagChangedCallback(tag, tag, tagType, controller.TagOperation.remove);
+              PackageConfiguratorView.toggleUnsavedState(true);
               return;
             }
             onTagChangedCallback(tag, tagType, controller.TagOperation.remove);
+            PackageConfiguratorView.toggleUnsavedState(true);
           })
       );
 
     if (isEditableTag) {
       _tagText.contentEditable = 'true';
-      _tagText.onBlur.listen((event) => onTagChangedCallback(tag, (event.target as Element).text, tagType, controller.TagOperation.update));
+      _tagText.onBlur.listen((event) {
+        onTagChangedCallback(tag, (event.target as Element).text, tagType, controller.TagOperation.update);
+        PackageConfiguratorView.toggleUnsavedState(true);
+      });
     }
 
     return tagElement;
@@ -965,6 +998,7 @@ class ResponseView {
         updated = true;
         updateResponseEntriesState();
         _handleTextareaHeightChange();
+        PackageConfiguratorView.toggleUnsavedState(true);
       });
     var responseElementDetails = new DivElement()
       ..classes.add('conversation-response-language__details')
@@ -1033,7 +1067,10 @@ class ResponseListView extends BaseView {
     for (int i = 0; i < suggestedReplies.length; i++) {
       _responsesContainer.append(_createResponseEntry(i, suggestedReplies[i]));
     }
-    _responsesContainer.append(new AddTagButtonElement((_) => onAddNewResponseCallback()).renderElement);
+    _responsesContainer.append(new AddTagButtonElement((_) {
+      onAddNewResponseCallback();
+      PackageConfiguratorView.toggleUnsavedState(true);
+    }).renderElement);
   }
 
   DivElement get renderElement => _responsesContainer;
@@ -1067,7 +1104,10 @@ class ResponseListView extends BaseView {
                     new ButtonElement()
                       ..classes.add('remove-conversation-responses-modal-actions__action')
                       ..text = 'Yes'
-                      ..onClick.listen((_) => onRemoveResponseCallback(rowIndex))
+                      ..onClick.listen((_) {
+                        onRemoveResponseCallback(rowIndex);
+                        PackageConfiguratorView.toggleUnsavedState(true);
+                      })
                   )
                   ..append(
                     new ButtonElement()
