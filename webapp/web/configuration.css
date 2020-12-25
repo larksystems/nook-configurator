@@ -4,6 +4,7 @@
   max-width: 750px;
   margin: 0 auto;
   overflow: hidden;
+  width: 750px;
 }
 
 .configure-package-sidebar {
@@ -238,7 +239,7 @@
 
 .conversation-suggested-reply-language {
   display: grid;
-  grid-auto-rows: 100%;
+  margin: 10px 0;
 }
 
 .conversation-suggested-reply-language__text {
@@ -249,11 +250,15 @@
   min-height: 70px;
   margin-bottom: 0px;
   width: 95%;
+  font: inherit;
+  font-size: 0.9em;
+  resize: none;
 }
 
 .conversation-suggested-reply-language__text--alert {
   border-color: #fa8072;
   outline-color: #fa8072;
+  margin-bottom: 16px;
 }
 
 .conversation-suggested-reply-language__text-count {

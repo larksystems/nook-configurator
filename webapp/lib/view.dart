@@ -253,34 +253,66 @@ class PackageConfiguratorView extends BaseView {
 
 class SuggestedReplyMessageView {
   Element _suggestedReplyMessageElement;
+  TextAreaElement _suggestedReplyText;
   Function onUpdateSuggestedReplyCallback;
+  Function onTextareaHeightChangeCallback;
 
   SuggestedReplyMessageView(int index, String suggestedReply, this.onUpdateSuggestedReplyCallback) {
     var suggestedReplyCounter = new SpanElement()
       ..classes.add('conversation-suggested-reply-language__text-count')
       ..classes.toggle('conversation-suggested-reply-language__text-count--alert', suggestedReply.length > 160)
       ..text = '${suggestedReply.length}/160';
-    var suggestedReplyText = new ParagraphElement();
-    suggestedReplyText
+    _suggestedReplyText = new TextAreaElement()
       ..classes.add('conversation-suggested-reply-language__text')
       ..classes.toggle('conversation-suggested-reply-language__text--alert', suggestedReply.length > 160)
       ..text = suggestedReply != null ? suggestedReply : ''
       ..contentEditable = 'true'
       ..dataset['index'] = '$index'
-      ..onBlur.listen((event) => onUpdateSuggestedReplyCallback(index, (event.target as Element).text))
+      ..onBlur.listen((event) => onUpdateSuggestedReplyCallback(index, (event.target as TextAreaElement).value))
       ..onInput.listen((event) {
-        int count = suggestedReplyText.text.split('').length;
+        int count = _suggestedReplyText.value.split('').length;
         suggestedReplyCounter.text = '${count}/160';
-        suggestedReplyText.classes.toggle('conversation-suggested-reply-language__text--alert', count > 160);
+        _suggestedReplyText.classes.toggle('conversation-suggested-reply-language__text--alert', count > 160);
         suggestedReplyCounter.classes.toggle('conversation-suggested-reply-language__text-count--alert', count > 160);
+        _handleTextareaHeightChange();
       });
     _suggestedReplyMessageElement = new DivElement()
       ..classes.add('conversation-suggested-reply-language')
-      ..append(suggestedReplyText)
+      ..append(_suggestedReplyText)
       ..append(suggestedReplyCounter);
+    finaliseRenderAsync();
   }
 
   Element get renderElement => _suggestedReplyMessageElement;
+
+  void set textareaHeight(int height) => _suggestedReplyText.style.height = '${height - 6}px';
+
+  /// Returns the height of the content text in the textarea element.
+  int get textareaScrollHeight {
+    var height = _suggestedReplyText.style.height;
+    _suggestedReplyText.style.height = '0';
+    var scrollHeight = _suggestedReplyText.scrollHeight;
+    _suggestedReplyText.style.height = height;
+    return scrollHeight;
+  }
+
+  /// This method reports the height of the content text (if the callback is set).
+  void _handleTextareaHeightChange() {
+    if (onTextareaHeightChangeCallback == null) return;
+    onTextareaHeightChangeCallback(textareaScrollHeight);
+  }
+
+  /// The response view is added to the DOM at some later point, outside this class.
+  /// This method periodically polls until the element has been added to the DOM (height > 0)
+  /// and then triggers the first [_handleTextareaHeightChange] so that the parent can
+  /// synchronise the height between this reply and it's sibling(s).
+  void finaliseRenderAsync() {
+    Timer.periodic(new Duration(milliseconds: 10), (timer) {
+      if (_suggestedReplyText.scrollHeight == 0) return;
+      _handleTextareaHeightChange();
+      timer.cancel();
+    });
+  }
 }
 
 class SuggestedReplyView {
@@ -322,10 +354,14 @@ class SuggestedReplyView {
         _suggestedReplyElement.append(removeSuggestedRepliesModal);
       });
     removeButton.style.visibility = 'hidden';
+
+    var textView = new SuggestedReplyMessageView(0, text, (index, text) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, text: text)));
+    var translationView = new SuggestedReplyMessageView(0, translation, (index, translation) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, translation: translation)));
     _suggestedReplyElement
       ..append(removeButton)
-      ..append(new SuggestedReplyMessageView(0, text, (index, text) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, text: text))).renderElement)
-      ..append(new SuggestedReplyMessageView(0, translation, (index, translation) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, translation: translation))).renderElement);
+      ..append(textView.renderElement)
+      ..append(translationView.renderElement);
+    _makeSuggestedReplyMessageViewTextareasSynchronisable([textView, translationView]);
   }
 
   Element get renderElement => _suggestedReplyElement;
@@ -477,5 +513,24 @@ class SuggestedRepliesView extends BaseView {
     }
     assert(_suggestedRepliesContainer.children.length == 0);
     groups.clear();
+  }
+}
+
+_makeSuggestedReplyMessageViewTextareasSynchronisable(List<SuggestedReplyMessageView> suggestedReplyViews) {
+  var onTextareaHeightChangeCallback = (int height) {
+    var maxHeight = height;
+    for (var responseView in suggestedReplyViews) {
+      var textareaScrollHeight = responseView.textareaScrollHeight;
+      if (textareaScrollHeight > maxHeight) {
+        maxHeight = textareaScrollHeight;
+      }
+    }
+    for (var responseView in suggestedReplyViews) {
+      responseView.textareaHeight = maxHeight;
+    }
+  };
+
+  for (var responseView in suggestedReplyViews) {
+    responseView.onTextareaHeightChangeCallback = onTextareaHeightChangeCallback;
   }
 }
