@@ -4,6 +4,8 @@ import 'dart:html';
 import 'logger.dart';
 import 'controller.dart' as controller;
 
+import 'package:nook/model.dart' as new_model;
+
 Logger log = new Logger('view.dart');
 
 Element get headerElement => querySelector('header');
@@ -129,7 +131,7 @@ class AuthHeaderViewPartial {
 }
 
 abstract class BaseView {
-  DivElement get renderElement;
+  Element get renderElement;
 }
 
 class ContentView {
@@ -251,7 +253,7 @@ class PackageConfiguratorView extends BaseView {
   }
 }
 
-class SuggestedReplyMessageView {
+class SuggestedReplyMessageView extends BaseView {
   Element _suggestedReplyMessageElement;
   TextAreaElement _suggestedReplyText;
   Function onUpdateSuggestedReplyCallback;
@@ -283,6 +285,7 @@ class SuggestedReplyMessageView {
     finaliseRenderAsync();
   }
 
+  @override
   Element get renderElement => _suggestedReplyMessageElement;
 
   void set textareaHeight(int height) => _suggestedReplyText.style.height = '${height - 6}px';
@@ -315,7 +318,7 @@ class SuggestedReplyMessageView {
   }
 }
 
-class SuggestedReplyView {
+class SuggestedReplyView extends BaseView {
   Element _suggestedReplyElement;
 
   SuggestedReplyView(String id, String text, String translation) {
@@ -383,6 +386,8 @@ class SuggestedReplyGroupView {
       ..onClick.listen((_) {
         var removeSuggestedRepliesModal = new DivElement()
           ..classes.add('remove-conversation-suggested-replies-modal');
+
+
         removeSuggestedRepliesModal
           ..append(
             new ParagraphElement()
@@ -516,6 +521,122 @@ class SuggestedRepliesView extends BaseView {
   }
 }
 
+class TagView extends BaseView {
+  DivElement tag;
+  SpanElement _tagText;
+  SpanElement _removeButton;
+
+    TagView(String text, String tagId, new_model.TagType tagStyle) {
+
+    var tag = new DivElement()
+      ..classes.add('tag')
+      ..dataset['id'] = tagId;
+    // switch (tagStyle) {
+    //   case TagStyle.Green:
+    //     tag.classes.add('tag--green');
+    //     break;
+    //   case TagStyle.Yellow:
+    //     tag.classes.add('tag--yellow');
+    //     break;
+    //   case TagStyle.Red:
+    //     tag.classes.add('tag--red');
+    //     break;
+    //   case TagStyle.Important:
+    //     tag.classes.add('tag--important');
+    //     break;
+    //   default:
+    // }
+
+    _tagText = new SpanElement()
+      ..classes.add('tag__name')
+      ..text = text
+      ..title = text;
+    tag.append(_tagText);
+
+    _removeButton = new SpanElement()
+      ..classes.add('tag__remove');
+    tag.append(_removeButton);
+  }
+
+  Element get renderElement => tag;
+
+}
+
+class TagGroupView {
+  DivElement _tagsGroupElement;
+  DivElement _tagsContainer;
+  SpanElement _title;
+
+  // Map<String, SuggestedReplyView> replies = {};
+  // TODO: Adjust these CSS to be associated with tags
+  TagGroupView(String groupId, String name) {
+    _tagsGroupElement = new DivElement()
+      ..classes.add('conversation-suggested-reply-group');
+    var removeButton = new ButtonElement()
+      ..classes.add('button-remove-conversation-suggested-replies')
+      ..text = 'x'
+      ..onClick.listen((_) {
+        var removetagModal = new DivElement()
+          ..classes.add('remove-conversation-suggested-replies-modal');
+        removetagModal
+          ..append(
+            new ParagraphElement()
+              ..classes.add('remove-conversation-suggested-replies-modal__message')
+              ..text = 'Are you sure?'
+          )
+          ..append(
+            new DivElement()
+              ..classes.add('remove-conversation-suggested-replies-modal-actions')
+              ..append(
+                new ButtonElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                  ..text = 'Yes'
+                  ..onClick.listen((_) => controller.command(controller.UIAction.removeTagGroup, new controller.TagGroupData(groupId)))
+              )
+              ..append(
+                new ButtonElement()
+                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
+                  ..text = 'No'
+                  ..onClick.listen((_) => removetagModal.remove())
+              )
+          );
+        _tagsGroupElement.append(removetagModal);
+      });
+    removeButton.style.visibility = 'hidden';
+    _tagsGroupElement.append(removeButton);
+
+    _title = new SpanElement()
+      ..classes.add('conversation-suggested-reply-group__title')
+      ..text = name
+      ..title = '<group name>'
+      ..contentEditable = 'true'
+      ..onBlur.listen((event) => controller.command(controller.UIAction.updateTagGroup, new controller.TagGroupData(groupId, groupName: name, newGroupName: _title.text)));
+    _tagsGroupElement.append(_title);
+
+    _tagsContainer = new DivElement()
+      ..classes.add('conversation-suggested-reply-container');
+    _tagsGroupElement.append(_tagsContainer);
+
+    var addButton = new ButtonElement()
+      ..classes.add('button-add-conversation-suggested-replies')
+      ..text = '+'
+      ..title = 'Add new suggested reply'
+      ..onClick.listen((event) => controller.command(controller.UIAction.addTag, new controller.TagData(null, groupId: groupId)));
+    addButton.style.visibility = 'hidden';
+    _tagsGroupElement.append(addButton);
+  }
+
+  Map<String, TagView> _tagsMap = {}; // Todo replace this with a search to avoid state duplication
+  void addTag(String id, TagView tagView) {
+    _tagsContainer.append(tagView.renderElement);
+    _tagsMap[id] = tagView;
+  }
+
+  void removeTag(String id) {
+    _tagsMap[id].renderElement.remove();
+    _tagsMap.remove(id);
+  }
+}
 
 class TagsConfigurationView extends BaseView {
   DivElement _tagsElement;
@@ -541,7 +662,7 @@ class TagsConfigurationView extends BaseView {
       // ..append(suggestedRepliesView.renderElement);
     _tagsElement.append(tagsViewWrapper);
 
-    var packageActionsWrapper = new DivElement()
+    var actionsWrapper = new DivElement()
       ..classes.add('configure-package-actions');
     var saveConfigurationButton = new ButtonElement()
       ..classes.add('configure-package-actions__save-action')
@@ -549,15 +670,13 @@ class TagsConfigurationView extends BaseView {
       ..onClick.listen((_) => controller.command(controller.UIAction.saveTagsConfiguration));
     var _saveStatusElement = new SpanElement()
       ..classes.add('configure-package-actions__save-action__status');
-    packageActionsWrapper
+    actionsWrapper
       ..append(saveConfigurationButton)
       ..append(_saveStatusElement);
-    _tagsElement.append(packageActionsWrapper);
+    _tagsElement.append(actionsWrapper);
   }
 
-
   DivElement get renderElement => _tagsElement;
-
 }
 
 _makeSuggestedReplyMessageViewTextareasSynchronisable(List<SuggestedReplyMessageView> suggestedReplyViews) {

@@ -34,7 +34,17 @@ enum UIAction {
   removeSuggestedReply,
   removeSuggestedReplyGroup,
   changeSuggestedRepliesCategory,
+
+  // Handling tags
+  addTag,
+  addTagGroup,
+  updateTag,
+  updateTagGroup,
+  remoteTag,
+  removeTagGroup
 }
+
+// ViewModel style data
 
 class Data {}
 
@@ -48,6 +58,20 @@ class UserData extends Data {
   String toString() {
     return "UserData($displayName, $email, $photoUrl)";
   }
+}
+
+class TagData extends Data {
+  String id;
+  String text;
+  String groupId; // TODO: This is wrong, tags can exist in multiple groups
+  TagData(this.id, {this.text, this.groupId});
+}
+
+class TagGroupData extends Data {
+  String groupId;
+  String groupName;
+  String newGroupName;
+  TagGroupData(this.groupId, {this.groupName, this.newGroupName});
 }
 
 class SuggestedReplyData extends Data {
@@ -86,6 +110,7 @@ class SuggestedRepliesCategoryData extends Data {
   }
 }
 
+// ====
 
 
 List<String> configurationSuggestedReplyLanguages;
@@ -210,6 +235,7 @@ void command(UIAction action, [Data actionData]) {
       var newGroupId = suggestedRepliesManager.nextSuggestedReplyGroupId;
       suggestedRepliesManager.emptyGroups[newGroupId] = '';
       var suggestedReplyGroupView = new view.SuggestedReplyGroupView(newGroupId, suggestedRepliesManager.emptyGroups[newGroupId]);
+      // TODO: This will only work when the view is active, async updates will cause a
       (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.addReplyGroup(newGroupId, suggestedReplyGroupView);
       break;
     case UIAction.updateSuggestedReplyGroup:
@@ -227,6 +253,33 @@ void command(UIAction action, [Data actionData]) {
       selectedSuggestedRepliesCategory = data.category;
       _populateReplyPanelView(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
       break;
+
+    case UIAction.addTag:
+      TagData data = actionData;
+      var newTag = new_model.Tag();
+        // ..docId = suggestedRepliesManager.nextSuggestedReplyId
+        // ..text = ''
+        // ..translation = ''
+        // ..shortcut = ''
+        // ..seqNumber = suggestedRepliesManager.lastSuggestedReplySeqNo
+        // ..category = selectedSuggestedRepliesCategory
+        // ..groupId = data.groupId
+        // ..groupDescription = suggestedRepliesManager.groups[data.groupId]
+        // ..indexInGroup = suggestedRepliesManager.getNextIndexInGroup(data.groupId);
+
+      tagManager.addTag(newTag);
+
+      // TODO
+      // var newSuggestedReplyView = new view.SuggestedReplyView(newSuggestedReply.docId, newSuggestedReply.text, newSuggestedReply.translation);
+      // (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[data.groupId].addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
+      // editedSuggestedReplies.add(newSuggestedReply.docId);
+      break;
+
+    case UIAction.updateTag:
+    case UIAction.remoteTag:
+    case UIAction.addTagGroup:
+    case UIAction.updateTagGroup:
+    case UIAction.removeTagGroup:
     case UIAction.saveTagsConfiguration:
       throw "Not implemented";
       // TODO: Handle this case.

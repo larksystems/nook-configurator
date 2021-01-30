@@ -4,7 +4,7 @@ part of controller;
 class TagManager {
   static final TagManager _singleton = TagManager._internal();
 
-  List<new_model.Tag> _tags;
+  List<new_model.Tag> _tags = <new_model.Tag>[];
   List<new_model.Tag> get tags => _tags;
 
   TagManager._internal();
