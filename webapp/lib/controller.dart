@@ -13,6 +13,7 @@ import 'model.dart' as model;
 
 part 'controller_view_helper.dart';
 part 'controller_suggested_replies_helper.dart';
+part 'controller_tag_helper.dart';
 
 Logger log = new Logger('controller.dart');
 Router router;
