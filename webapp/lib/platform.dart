@@ -90,3 +90,18 @@ Future<void> updateSuggestedReplies(List<SuggestedReply> replies) {
 
   return Future.wait(futures);
 }
+
+// TODO: When the message | conv tag merging logic has landed, replace the collection path
+void listenForTags(TagCollectionListener listener, [OnErrorListener onErrorListener]) =>
+    Tag.listen(_docStorage, listener, "conversationTags", onErrorListener: onErrorListener);
+
+Future<void> updateTags(List<Tag> tags) {
+  List<Future> futures = [];
+  for (Tag tag in tags) {
+    futures.add(
+      _pubsubInstance.publishAddOpinion('nook/set_tag', tag.toData()
+    ));
+  }
+
+  return Future.wait(futures);
+}

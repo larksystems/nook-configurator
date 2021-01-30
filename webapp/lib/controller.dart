@@ -89,6 +89,7 @@ class SuggestedRepliesCategoryData extends Data {
 
 List<String> configurationSuggestedReplyLanguages;
 SuggestedRepliesManager suggestedRepliesManager = new SuggestedRepliesManager();
+TagManager tagManager = new TagManager();
 String selectedSuggestedRepliesCategory;
 List<String> editedSuggestedReplies = [];
 
@@ -122,6 +123,14 @@ void initUI() {
     // Select the selected category in the UI and add the suggested replies for it
     (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.selectedCategory = selectedSuggestedRepliesCategory;
     _populateReplyPanelView(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+  });
+
+  platform.listenForTags((added, modified, removed) {
+    tagManager.addTags(added);
+    tagManager.updateTags(modified);
+    tagManager.removeTags(removed);
+
+    // TODO: Reactive UI updates
   });
 }
 
@@ -216,6 +225,11 @@ void command(UIAction action, [Data actionData]) {
       SuggestedRepliesCategoryData data = actionData;
       selectedSuggestedRepliesCategory = data.category;
       _populateReplyPanelView(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+      break;
+    case UIAction.saveTagsConfiguration:
+      throw "Not implemented";
+      // TODO: Handle this case.
+      break;
   }
 }
 
