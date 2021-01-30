@@ -516,6 +516,21 @@ class SuggestedRepliesView extends BaseView {
   }
 }
 
+
+class TagsView extends BaseView {
+  DivElement _tagsElement;
+
+  TagsView() {
+    _tagsElement = new DivElement()
+      ..classes.add('conversation-suggested-replies');
+
+    _tagsElement.appendText("TagsView test");
+  }
+
+  DivElement get renderElement => _tagsElement;
+
+}
+
 _makeSuggestedReplyMessageViewTextareasSynchronisable(List<SuggestedReplyMessageView> suggestedReplyViews) {
   var onTextareaHeightChangeCallback = (int height) {
     var maxHeight = height;

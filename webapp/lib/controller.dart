@@ -127,6 +127,7 @@ void initUI() {
 void setupRoutes() {
   router = new Router()
     ..addAuthHandler(new Route('#/auth', loadAuthView))
+    ..addDefaultHandler(new Route('#/configuration/tags', loadTagConfigurationView))
     ..addDefaultHandler(new Route('#/configuration', loadPackageConfigurationView))
     ..listen();
 }
@@ -234,6 +235,11 @@ void savePackageConfiguration() {
 void loadPackageConfigurationView() {
   var configuratorView = new view.PackageConfiguratorView();
   view.contentView.renderView(configuratorView);
+}
+
+void loadTagConfigurationView() {
+  var tagConfigView = new view.TagsView();
+  view.contentView.renderView(tagConfigView);
 }
 
 Future<void> saveSuggestedReplies(List<new_model.SuggestedReply> suggestedReplies) {
