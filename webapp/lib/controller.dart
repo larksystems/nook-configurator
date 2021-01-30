@@ -23,6 +23,7 @@ enum UIAction {
   signInButtonClicked,
   signOutButtonClicked,
   savePackageConfiguration,
+  saveTagsConfiguration,
 
   // Handling suggested replies
   addSuggestedReply,
@@ -238,7 +239,7 @@ void loadPackageConfigurationView() {
 }
 
 void loadTagConfigurationView() {
-  var tagConfigView = new view.TagsView();
+  var tagConfigView = new view.TagsConfigurationView();
   view.contentView.renderView(tagConfigView);
 }
 

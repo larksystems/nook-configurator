@@ -517,15 +517,44 @@ class SuggestedRepliesView extends BaseView {
 }
 
 
-class TagsView extends BaseView {
+class TagsConfigurationView extends BaseView {
   DivElement _tagsElement;
 
-  TagsView() {
+  TagsConfigurationView() {
     _tagsElement = new DivElement()
-      ..classes.add('conversation-suggested-replies');
+      ..classes.add('configure-tags');
 
-    _tagsElement.appendText("TagsView test");
+    _buildContentPartial();
   }
+
+  void _buildContentPartial() {
+    var tagsViewWrapper = new DivElement()
+      // ..classes.add('configure-package-suggested-replies')
+      ..append(
+        new DivElement()
+          // ..classes.add('configure-package-suggested-replies-headers')
+          ..append(
+            new HeadingElement.h3()
+              ..text = 'How do you want to tag messages and conversations?'
+          )
+      );
+      // ..append(suggestedRepliesView.renderElement);
+    _tagsElement.append(tagsViewWrapper);
+
+    var packageActionsWrapper = new DivElement()
+      ..classes.add('configure-package-actions');
+    var saveConfigurationButton = new ButtonElement()
+      ..classes.add('configure-package-actions__save-action')
+      ..text = 'Save Configuration'
+      ..onClick.listen((_) => controller.command(controller.UIAction.saveTagsConfiguration));
+    var _saveStatusElement = new SpanElement()
+      ..classes.add('configure-package-actions__save-action__status');
+    packageActionsWrapper
+      ..append(saveConfigurationButton)
+      ..append(_saveStatusElement);
+    _tagsElement.append(packageActionsWrapper);
+  }
+
 
   DivElement get renderElement => _tagsElement;
 
