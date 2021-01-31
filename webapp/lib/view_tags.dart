@@ -152,8 +152,10 @@ class TagView {
   DivElement tag;
   var _tagText;
   SpanElement _removeButton;
+  String tagId;
 
   TagView(String text, String tagId, TagStyle tagStyle) {
+    this.tagId = tagId;
     tag = new DivElement()
       ..classes.add('tag')
       ..dataset['id'] = tagId;
@@ -180,6 +182,11 @@ class TagView {
     _makeEditable(_tagText, onEnter: (e) => e.preventDefault());
     tag.append(_tagText);
 
+
+    tag.onMouseDown.listen((event) {
+      getSampleMessages(platform.fireStoreInstance, this.tagId).then((value) => print(value));
+    });
+
     _removeButton = new SpanElement()..classes.add('tag__remove');
     tag.append(_removeButton);
     _removeButton.onClick.listen((e) {
@@ -187,7 +194,10 @@ class TagView {
     });
   }
 
-  void focus() => _tagText.focus();
+  void focus() {
+    print ("focus");
+    _tagText.focus();
+  }
 
   Element get renderElement => tag;
 }

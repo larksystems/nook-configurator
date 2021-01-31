@@ -246,7 +246,8 @@ void command(UIAction action, [Data actionData]) {
     case UIAction.updateTagGroup:
     case UIAction.removeTagGroup:
     case UIAction.saveTagsConfiguration:
-      throw "Not implemented";
+
+      // throw "Not implemented";
       // TODO: Handle this case.
       break;
   }

@@ -6,8 +6,10 @@ import 'dart:math' as math;
 
 import 'logger.dart';
 import 'controller.dart' as controller;
+import 'platform.dart' as platform;
 
 import 'package:nook/model.dart' as new_model;
+import 'sample_data_helper.dart';
 
 part 'view_suggested_replies.dart';
 part 'view_tags.dart';
