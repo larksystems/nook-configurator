@@ -194,10 +194,7 @@ class TagView {
     });
   }
 
-  void focus() {
-    print ("focus");
-    _tagText.focus();
-  }
+  void focus() => _tagText.focus();
 
   Element get renderElement => tag;
 }
