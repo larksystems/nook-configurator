@@ -13,6 +13,8 @@ Logger log = new Logger('platform.dart');
 
 firestore.Firestore _firestoreInstance;
 
+firestore.Firestore get firestoreInstance => _firestoreInstance;
+
 DocStorage _docStorage;
 PubSubClient _pubsubInstance;
 PubSubClient _uptimePubSubInstance;

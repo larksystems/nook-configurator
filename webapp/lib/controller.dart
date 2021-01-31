@@ -11,9 +11,13 @@ import 'view.dart' as view;
 import 'router.dart';
 import 'model.dart' as model;
 
+import 'query_demo/sample_data_getter.dart';
+
 part 'controller_view_helper.dart';
 part 'controller_suggested_replies_helper.dart';
 part 'controller_tag_helper.dart';
+
+
 
 Logger log = new Logger('controller.dart');
 Router router;
@@ -158,6 +162,14 @@ void initUI() {
 
     // TODO: Reactive UI updates
   });
+
+  print("initUI completed");
+
+  getSampleMessages(platform.firestoreInstance, "code-eb714938").then((v) {
+    print ("sample messages complete");
+    print(v);
+  });
+
 }
 
 void setupRoutes() {
