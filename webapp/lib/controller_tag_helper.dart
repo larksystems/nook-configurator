@@ -4,16 +4,16 @@ part of controller;
 class TagManager {
   static final TagManager _singleton = TagManager._internal();
 
-  List<new_model.Tag> _tags = <new_model.Tag>[];
-  List<new_model.Tag> get tags => _tags;
+  List<model.Tag> _tags = <model.Tag>[];
+  List<model.Tag> get tags => _tags;
 
   TagManager._internal();
 
   factory TagManager() => _singleton;
 
-  void addTag(new_model.Tag tag) => addTags([tag]);
+  void addTag(model.Tag tag) => addTags([tag]);
 
-  void addTags(List<new_model.Tag> tags) {
+  void addTags(List<model.Tag> tags) {
     for (var tag in tags) {
       if (_tags.any((t) => t.tagId == tag.tagId)) {
         throw "Tag consistency error: Adding tag that already exist, ${tag.tagId}";
@@ -22,8 +22,8 @@ class TagManager {
     }
   }
 
-  void updateTag(new_model.Tag tag) => updateTags([tag]);
-  void updateTags(List<new_model.Tag> tags) {
+  void updateTag(model.Tag tag) => updateTags([tag]);
+  void updateTags(List<model.Tag> tags) {
     for (var tag in tags) {
       if (!_tags.any((t) => t.tagId == tag.tagId)) {
         throw "Tag consistency error: Updating tag that doesn't exist, ${tag.tagId}";
@@ -35,8 +35,8 @@ class TagManager {
 
   }
 
-  void removeTag(new_model.Tag tag) => updateTags([tag]);
-  void removeTags(List<new_model.Tag> tags) {
+  void removeTag(model.Tag tag) => updateTags([tag]);
+  void removeTags(List<model.Tag> tags) {
     for (var tag in tags) {
       if (!_tags.any((t) => t.tagId == tag.tagId)) {
         throw "Tag consistency error: Updating tag that doesn't exist, ${tag.tagId}";

@@ -1,85 +1,24 @@
-.configure-package-view {
-  display: grid;
-  /* grid-template-columns: 20% auto; */
+.configuration-view {
+  display: flex;
+  flex-direction: column;
   max-width: 750px;
   margin: 0 auto;
-  overflow: hidden;
   width: 750px;
 }
 
-.configure-package-sidebar {
-  border-right: 1px solid #ddd;
-  overflow-y: scroll;
+.configuration-view__title {
+  font-size: large;
+  font-weight: bold;
+  padding: 30px 0;
 }
 
-.configure-package-sidebar__title {
-  display: block;
-  padding: 10px;
-  border-bottom: 2px solid #ddd;
-  font-size: 1.4em;
-  font-weight: 400;
-  color: #868383;
-}
-
-.selected-active-package-list {
-  padding-left: 0px;
-  margin-top: 0px;
-}
-
-.selected-active-package-list__item {
-  display: grid;
-  grid-template-columns: 30px auto;
-  border-bottom: 1px solid #ddd;
-  padding: 15px 10px;
-}
-
-.selected-active-package-list__item--selected {
-  background-color: #c0c1c1;
-}
-
-.selected-active-package-list__item:hover {
-  cursor: pointer;
-  background-color: #ddd;
-}
-
-.selected-active-package-list__item-state {
-  width: 18px;
-  height: 18px;
-}
-
-.selected-active-package-list__item-text {
-  list-style-type: none;
-  font-size: 1.15em;
-  white-space: nowrap;
-}
-
-.configure-package-content {
-  display: grid;
-  grid-template-rows: auto min-content;
-  overflow-y: scroll;
-}
-
-.configure-package-tags {
-  display: grid;
-  grid-template-columns: 60% 40%;
-  padding: 20px;
-  border-bottom: 1px solid #ddd;
-}
-
-.configure-package-charts {
-}
-
-.configure-package-charts__chart {
-  width: 400px;
-}
-
-.configure-package-actions {
+.configuration-actions {
   display: flex;
   margin: 20px 0;
   align-items: center;
 }
 
-.configure-package-actions__save-action {
+.configuration-actions__save-action {
   width: 130px;
   height: 40px;
   font-size: 1.1em;
@@ -88,7 +27,7 @@
   border: none;
 }
 
-.configure-package-actions__save-action__status {
+.configuration-actions__save-action__status {
   font-weight: 400;
   border: none;
   display: inline-block;
@@ -102,247 +41,68 @@
   transition: all 0.2s;
 }
 
-.conversation-tags {
-}
 
-.conversation-tags__text {
-}
-
-.conversation-tags__text--center {
-  margin-left: 85px;
-}
-
-.conversation-tags__title {
-}
-
-.conversation-tags__sub-title {
-  margin-left: 10px;
-}
-
-.conversation-tags__row {
-  padding-bottom: 20px;
-}
-
-.tags {
-  margin-left: 30px;
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.tags__actions {
-  position: relative;
-}
-
-.tag {
-  align-self: flex-start;
-  line-height: 18px;
-  border: 2px dotted #cacaca;
-  border-radius: 3px;
-  margin: 5px 10px 0px 0px;
-  white-space: nowrap;
-}
-
-.tag__name {
-  padding: 1px 4px;
-
-}
-
-.tag__remove-btn {
-  padding: 1px 4px;
-  border-left: 2px dotted #cacaca;
-  cursor: pointer;
-}
-
-.tag__remove-btn:hover {
-  background-color: #efefef;
-}
-
-.button-add-tag {
-  align-self: flex-start;
-  margin-top: 5px;
-  position: relative;
-}
-
-.button-add-tag:hover {
-  cursor: pointer;
-}
-
-.add-tag-dropdown {
-  align-self: flex-start;
-  background-color: #f9f9f9;
-  position: absolute;
-  top: 0px;
-  left: 16px;
-  padding: 0px;
-  border: 1px solid #ddd;
-  margin-left: 10px;
-  margin-top: 5px;
-  min-width: 180px;
-  z-index: 1;
-}
-
-.add-tag-dropdown__item {
-  list-style-type: none;
-  border-bottom: 1px solid #ddd;
-  padding: 2px 4px;
-}
-
-.add-tag-dropdown__item:hover {
-  cursor: pointer;
-}
-
-.conversation-charts {
-  display: grid;
-  grid-template-rows: 90% auto;
-}
-
-.configure-package-suggested-replies {
-  border-bottom: 1px solid #ddd;
-  padding: 20px;
-}
-
-.configure-package-suggested-replies-headers {
-  display: flex;
-  justify-content: space-between;
-  padding-right: 185px;
-}
-
-.configure-tags {}
-
-.conversation-suggested-replies {}
-
-.conversation-suggested-reply-group {
+.suggested-replies-group {
   position: relative;
   padding: 15px;
   margin: 15px 0;
   border: 1px solid #ddd;
 }
 
-.conversation-suggested-reply-group__title {
+.suggested-replies-group__title {
   font-weight: 600;
   display: inline-block;
   padding: 0 1px;
   margin-left: 10px;
 }
 
-.conversation-suggested-reply-group__title:empty:not(:focus):before {
+.suggested-replies-group__title:empty:not(:focus):before {
   content: attr(title);
   font-weight: 300;
   font-style: italic;
 }
 
-.conversation-suggested-reply {
+.suggested-reply {
   display: grid;
   grid-template-columns: 3% 47% 47%;
   grid-gap: 1.5%;
   position: relative;
 }
 
-.conversation-suggested-reply-language {
+.suggested-reply .button {
+  margin-bottom: 20px;
+}
+
+.suggested-reply-language {
   display: grid;
   margin: 10px 0;
 }
 
-.conversation-suggested-reply-language__text {
+.suggested-reply-language__text {
   overflow-y: scroll;
   border: 1px solid #ddd;
-  border-radius: .5rem;
+  border-radius: 2px;
   padding: 2px;
   min-height: 70px;
   margin-bottom: 0px;
-  width: 95%;
+  width: 100%;
   font: inherit;
   font-size: 0.9em;
   resize: none;
 }
 
-.conversation-suggested-reply-language__text--alert {
+.suggested-reply-language__text--alert {
   border-color: #fa8072;
   outline-color: #fa8072;
   margin-bottom: 16px;
 }
 
-.conversation-suggested-reply-language__text-count {
+.suggested-reply-language__text-count {
   justify-self: flex-end;
   font-size: 0.8em;
 }
 
-.conversation-suggested-reply-language__text-count--alert {
+.suggested-reply-language__text-count--alert {
   color: #fa8072;
   outline-color: #fa8072;
-}
-
-.conversation-suggested-reply__reviewed {
-  display: flex;
-  justify-content: flex-start;
-  align-self: center;
-  flex-wrap: nowrap;
-}
-
-.conversation-suggested-reply__reviewed-state {}
-
-.conversation-suggested-reply__reviewed-state:hover {
-  cursor: pointer;
-}
-
-.conversation-suggested-reply__reviewed-description {
-  margin-top: 0px;
-}
-
-.button-remove-conversation-suggested-replies {
-  height: 22px;
-  width: 20px;
-  align-self: center;
-  border: none;
-  background-color: #c0c1c1;
-  border-radius: .5rem;
-}
-
-.button-remove-conversation-suggested-replies:hover {
-  cursor: pointer;
-}
-
-.remove-conversation-suggested-replies-modal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.33);
-  border-radius: .5rem;
-  top: 0;
-  left: 0;
-}
-
-.remove-conversation-suggested-replies-modal__message {
-  justify-self: center;
-  font-size: 1.2em;
-  font-weight: 400;
-  color: #fff;
-  margin-bottom: 0px;
-  text-shadow: 0 0 1px black;
-}
-
-.remove-conversation-suggested-replies-modal-actions {
-  justify-self: center;
-}
-
-.remove-conversation-suggested-replies-modal-actions__action {
-  width: 50px;
-  height: 25px;
-  justify-self: center;
-  margin: 0 10px;
-}
-
-.button-add-conversation-suggested-replies {}
-
-.button-add-conversation-suggested-replies:hover {
-  cursor: pointer;
-}
-
-.configure-package-labels {
-  display: grid;
-  padding: 20px;
 }

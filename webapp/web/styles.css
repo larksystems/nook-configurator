@@ -18,3 +18,29 @@ main {
     display: flex;
     height: 100%;
 }
+
+.content {
+    display: grid;
+    width: 100vw;
+    overflow-y: auto;
+    margin-top: 50px;
+}
+
+
+.hidden {
+    visibility: hidden;
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.foldable::before {
+    content: "▼";
+    font-size: .6em;
+    font-weight: bold;
+    padding-right: 7px;
+  }
+
+  .foldable.folded::before {
+    content: "►";
+  }
