@@ -17,6 +17,14 @@ void _populateReplyPanelView(List<new_model.SuggestedReply> replies) {
   }
 }
 
+void _populateTagsView(List<new_model.Tag> tags) {
+  // TODO
+
+
+
+
+}
+
 Map<String, List<new_model.SuggestedReply>> _groupRepliesIntoGroups(List<new_model.SuggestedReply> replies) {
   Map<String, List<new_model.SuggestedReply>> result = {};
   for (new_model.SuggestedReply reply in replies) {
