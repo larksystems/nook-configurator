@@ -44,7 +44,7 @@ void _modifyTagsInView(Map<String, List<model.Tag>> tagsByCategory) {
     for (var tag in tagsByCategory[category]) {
       tagViewsById[tag.tagId] = new view.TagView(tag.text, tag.docId, category, _tagTypeToStyle(tag.type));
     }
-    configPage.groups[category].addTags(tagViewsById);
+    configPage.groups[category].modifyTags(tagViewsById);
   }
 }
 
