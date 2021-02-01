@@ -182,19 +182,20 @@ class TagView {
       ..text = text
       ..title = text;
 
-    _editableTag =
-        new EditableText(_tagText, onSave: (_) => controller.command(controller.UIAction.renameTag, new controller.TagData(tagId, text: _tagText.text)));
+    _editableTag = new EditableText(_tagText,
+        onEditStart: (_) => draggableTag.destroy(),
+        onEditEnd: (_) => new dnd.Draggable(tag, avatarHandler: dnd.AvatarHandler.original(), draggingClass: 'tag__name'),
+        onSave: (_) => controller.command(controller.UIAction.renameTag, new controller.TagData(tagId, text: _tagText.text)));
     _editableTag.parent = tag;
 
     var removeButton = new Button(ButtonType.remove, hoverText: 'Remove tag', onClick: (_) {
-      controller.command(controller.UIAction.removeTag, new controller.TagData(tagId, groupId: groupId));
-      // var warningModal;
-      // warningModal = new PopupModal('Are you sure you want to remove this group?', [
-      //   new Button(ButtonType.text,
-      //       buttonText: 'Yes', onClick: (_) => controller.command(controller.UIAction.removeTag, new controller.TagData(tagId, groupId: groupId))),
-      //   new Button(ButtonType.text, buttonText: 'No', onClick: (_) => warningModal.remove()),
-      // ]);
-      // warningModal.parent = tag;
+      var warningModal;
+      warningModal = new PopupModal('Are you sure you want to remove this tag?', [
+        new Button(ButtonType.text,
+            buttonText: 'Yes', onClick: (_) => controller.command(controller.UIAction.removeTag, new controller.TagData(tagId, groupId: groupId))),
+        new Button(ButtonType.text, buttonText: 'No', onClick: (_) => warningModal.remove()),
+      ]);
+      warningModal.parent = tag;
     });
     removeButton.parent = tag;
 
