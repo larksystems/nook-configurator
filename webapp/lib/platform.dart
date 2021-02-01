@@ -12,6 +12,7 @@ import 'package:nook/model_firebase.dart';
 Logger log = new Logger('platform.dart');
 
 firestore.Firestore _firestoreInstance;
+firestore.Firestore get fireStoreInstance => _firestoreInstance;
 
 DocStorage _docStorage;
 PubSubClient _pubsubInstance;
