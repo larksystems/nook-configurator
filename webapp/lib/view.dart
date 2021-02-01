@@ -360,6 +360,7 @@ class EditableText {
   Button _cancelButton;
 
   String _textBeforeEdit;
+  bool _duringEdit;
 
   EditableText(Element textElementToEdit, {OnEventCallback onEditStart, OnEventCallback onEditEnd, OnEventCallback onSave}) {
     editableWrapper = new DivElement()..classes.add('editable-widget');
@@ -369,7 +370,11 @@ class EditableText {
     onEditEnd = onEditEnd ?? (_) {};
     onSave = onSave ?? (_) {};
 
+    _duringEdit = false;
     var saveEdits = (e) {
+      if (!_duringEdit) return;
+      _duringEdit = false;
+
       _editButton.parent = editableWrapper;
       _saveButton.remove();
       _cancelButton.remove();
@@ -380,22 +385,28 @@ class EditableText {
     };
 
     var cancelEdits = (e) {
+      if (!_duringEdit) return;
+      _duringEdit = false;
+
       _editButton.parent = editableWrapper;
       _saveButton.remove();
       _cancelButton.remove();
-      print('cance;');
+
       textElementToEdit.contentEditable = 'false';
       textElementToEdit.text = _textBeforeEdit;
       onEditEnd(e);
     };
 
     var startEditing = (e) {
+      _duringEdit = true;
+
       _editButton.remove();
       _saveButton.parent = editableWrapper;
       _cancelButton.parent = editableWrapper;
 
       _textBeforeEdit = textElementToEdit.text;
-      _makeEditable(textElementToEdit, onBlur: saveEdits, onEsc: cancelEdits, onEnter: (e) {
+      _makeEditable(textElementToEdit, onBlur: cancelEdits, onEsc: cancelEdits, onEnter: (e) {
+        e.stopPropagation();
         e.preventDefault();
         saveEdits(e);
       });
