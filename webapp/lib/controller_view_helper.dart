@@ -24,7 +24,7 @@ void _addTagsToView(Map<String, List<model.Tag>> tagsByCategory) {
     }
     Map<String, view.TagView> tagsById = {};
     for (var tag in tagsByCategory[category]) {
-      tagsById[tag.tagId] = new view.TagView(tag.text, tag.docId, _tagTypeToStyle(tag.type));
+      tagsById[tag.tagId] = new view.TagView(tag.text, tag.docId, category, _tagTypeToStyle(tag.type));
     }
     configPage.groups[category].addTags(tagsById);
   }
@@ -42,7 +42,7 @@ void _modifyTagsInView(Map<String, List<model.Tag>> tagsByCategory) {
   for (var category in tagsByCategory.keys.toList()..sort()) {
     Map<String, view.TagView> tagViewsById = {};
     for (var tag in tagsByCategory[category]) {
-      tagViewsById[tag.tagId] = new view.TagView(tag.text, tag.docId, _tagTypeToStyle(tag.type));
+      tagViewsById[tag.tagId] = new view.TagView(tag.text, tag.docId, category, _tagTypeToStyle(tag.type));
     }
     configPage.groups[category].addTags(tagViewsById);
   }

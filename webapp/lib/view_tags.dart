@@ -40,30 +40,43 @@ class TagGroupView {
   DivElement _tagsGroupElement;
   DivElement _tagsContainer;
   SpanElement _title;
+  EditableText _editableTitle;
   Button _addTagButton;
 
   Map<String, TagView> tagViewsById;
 
   TagGroupView(String groupName) {
     _tagsGroupElement = new DivElement()..classes.add('tags-group');
+    var tagsDropzone = new dnd.Dropzone(_tagsGroupElement);
+    tagsDropzone.onDrop.listen((event) {
+      var tag = event.draggableElement;
+      var tagId = tag.dataset['id'];
+      var groupId = tag.dataset['group-id'];
+      controller.command(controller.UIAction.moveTag, new controller.TagData(tagId, groupId: groupId, newGroupId: groupName));
+      tag.remove();
+    });
+
     var removeGroupButton = new Button(ButtonType.remove, hoverText: 'Remove tags group', onClick: (_) {
-      var removeWarningModal;
-      removeWarningModal = new InlineOverlayModal('Are you sure you want to remove this group?', [
+      _title.classes.toggle('folded', false); // show the tag group before deletion
+      var warningModal;
+      warningModal = new InlineOverlayModal('Are you sure you want to remove this group?', [
         new Button(ButtonType.text,
             buttonText: 'Yes', onClick: (_) => controller.command(controller.UIAction.removeTagGroup, new controller.TagGroupData(groupName))),
-        new Button(ButtonType.text, buttonText: 'No', onClick: (_) => removeWarningModal.remove()),
+        new Button(ButtonType.text, buttonText: 'No', onClick: (_) => warningModal.remove()),
       ]);
-      removeWarningModal.parent = _tagsGroupElement;
+      warningModal.parent = _tagsGroupElement;
     });
     removeGroupButton.parent = _tagsGroupElement;
 
     _title = new SpanElement()
       ..classes.add('tags-group__title')
       ..classes.add('foldable')
-      ..text = groupName
-      ..contentEditable = 'true'
-      ..onBlur.listen((_) => controller.command(controller.UIAction.updateTagGroup, new controller.TagGroupData(groupName, newGroupName: _title.text)));
-    _tagsGroupElement.append(_title);
+      ..text = groupName;
+    _editableTitle = new EditableText(_title,
+        onEditStart: (_) => _title.classes.remove('foldable'),
+        onEditEnd: (_) => _title.classes.add('foldable'),
+        onSave: (_) => controller.command(controller.UIAction.updateTagGroup, new controller.TagGroupData(groupName, newGroupName: _title.text)));
+    _editableTitle.parent = _tagsGroupElement;
 
     _tagsContainer = new DivElement()..classes.add('tags-group__tags');
     _tagsGroupElement.append(_tagsContainer);
@@ -90,22 +103,6 @@ class TagGroupView {
 
   void set name(String name) => _title.text = name;
 
-  // void addTag(String id, TagView tagView) {
-  //   _tagsContainer.append(tagView.renderElement);
-  //   tags[id] = tagView;
-  // }
-
-  // void removeTag(String id) {
-  //   tags[id].renderElement.remove();
-  //   tags.remove(id);
-  // }
-
-  // void modifyTag(String id, TagView tagView) {
-  //   _tagsContainer.insertBefore(tagView.renderElement, tags[id].renderElement);
-  //   tags[id].renderElement.remove();
-  //   tags[id] = tagView;
-  // }
-
   void addTags(Map<String, TagView> tags) {
     for (var tag in tags.keys) {
       _tagsContainer.insertBefore(tags[tag].renderElement, _addTagButton.renderElement);
@@ -113,13 +110,16 @@ class TagGroupView {
     }
 
     _tagsContainer.style.display = 'block'; // briefly override any display settings to make sure we can compute getBoundingClientRect()
+    bool hidden = _tagsContainer.classes.contains('hidden');
+    _tagsContainer.classes.toggle('hidden', false); // briefly override any display settings to make sure we can compute getBoundingClientRect()
     List<num> widths = _tagsContainer.querySelectorAll('.tag__name').toList().map((e) => e.getBoundingClientRect().width).toList();
-    _tagsContainer.style.display = ''; // clear inline display settings
-    num avgGridWidth = widths.fold(0, (previousValue, width) => previousValue + width);
-    avgGridWidth = avgGridWidth / widths.length;
-    num colSpacing = 10;
-    num minColWidth = math.min(avgGridWidth + 2 * colSpacing, 138);
     num containerWidth = _tagsContainer.getBoundingClientRect().width;
+    _tagsContainer.style.display = ''; // clear inline display settings
+    _tagsContainer.classes.toggle('hidden', hidden);
+
+    num maxGridWidth = widths.fold(0, (previousValue, width) => width > previousValue ? width : previousValue);
+    num colSpacing = 10;
+    num minColWidth = maxGridWidth + 2 * colSpacing + 50;
     num columnWidth = containerWidth / (containerWidth / minColWidth).floor() - colSpacing;
     _tagsContainer.style.setProperty('grid-template-columns', 'repeat(auto-fill, ${columnWidth}px)');
   }
@@ -150,15 +150,16 @@ enum TagStyle {
 
 class TagView {
   DivElement tag;
-  var _tagText;
-  SpanElement _removeButton;
+  SpanElement _tagText;
+  EditableText _editableTag;
   String tagId;
 
-  TagView(String text, String tagId, TagStyle tagStyle) {
+  TagView(String text, String tagId, String groupId, TagStyle tagStyle) {
     this.tagId = tagId;
     tag = new DivElement()
       ..classes.add('tag')
-      ..dataset['id'] = tagId;
+      ..dataset['id'] = tagId
+      ..dataset['group-id'] = groupId;
     switch (tagStyle) {
       case TagStyle.Green:
         tag.classes.add('tag--green');
@@ -174,24 +175,35 @@ class TagView {
         break;
       default:
     }
+    var draggableTag = new dnd.Draggable(tag, avatarHandler: dnd.AvatarHandler.original(), draggingClass: 'tag__name');
 
     _tagText = new SpanElement()
       ..classes.add('tag__name')
       ..text = text
       ..title = text;
-    _makeEditable(_tagText, onEnter: (e) => e.preventDefault());
-    tag.append(_tagText);
 
+    _editableTag =
+        new EditableText(_tagText, onSave: (_) => controller.command(controller.UIAction.renameTag, new controller.TagData(tagId, text: _tagText.text)));
+    _editableTag.parent = tag;
 
-    tag.onMouseDown.listen((event) {
-      getSampleMessages(platform.fireStoreInstance, this.tagId).then((value) => print(value));
+    var removeButton = new Button(ButtonType.remove, hoverText: 'Remove tag', onClick: (_) {
+      controller.command(controller.UIAction.removeTag, new controller.TagData(tagId, groupId: groupId));
+      // var warningModal;
+      // warningModal = new PopupModal('Are you sure you want to remove this group?', [
+      //   new Button(ButtonType.text,
+      //       buttonText: 'Yes', onClick: (_) => controller.command(controller.UIAction.removeTag, new controller.TagData(tagId, groupId: groupId))),
+      //   new Button(ButtonType.text, buttonText: 'No', onClick: (_) => warningModal.remove()),
+      // ]);
+      // warningModal.parent = tag;
     });
+    removeButton.parent = tag;
 
-    _removeButton = new SpanElement()..classes.add('tag__remove');
-    tag.append(_removeButton);
-    _removeButton.onClick.listen((e) {
-      // controller.command(UIAction.cancelAddNewTagInline, new MessageTagData(tagId, int.parse(message.dataset['message-index'])));
+    var sampleMessagesButton = new Button(ButtonType.speech, hoverText: 'Get sample messages', onClick: (_) {
+      var tooltip = new SampleMessagesTooltip('Sample messages for tag "$text"');
+      tooltip.parent = tag;
+      getSampleMessages(platform.fireStoreInstance, this.tagId).then((value) => tooltip.displayMessages(value));
     });
+    sampleMessagesButton.parent = tag;
   }
 
   void focus() => _tagText.focus();
@@ -199,20 +211,40 @@ class TagView {
   Element get renderElement => tag;
 }
 
-void _makeEditable(Element element, {void onChange(e), void onEnter(e)}) {
-  element
-    ..contentEditable = 'true'
-    ..onBlur.listen((e) {
-      e.stopPropagation();
-      if (onChange != null) onChange(e);
-    })
-    ..onKeyPress.listen((e) => e.stopPropagation())
-    ..onKeyUp.listen((e) => e.stopPropagation())
-    ..onKeyDown.listen((e) {
-      e.stopPropagation();
-      if (onEnter != null && e.keyCode == KeyCode.ENTER) {
-        e.stopImmediatePropagation();
-        onEnter(e);
-      }
-    });
+class SampleMessagesTooltip {
+  DivElement tooltip;
+  DivElement _messages;
+
+  SampleMessagesTooltip(String title) {
+    tooltip = new DivElement()..classes.add('tooltip');
+
+    tooltip.append(new ParagraphElement()
+      ..classes.add('tooltip__title')
+      ..text = title);
+
+    var removeButton = new Button(ButtonType.remove, hoverText: 'Close sample messages tooltip', onClick: (_) => remove());
+    removeButton.renderElement.style
+      ..position = 'absolute'
+      ..top = '0'
+      ..right = '10px';
+    removeButton.parent = tooltip;
+
+    _messages = new DivElement()..classes.add('tooltip__messages');
+    tooltip.append(_messages);
+  }
+
+  void displayMessages(List<String> messages) {
+    for (var message in messages) {
+      _messages.append(new DivElement()
+        ..classes.add('tooltip__message')
+        ..text = message);
+    }
+  }
+
+  void set parent(Element value) => value.append(tooltip);
+  void remove() => tooltip.remove();
+
+  void set visible(bool value) {
+    tooltip.classes.toggle('hidden', !value);
+  }
 }

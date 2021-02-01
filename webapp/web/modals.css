@@ -9,6 +9,7 @@
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 10;
 }
 
 .inline-overlay-modal__message {
@@ -17,7 +18,7 @@
   font-weight: 400;
   color: #fff;
   margin-bottom: 0px;
-  text-shadow: 0 0 1px black;
+  text-shadow: 0 0 20px black;
 }
 
 .inline-overlay-modal__actions {

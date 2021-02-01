@@ -17,13 +17,9 @@ class SuggestedRepliesConfigurationPage extends ConfigurationPage {
     _suggestedRepliesContainer = new DivElement();
     _configurationContent.append(_suggestedRepliesContainer);
 
-    var addButton = new ButtonElement()
-      ..classes.add('button')
-      ..classes.add('button--add')
-      ..text = '+'
-      ..title = 'Add a new group of suggested replies'
-      ..onClick.listen((event) => controller.command(controller.UIAction.addSuggestedReplyGroup));
-    _configurationContent.append(addButton);
+    var addButton = new Button(ButtonType.add,
+        hoverText: 'Add a new group of suggested replies', onClick: (event) => controller.command(controller.UIAction.addSuggestedReplyGroup));
+    addButton.parent = _configurationContent;
   }
 
   void addReplyGroup(String id, SuggestedReplyGroupView suggestedReplyGroupView) {

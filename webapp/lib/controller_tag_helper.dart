@@ -1,6 +1,5 @@
 part of controller;
 
-
 class TagManager {
   static final TagManager _singleton = TagManager._internal();
 
@@ -11,8 +10,17 @@ class TagManager {
 
   factory TagManager() => _singleton;
 
-  void addTag(model.Tag tag) => addTags([tag]);
+  Set<String> get groups => new Set.from(emptyGroups)..addAll(_groupTagsIntoCategories(tags).keys);
 
+  Set<String> emptyGroups = {};
+
+  int _lastGroupSeqNo = 0;
+  int get nextGroupSeqNo => ++_lastGroupSeqNo;
+  String get nextTagGroupName => 'new tag group $nextGroupSeqNo';
+
+  model.Tag getTagById(String id) => _tags.singleWhere((t) => t.tagId == id);
+
+  void addTag(model.Tag tag) => addTags([tag]);
   void addTags(List<model.Tag> tags) {
     for (var tag in tags) {
       if (_tags.any((t) => t.tagId == tag.tagId)) {
@@ -32,7 +40,6 @@ class TagManager {
       _tags.removeWhere((t) => t.tagId == tag.tagId);
       _tags.add(tag);
     }
-
   }
 
   void removeTag(model.Tag tag) => updateTags([tag]);
@@ -46,3 +53,7 @@ class TagManager {
     }
   }
 }
+
+uuid.Uuid uuidGenerator = new uuid.Uuid();
+
+String generateTagId() => 'tag-${uuidGenerator.v4().substring(0, 8)}';

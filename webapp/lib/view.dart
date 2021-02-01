@@ -2,13 +2,13 @@ library view;
 
 import 'dart:async';
 import 'dart:html';
-import 'dart:math' as math;
+
+import 'package:dnd/dnd.dart' as dnd;
 
 import 'logger.dart';
 import 'controller.dart' as controller;
 import 'platform.dart' as platform;
 
-import 'package:nook/model.dart' as new_model;
 import 'sample_data_helper.dart';
 
 part 'view_suggested_replies.dart';
@@ -219,7 +219,7 @@ class ConfigurationPage extends PageView {
     _saveConfigurationButton = new ButtonElement()
       ..classes.add('configuration-actions__save-action')
       ..text = 'Save Configuration'
-      ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration));
+      ..onClick.listen((_) => controller.command(controller.UIAction.saveConfiguration));
     _configurationActions.append(_saveConfigurationButton);
 
     _saveStatusElement = new SpanElement()..classes.add('configuration-actions__save-action__status');
@@ -248,52 +248,54 @@ class ConfigurationPage extends PageView {
 
 /// Helper widgets
 
-typedef void OnClickCallback(MouseEvent clickEvent);
+typedef void OnEventCallback(Event e);
 
 enum ButtonType {
   text,
   add,
   remove,
   confirm,
+  edit,
+  speech,
 }
 
 class ButtonAction {
   String buttonText;
-  OnClickCallback onClick;
+  OnEventCallback onClick;
 
   ButtonAction(this.buttonText, this.onClick);
 }
 
 class Button {
   ButtonElement _element;
-  OnClickCallback _onClickCallback = (_) {};
 
-  Button(ButtonType buttonType, {String buttonText, String hoverText, OnClickCallback onClick}) {
+  Button(ButtonType buttonType, {String buttonText = '', String hoverText = '', OnEventCallback onClick}) {
     _element = new ButtonElement()
       ..classes.add('button')
       ..title = hoverText;
 
-    _onClickCallback = onClick ?? _onClickCallback;
-    _element.onClick.listen((e) {
-      print('clickccked');
-      _onClickCallback(e);
-    });
+    onClick = onClick ?? (_) {};
+    _element.onClick.listen(onClick);
 
     switch (buttonType) {
       case ButtonType.text:
+        _element.classes.add('button--text');
         _element.text = buttonText;
         break;
       case ButtonType.add:
-        _element.text = '+';
         _element.classes.add('button--add');
         break;
       case ButtonType.remove:
-        _element.text = 'x';
         _element.classes.add('button--remove');
         break;
       case ButtonType.confirm:
-        _element.text = '✔';
         _element.classes.add('button--confirm');
+        break;
+      case ButtonType.edit:
+        _element.classes.add('button--edit');
+        break;
+      case ButtonType.speech:
+        _element.classes.add('button--speech');
         break;
     }
   }
@@ -348,4 +350,88 @@ class PopupModal {
 
   void set parent(Element value) => value.append(popupModal);
   void remove() => popupModal.remove();
+}
+
+class EditableText {
+  DivElement editableWrapper;
+
+  Button _editButton;
+  Button _saveButton;
+  Button _cancelButton;
+
+  String _textBeforeEdit;
+
+  EditableText(Element textElementToEdit, {OnEventCallback onEditStart, OnEventCallback onEditEnd, OnEventCallback onSave}) {
+    editableWrapper = new DivElement()..classes.add('editable-widget');
+    editableWrapper.append(textElementToEdit);
+
+    onEditStart = onEditStart ?? (_) {};
+    onEditEnd = onEditEnd ?? (_) {};
+    onSave = onSave ?? (_) {};
+
+    var saveEdits = (e) {
+      _editButton.parent = editableWrapper;
+      _saveButton.remove();
+      _cancelButton.remove();
+
+      textElementToEdit.contentEditable = 'false';
+      onEditEnd(e);
+      onSave(e);
+    };
+
+    var cancelEdits = (e) {
+      _editButton.parent = editableWrapper;
+      _saveButton.remove();
+      _cancelButton.remove();
+      print('cance;');
+      textElementToEdit.contentEditable = 'false';
+      textElementToEdit.text = _textBeforeEdit;
+      onEditEnd(e);
+    };
+
+    var startEditing = (e) {
+      _editButton.remove();
+      _saveButton.parent = editableWrapper;
+      _cancelButton.parent = editableWrapper;
+
+      _textBeforeEdit = textElementToEdit.text;
+      _makeEditable(textElementToEdit, onBlur: saveEdits, onEsc: cancelEdits, onEnter: (e) {
+        e.preventDefault();
+        saveEdits(e);
+      });
+      onEditStart(e);
+      textElementToEdit.focus();
+    };
+
+    _editButton = new Button(ButtonType.edit, onClick: startEditing);
+    _editButton.parent = editableWrapper;
+
+    _saveButton = new Button(ButtonType.confirm, onClick: saveEdits);
+    _cancelButton = new Button(ButtonType.remove, onClick: cancelEdits);
+  }
+
+  void set parent(Element value) => value.append(editableWrapper);
+  void remove() => editableWrapper.remove();
+}
+
+void _makeEditable(Element element, {OnEventCallback onBlur, OnEventCallback onEnter, OnEventCallback onEsc}) {
+  element
+    ..contentEditable = 'true'
+    ..onBlur.listen((e) {
+      e.stopPropagation();
+      if (onBlur != null) onBlur(e);
+    })
+    ..onKeyPress.listen((e) => e.stopPropagation())
+    ..onKeyUp.listen((e) => e.stopPropagation())
+    ..onKeyDown.listen((e) {
+      e.stopPropagation();
+      if (onEnter != null && e.keyCode == KeyCode.ENTER) {
+        onEnter(e);
+        return;
+      }
+      if (onEsc != null && e.keyCode == KeyCode.ESC) {
+        onEsc(e);
+        return;
+      }
+    });
 }

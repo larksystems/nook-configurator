@@ -1,6 +1,8 @@
 @charset "utf-8";
 
-.tags-group {}
+.tags-group {
+  position: relative;
+}
 
 .tags-group__title {
   margin: 8px;
@@ -25,6 +27,7 @@
   font-size: 12px;
   font-style: italic;
   display: flex;
+  position: relative;
 }
 
 .tag__name {
@@ -84,148 +87,34 @@
   color: #666;
 }
 
-/* A simple x button to add a new tag */
-
-.tag__remove {
-  width: 16px;
-  height: 16px;
-  margin: 1px 2px 1px 2px;
-  padding: 3px 0;
-  border-radius: 2px;
-  display: inline-block;
-  vertical-align: middle;
-  opacity: 0;
-  cursor: pointer;
+.tooltip {
+  position: absolute;
+  top: 20px;
+  width: 300px;
+  height: 300px;
+  overflow-y: scroll;
+  background: white;
+  box-shadow: 0px 0px 20px 0px #ddd;
+  border: 1px solid #ddd;
+  z-index: 3;
+  padding: 7px;
+  font-size: .8em;
+  font-style: normal;
 }
 
-.tag__remove:before,
-.tag__remove:after {
-  position: relative;
-  left: 7px;
-  top: 1px;
-  content: ' ';
-  height: 14px;
-  width: 1px;
-  background-color: #ccc;
-  display: block;
+.tooltip__title {
+  font-weight: bold;
 }
 
-.tag__remove:before {
-  transform: rotate(45deg);
+.tooltip__messages {
+  display: flex;
+  flex-wrap: wrap;
 }
 
-.tag__remove:after {
-  top: -13px;
-  transform: rotate(-45deg);
-}
-
-.tag:hover .tag__remove {
-  opacity: 0.7;
-}
-
-.tag__remove:hover:before,
-.tag__remove:hover:after {
-  background-color: #888;
-}
-
-.tag__remove:active:before,
-.tag__remove:active:after {
-  background-color: #333;
-}
-
-/* A simple plus button to add a new tag */
-
-.tag__add {
-  width: 16px;
-  height: 16px;
-  margin: 1px 2px 1px 2px;
-  padding: 3px 0;
-  border-radius: 2px;
-  display: inline-block;
-  vertical-align: middle;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.tag__add:before,
-.tag__add:after {
-  position: relative;
-  left: 7px;
-  top: 1px;
-  content: ' ';
-  height: 14px;
-  width: 1px;
-  background-color: #ccc;
-  display: block;
-}
-
-.tag__add:before {
-  transform: rotate(90deg);
-}
-
-.tag__add:after {
-  top: -13px;
-}
-
-.message__tags:hover .tag__add {
-  opacity: 0.7;
-}
-
-.tag__add:hover:before,
-.tag__add:hover:after {
-  background-color: #888;
-}
-
-.tag__add:active:before,
-.tag__add:active:after {
-  background-color: #333;
-}
-
-/* A simple tick button to add a new tag */
-
-.tag__confirm {
-  width: 16px;
-  height: 16px;
-  margin: 1px 2px 1px 2px;
-  padding: 3px 0;
-  border-radius: 2px;
-  display: inline-block;
-  vertical-align: middle;
-  opacity: 0.7;
-  cursor: pointer;
-}
-
-.tag__confirm:before,
-.tag__confirm:after {
-  position: relative;
-  left: 7px;
-  top: 1px;
-  content: ' ';
-  height: 14px;
-  width: 1px;
-  background-color: #ccc;
-  display: block;
-}
-
-.tag__confirm:before {
-  left: 10px;
-  height: 12px;
-  transform: rotate(40deg);
-}
-
-.tag__confirm:after {
-  left: 4px;
-  top: -6px;
-  height: 7px;
-  transform: rotate(310deg);
-}
-
-.tag__confirm:hover:before,
-.tag__confirm:hover:after {
-  background-color: #888;
-}
-
-.tag__confirm:active:before,
-.tag__confirm:active:after {
-  background-color: #333;
+.tooltip__message {
+  flex: 1 1 auto;
+  margin: 3px;
+  padding: 2px 4px;
+  background: #eee;
+  border-radius: 5px;
 }

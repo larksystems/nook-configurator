@@ -1,7 +1,9 @@
 library controller;
 
 import 'dart:html';
+import 'dart:math';
 
+import 'package:uuid/uuid.dart' as uuid;
 import 'package:nook/model.dart' as model;
 
 import 'logger.dart';
@@ -21,8 +23,7 @@ enum UIAction {
   userSignedOut,
   signInButtonClicked,
   signOutButtonClicked,
-  savePackageConfiguration,
-  saveTagsConfiguration,
+  saveConfiguration,
 
   // Handling suggested replies
   addSuggestedReply,
@@ -36,9 +37,10 @@ enum UIAction {
   // Handling tags
   addTag,
   addTagGroup,
-  updateTag,
+  renameTag,
+  moveTag,
   updateTagGroup,
-  remoteTag,
+  removeTag,
   removeTagGroup
 }
 
@@ -60,9 +62,16 @@ class UserData extends Data {
 
 class TagData extends Data {
   String id;
+
+  /// Used when renaming a tag
   String text;
-  String groupId; // TODO: This is wrong, tags can exist in multiple groups
-  TagData(this.id, {this.text, this.groupId});
+
+  /// Used when removing, or moving a tag
+  String groupId;
+
+  /// Used when moving a tag
+  String newGroupId;
+  TagData(this.id, {this.text, this.groupId, this.newGroupId});
 }
 
 class TagGroupData extends Data {
@@ -108,11 +117,12 @@ class SuggestedRepliesCategoryData extends Data {
 
 // ====
 
-List<String> configurationSuggestedReplyLanguages;
 SuggestedRepliesManager suggestedRepliesManager = new SuggestedRepliesManager();
-TagManager tagManager = new TagManager();
 String selectedSuggestedRepliesCategory;
-List<String> editedSuggestedReplies = [];
+Set<String> editedSuggestedReplyIds = {};
+
+TagManager tagManager = new TagManager();
+Set<String> editedTagIds = {};
 
 model.User signedInUser;
 
@@ -130,6 +140,8 @@ void setupRoutes() {
     ..addHandler(new Route('#/configuration/suggested-replies', loadSuggestedRepliesConfigurationView))
     ..listen();
 }
+
+var page;
 
 void command(UIAction action, [Data actionData]) {
   log.verbose('command => $action : $actionData');
@@ -154,8 +166,15 @@ void command(UIAction action, [Data actionData]) {
     case UIAction.signOutButtonClicked:
       platform.signOut();
       break;
-    case UIAction.savePackageConfiguration:
-      savePackageConfiguration();
+    case UIAction.saveConfiguration:
+      switch (page) {
+        case 'tags':
+          saveTagsConfiguration();
+          break;
+        case 'replies':
+          saveSuggestedRepliesConfiguration();
+          break;
+      }
       break;
 
     case UIAction.addSuggestedReply:
@@ -176,7 +195,7 @@ void command(UIAction action, [Data actionData]) {
       (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage)
           .groups[data.groupId]
           .addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
-      editedSuggestedReplies.add(newSuggestedReply.docId);
+      editedSuggestedReplyIds.add(newSuggestedReply.docId);
       break;
     case UIAction.updateSuggestedReply:
       SuggestedReplyData data = actionData;
@@ -187,7 +206,7 @@ void command(UIAction action, [Data actionData]) {
       if (data.translation != null) {
         suggestedReply.translation = data.translation;
       }
-      editedSuggestedReplies.add(data.id);
+      editedSuggestedReplyIds.add(data.id);
       break;
     case UIAction.removeSuggestedReply:
       SuggestedReplyData data = actionData;
@@ -221,31 +240,68 @@ void command(UIAction action, [Data actionData]) {
 
     case UIAction.addTag:
       TagData data = actionData;
-      var newTag = model.Tag();
-      // ..docId = suggestedRepliesManager.nextSuggestedReplyId
-      // ..text = ''
-      // ..translation = ''
-      // ..shortcut = ''
-      // ..seqNumber = suggestedRepliesManager.lastSuggestedReplySeqNo
-      // ..category = selectedSuggestedRepliesCategory
-      // ..groupId = data.groupId
-      // ..groupDescription = suggestedRepliesManager.groups[data.groupId]
-      // ..indexInGroup = suggestedRepliesManager.getNextIndexInGroup(data.groupId);
+      var newTag = new model.Tag()
+        ..docId = generateTagId()
+        ..filterable = true
+        ..groups = [data.groupId]
+        ..isUnifier = false
+        ..text = ''
+        ..shortcut = ''
+        ..visible = true
+        ..type = model.TagType.Normal;
 
       tagManager.addTag(newTag);
 
-      // TODO
-      // var newSuggestedReplyView = new view.SuggestedReplyView(newSuggestedReply.docId, newSuggestedReply.text, newSuggestedReply.translation);
-      // (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[data.groupId].addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
-      // editedSuggestedReplies.add(newSuggestedReply.docId);
+      _addTagsToView({
+        data.groupId: [newTag]
+      });
+      editedTagIds.add(newTag.docId);
       break;
 
-    case UIAction.updateTag:
-    case UIAction.remoteTag:
+    case UIAction.renameTag:
+      TagData data = actionData;
+      model.Tag tag = tagManager.getTagById(data.id);
+      tag.text = data.text;
+      print(data.text);
+      editedTagIds.add(data.id);
+      _modifyTagsInView(Map.fromEntries(tag.groups.map((g) => new MapEntry(g, [tag]))));
+      break;
+    case UIAction.moveTag:
+      TagData data = actionData;
+      model.Tag tag = tagManager.getTagById(data.id);
+      tag.groups.remove(data.groupId);
+      tag.groups.add(data.newGroupId);
+      editedTagIds.add(data.id);
+      _removeTagsFromView({
+        data.groupId: [tag]
+      });
+      _addTagsToView({
+        data.newGroupId: [tag]
+      });
+      break;
+    case UIAction.removeTag:
+      TagData data = actionData;
+      model.Tag tag = tagManager.getTagById(data.id);
+      tag.groups.remove(data.groupId);
+      _removeTagsFromView({
+        data.groupId: [tag]
+      });
+      if (tag.groups.isEmpty) {
+        // handle removals
+      } else {
+        editedTagIds.add(data.id);
+      }
+      break;
     case UIAction.addTagGroup:
+      var newGroupName = tagManager.nextTagGroupName;
+      tagManager.emptyGroups.add(newGroupName);
+      _addTagsToView({newGroupName: []});
+      break;
     case UIAction.updateTagGroup:
+      TagGroupData data = actionData;
+
+      break;
     case UIAction.removeTagGroup:
-    case UIAction.saveTagsConfiguration:
 
       // throw "Not implemented";
       // TODO: Handle this case.
@@ -253,11 +309,22 @@ void command(UIAction action, [Data actionData]) {
   }
 }
 
-void savePackageConfiguration() {
+void saveSuggestedRepliesConfiguration() {
   List<model.SuggestedReply> repliesToSave =
-      editedSuggestedReplies.map((suggestedReplyId) => suggestedRepliesManager.getSuggestedReplyById(suggestedReplyId)).toList();
+      editedSuggestedReplyIds.map((suggestedReplyId) => suggestedRepliesManager.getSuggestedReplyById(suggestedReplyId)).toList();
   (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
   saveSuggestedReplies(repliesToSave).then((value) {
+    (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
+  }, onError: (error, stacktrace) {
+    (view.contentView.renderedPage as view.ConfigurationPage)
+        .showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
+  });
+}
+
+void saveTagsConfiguration() {
+  List<model.Tag> tagsToSave = editedTagIds.map((tagId) => tagManager.getTagById(tagId)).toList();
+  (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
+  saveTags(tagsToSave).then((value) {
     (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
   }, onError: (error, stacktrace) {
     (view.contentView.renderedPage as view.ConfigurationPage)
@@ -275,6 +342,7 @@ void loadConfigurationSelectionView() {
 }
 
 void loadSuggestedRepliesConfigurationView() {
+  page = 'replies';
   view.contentView.renderView(new view.SuggestedRepliesConfigurationPage());
 
   platform.listenForSuggestedReplies((added, modified, removed) {
@@ -296,6 +364,7 @@ void loadSuggestedRepliesConfigurationView() {
 }
 
 void loadTagsConfigurationView() {
+  page = 'tags';
   view.contentView.renderView(new view.TagsConfigurationPage());
 
   platform.listenForTags((added, modified, removed) {
@@ -311,4 +380,8 @@ void loadTagsConfigurationView() {
 
 Future<void> saveSuggestedReplies(List<model.SuggestedReply> suggestedReplies) {
   return platform.updateSuggestedReplies(suggestedReplies);
+}
+
+Future<void> saveTags(List<model.Tag> tags) {
+  return platform.updateTags(tags);
 }
