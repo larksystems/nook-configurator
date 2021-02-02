@@ -41,11 +41,11 @@ class SuggestedRepliesManager {
   }
 
 
-  List<new_model.SuggestedReply> _suggestedReplies = [];
-  List<new_model.SuggestedReply> get suggestedReplies => _suggestedReplies;
+  List<model.SuggestedReply> _suggestedReplies = [];
+  List<model.SuggestedReply> get suggestedReplies => _suggestedReplies;
 
-  Map<String, List<new_model.SuggestedReply>> _suggestedRepliesByCategory = {};
-  Map<String, List<new_model.SuggestedReply>> get suggestedRepliesByCategory => _suggestedRepliesByCategory;
+  Map<String, List<model.SuggestedReply>> _suggestedRepliesByCategory = {};
+  Map<String, List<model.SuggestedReply>> get suggestedRepliesByCategory => _suggestedRepliesByCategory;
 
   Map<String, String> emptyGroups = {};
 
@@ -59,12 +59,12 @@ class SuggestedRepliesManager {
     return lastIndexInGroup + 1;
   }
 
-  new_model.SuggestedReply getSuggestedReplyById(String id) => _suggestedReplies.singleWhere((r) => r.suggestedReplyId == id);
+  model.SuggestedReply getSuggestedReplyById(String id) => _suggestedReplies.singleWhere((r) => r.suggestedReplyId == id);
 
 
-  void addSuggestedReply(new_model.SuggestedReply suggestedReply) => addSuggestedReplies([suggestedReply]);
+  void addSuggestedReply(model.SuggestedReply suggestedReply) => addSuggestedReplies([suggestedReply]);
 
-  void addSuggestedReplies(List<new_model.SuggestedReply> suggestedReplies) {
+  void addSuggestedReplies(List<model.SuggestedReply> suggestedReplies) {
     for (var suggestedReply in suggestedReplies) {
       _suggestedReplies.add(suggestedReply);
       _suggestedRepliesByCategory.putIfAbsent(suggestedReply.category, () => []);
@@ -76,9 +76,9 @@ class SuggestedRepliesManager {
     }
   }
 
-  void updateSuggestedReply(new_model.SuggestedReply suggestedReply) => updateSuggestedReplies([suggestedReply]);
+  void updateSuggestedReply(model.SuggestedReply suggestedReply) => updateSuggestedReplies([suggestedReply]);
 
-  void updateSuggestedReplies(List<new_model.SuggestedReply> suggestedReplies) {
+  void updateSuggestedReplies(List<model.SuggestedReply> suggestedReplies) {
     for (var suggestedReply in suggestedReplies) {
       var oldSuggestedReply = _suggestedReplies.singleWhere((r) => r.suggestedReplyId == suggestedReply.suggestedReplyId);
       var index = _suggestedReplies.indexOf(oldSuggestedReply);
@@ -99,9 +99,9 @@ class SuggestedRepliesManager {
     }
   }
 
-  void removeSuggestedReply(new_model.SuggestedReply suggestedReply) => removeSuggestedReplies([suggestedReply]);
+  void removeSuggestedReply(model.SuggestedReply suggestedReply) => removeSuggestedReplies([suggestedReply]);
 
-  void removeSuggestedReplies(List<new_model.SuggestedReply> suggestedReplies) {
+  void removeSuggestedReplies(List<model.SuggestedReply> suggestedReplies) {
     var suggestedRepliesIds = new Set()..addAll(suggestedReplies.map((r) => r.suggestedReplyId));
     _suggestedReplies.removeWhere((suggestedReply) => suggestedRepliesIds.contains(suggestedReply.suggestedReplyId));
     for (var category in _suggestedRepliesByCategory.keys) {
@@ -119,7 +119,7 @@ class SuggestedRepliesManager {
   }
 
   void removeSuggestedRepliesGroup(String groupId) {
-    List<new_model.SuggestedReply> suggestedRepliesToRemove = _suggestedReplies.where((r) => r.groupId == groupId).toList();
+    List<model.SuggestedReply> suggestedRepliesToRemove = _suggestedReplies.where((r) => r.groupId == groupId).toList();
     removeSuggestedReplies(suggestedRepliesToRemove);
   }
 

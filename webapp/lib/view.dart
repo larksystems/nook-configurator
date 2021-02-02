@@ -1,8 +1,18 @@
+library view;
+
 import 'dart:async';
 import 'dart:html';
 
+import 'package:dnd/dnd.dart' as dnd;
+
 import 'logger.dart';
 import 'controller.dart' as controller;
+import 'platform.dart' as platform;
+
+import 'sample_data_helper.dart';
+
+part 'view_suggested_replies.dart';
+part 'view_tags.dart';
 
 Logger log = new Logger('view.dart');
 
@@ -11,13 +21,13 @@ Element get mainElement => querySelector('main');
 Element get footerElement => querySelector('footer');
 
 NavView navView;
-ContentView contentView;
+PageRenderer contentView;
 
 void init() {
   navView = new NavView();
-  contentView = new ContentView();
+  contentView = new PageRenderer();
   headerElement.append(navView.navViewElement);
-  mainElement.append(contentView.contentViewElement);
+  mainElement.append(contentView.contentElement);
 }
 
 class NavView {
@@ -31,8 +41,7 @@ class NavView {
   AnchorElement _allProjectsLink;
 
   NavView() {
-    navViewElement = new DivElement()
-      ..classes.add('nav');
+    navViewElement = new DivElement()..classes.add('nav');
     _appLogos = new DivElement()
       ..classes.add('nav__app-logo')
       ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
@@ -44,14 +53,11 @@ class NavView {
       ..classes.add('nav-links__all-projects-link')
       ..href = '#/project-selector'
       ..text = 'All projects';
-    _navLinks = new DivElement()
-      ..classes.add('nav-links');
-      // ..append(_backBtn)
-      // ..append(_allProjectsLink);
-    _projectTitle = new DivElement()
-      ..classes.add('nav-project-details__title');
-    _projectOrganizations = new DivElement()
-      ..classes.add('nav-project-details__organization');
+    _navLinks = new DivElement()..classes.add('nav-links');
+    // ..append(_backBtn)
+    // ..append(_allProjectsLink);
+    _projectTitle = new DivElement()..classes.add('nav-project-details__title');
+    _projectOrganizations = new DivElement()..classes.add('nav-project-details__organization');
     var projectDetails = new DivElement()
       ..classes.add('nav-project-details')
       ..append(_projectTitle)
@@ -81,15 +87,12 @@ class AuthHeaderViewPartial {
   ButtonElement _signInButton;
 
   AuthHeaderViewPartial() {
-    authElement = new DivElement()
-      ..classes.add('auth-header');
+    authElement = new DivElement()..classes.add('auth-header');
 
-    _userPic = new DivElement()
-      ..classes.add('auth-header__user-pic');
+    _userPic = new DivElement()..classes.add('auth-header__user-pic');
     authElement.append(_userPic);
 
-    _userName = new DivElement()
-      ..classes.add('auth-header__user-name');
+    _userName = new DivElement()..classes.add('auth-header__user-name');
     authElement.append(_userName);
 
     _signOutButton = new ButtonElement()
@@ -128,43 +131,41 @@ class AuthHeaderViewPartial {
   }
 }
 
-abstract class BaseView {
-  DivElement get renderElement;
-}
+class PageRenderer {
+  DivElement contentElement;
 
-class ContentView {
-  DivElement contentViewElement;
+  PageView renderedPage;
 
-  BaseView renderedView;
-
-  ContentView() {
-    contentViewElement = new DivElement()..classes.add('content');
+  PageRenderer() {
+    contentElement = new DivElement()..classes.add('content');
   }
 
-  void renderView(BaseView view) {
-    contentViewElement.children.clear();
-    contentViewElement.append(view.renderElement);
-    renderedView = view;
+  void renderView(PageView view) {
+    contentElement.children.clear();
+    contentElement.append(view.renderElement);
+    renderedPage = view;
   }
 }
 
-class AuthMainView extends BaseView {
+abstract class PageView {
+  Element get renderElement;
+}
+
+/// The authentication page
+class AuthPage extends PageView {
   DivElement authElement;
   ButtonElement _signInButton;
 
   final descriptionText1 = 'Sign in to Katikati';
   final descriptionText2 = 'Please contact Africa\'s Voices for login details.';
 
-  AuthMainView() {
-    authElement = new DivElement()
-      ..classes.add('auth-main');
+  AuthPage() {
+    authElement = new DivElement()..classes.add('auth-main');
 
-    var logosContainer = new DivElement()
-      ..classes.add('auth-main__logos');
+    var logosContainer = new DivElement()..classes.add('auth-main__logos');
     authElement.append(logosContainer);
 
-    var avfLogo = new ImageElement(src: 'assets/africas-voices-logo.svg')
-      ..classes.add('auth-main__partner-logo');
+    var avfLogo = new ImageElement(src: 'assets/africas-voices-logo.svg')..classes.add('auth-main__partner-logo');
     logosContainer.append(avfLogo);
 
     var shortDescription = new DivElement()
@@ -182,53 +183,47 @@ class AuthMainView extends BaseView {
   DivElement get renderElement => authElement;
 }
 
-class PackageConfiguratorView extends BaseView {
-  SuggestedRepliesView suggestedRepliesView;
+/// The page for selecting between the configuration pages
+class ConfigurationSelectionPage extends PageView {
+  DivElement renderElement;
 
-  DivElement _packageConfiguratorViewElement;
-  DivElement _packageConfiguratorContent;
+  ConfigurationSelectionPage() {
+    renderElement = new DivElement()..classes.add('configuration-page-selection-view');
+    renderElement.text = 'Available configurations:';
+  }
+}
 
+/// An empty page to be inherited to create different options for configuring,
+/// (e.g. tags or suggested replies), and a save button with an indicator.
+class ConfigurationPage extends PageView {
+  DivElement renderElement;
+  DivElement _configurationTitle;
+  DivElement _configurationContent;
+
+  DivElement _configurationActions;
+  ButtonElement _saveConfigurationButton;
   SpanElement _saveStatusElement;
 
-  PackageConfiguratorView() {
-    suggestedRepliesView = new SuggestedRepliesView();
+  ConfigurationPage() {
+    renderElement = new DivElement()..classes.add('configuration-view');
 
-    _packageConfiguratorViewElement = new DivElement()
-      ..classes.add('configure-package-view');
-    _packageConfiguratorContent = new DivElement()
-      ..classes.add('configure-package-content');
-    _buildContentPartial(_packageConfiguratorContent);
-    _packageConfiguratorViewElement.append(_packageConfiguratorContent);
-  }
+    _configurationTitle = new DivElement()..classes.add('configuration-view__title');
+    renderElement.append(_configurationTitle);
 
-  DivElement get renderElement => _packageConfiguratorViewElement;
+    _configurationContent = new DivElement()..classes.add('configuration-view__content');
+    renderElement.append(_configurationContent);
 
-  void _buildContentPartial(DivElement packageConfiguratorContent) {
-    var suggestedRepliesViewWrapper = new DivElement()
-      ..classes.add('configure-package-suggested-replies')
-      ..append(
-        new DivElement()
-          ..classes.add('configure-package-suggested-replies-headers')
-          ..append(
-            new HeadingElement.h3()
-              ..text = 'What do you want to say?'
-          )
-      )
-      ..append(suggestedRepliesView.renderElement);
-    packageConfiguratorContent.append(suggestedRepliesViewWrapper);
+    _configurationActions = new DivElement()..classes.add('configuration-actions');
+    renderElement.append(_configurationActions);
 
-    var packageActionsWrapper = new DivElement()
-      ..classes.add('configure-package-actions');
-    var saveConfigurationButton = new ButtonElement()
-      ..classes.add('configure-package-actions__save-action')
+    _saveConfigurationButton = new ButtonElement()
+      ..classes.add('configuration-actions__save-action')
       ..text = 'Save Configuration'
-      ..onClick.listen((_) => controller.command(controller.UIAction.savePackageConfiguration));
-    _saveStatusElement = new SpanElement()
-      ..classes.add('configure-package-actions__save-action__status');
-    packageActionsWrapper
-      ..append(saveConfigurationButton)
-      ..append(_saveStatusElement);
-    packageConfiguratorContent.append(packageActionsWrapper);
+      ..onClick.listen((_) => controller.command(controller.UIAction.saveConfiguration));
+    _configurationActions.append(_saveConfigurationButton);
+
+    _saveStatusElement = new SpanElement()..classes.add('configuration-actions__save-action__status');
+    _configurationActions.append(_saveStatusElement);
   }
 
   /// How many seconds the save status will be displayed on screen before disappearing.
@@ -251,286 +246,203 @@ class PackageConfiguratorView extends BaseView {
   }
 }
 
-class SuggestedReplyMessageView {
-  Element _suggestedReplyMessageElement;
-  TextAreaElement _suggestedReplyText;
-  Function onUpdateSuggestedReplyCallback;
-  Function onTextareaHeightChangeCallback;
+/// Helper widgets
 
-  SuggestedReplyMessageView(int index, String suggestedReply, this.onUpdateSuggestedReplyCallback) {
-    var suggestedReplyCounter = new SpanElement()
-      ..classes.add('conversation-suggested-reply-language__text-count')
-      ..classes.toggle('conversation-suggested-reply-language__text-count--alert', suggestedReply.length > 160)
-      ..text = '${suggestedReply.length}/160';
-    _suggestedReplyText = new TextAreaElement()
-      ..classes.add('conversation-suggested-reply-language__text')
-      ..classes.toggle('conversation-suggested-reply-language__text--alert', suggestedReply.length > 160)
-      ..text = suggestedReply != null ? suggestedReply : ''
-      ..contentEditable = 'true'
-      ..dataset['index'] = '$index'
-      ..onBlur.listen((event) => onUpdateSuggestedReplyCallback(index, (event.target as TextAreaElement).value))
-      ..onInput.listen((event) {
-        int count = _suggestedReplyText.value.split('').length;
-        suggestedReplyCounter.text = '${count}/160';
-        _suggestedReplyText.classes.toggle('conversation-suggested-reply-language__text--alert', count > 160);
-        suggestedReplyCounter.classes.toggle('conversation-suggested-reply-language__text-count--alert', count > 160);
-        _handleTextareaHeightChange();
-      });
-    _suggestedReplyMessageElement = new DivElement()
-      ..classes.add('conversation-suggested-reply-language')
-      ..append(_suggestedReplyText)
-      ..append(suggestedReplyCounter);
-    finaliseRenderAsync();
-  }
+typedef void OnEventCallback(Event e);
 
-  Element get renderElement => _suggestedReplyMessageElement;
-
-  void set textareaHeight(int height) => _suggestedReplyText.style.height = '${height - 6}px';
-
-  /// Returns the height of the content text in the textarea element.
-  int get textareaScrollHeight {
-    var height = _suggestedReplyText.style.height;
-    _suggestedReplyText.style.height = '0';
-    var scrollHeight = _suggestedReplyText.scrollHeight;
-    _suggestedReplyText.style.height = height;
-    return scrollHeight;
-  }
-
-  /// This method reports the height of the content text (if the callback is set).
-  void _handleTextareaHeightChange() {
-    if (onTextareaHeightChangeCallback == null) return;
-    onTextareaHeightChangeCallback(textareaScrollHeight);
-  }
-
-  /// The response view is added to the DOM at some later point, outside this class.
-  /// This method periodically polls until the element has been added to the DOM (height > 0)
-  /// and then triggers the first [_handleTextareaHeightChange] so that the parent can
-  /// synchronise the height between this reply and it's sibling(s).
-  void finaliseRenderAsync() {
-    Timer.periodic(new Duration(milliseconds: 10), (timer) {
-      if (_suggestedReplyText.scrollHeight == 0) return;
-      _handleTextareaHeightChange();
-      timer.cancel();
-    });
-  }
+enum ButtonType {
+  text,
+  add,
+  remove,
+  confirm,
+  edit,
+  speech,
 }
 
-class SuggestedReplyView {
-  Element _suggestedReplyElement;
+class ButtonAction {
+  String buttonText;
+  OnEventCallback onClick;
 
-  SuggestedReplyView(String id, String text, String translation) {
-    _suggestedReplyElement = new DivElement()
-      ..classes.add('conversation-suggested-reply')
-      ..dataset['id'] = '$id';
-
-    var removeButton = new ButtonElement()
-      ..classes.add('button-remove-conversation-suggested-replies')
-      ..text = 'x'
-      ..onClick.listen((_) {
-        var removeSuggestedRepliesModal = new DivElement()
-          ..classes.add('remove-conversation-suggested-replies-modal');
-        removeSuggestedRepliesModal
-          ..append(
-            new ParagraphElement()
-              ..classes.add('remove-conversation-suggested-replies-modal__message')
-              ..text = 'Are you sure?'
-          )
-          ..append(
-            new DivElement()
-              ..classes.add('remove-conversation-suggested-replies-modal-actions')
-              ..append(
-                new ButtonElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                  ..text = 'Yes'
-                  ..onClick.listen((_) => controller.command(controller.UIAction.removeSuggestedReply, new controller.SuggestedReplyData(id)))
-              )
-              ..append(
-                new ButtonElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                  ..text = 'No'
-                  ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
-              )
-          );
-        _suggestedReplyElement.append(removeSuggestedRepliesModal);
-      });
-    removeButton.style.visibility = 'hidden';
-
-    var textView = new SuggestedReplyMessageView(0, text, (index, text) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, text: text)));
-    var translationView = new SuggestedReplyMessageView(0, translation, (index, translation) => controller.command(controller.UIAction.updateSuggestedReply, new controller.SuggestedReplyData(id, translation: translation)));
-    _suggestedReplyElement
-      ..append(removeButton)
-      ..append(textView.renderElement)
-      ..append(translationView.renderElement);
-    _makeSuggestedReplyMessageViewTextareasSynchronisable([textView, translationView]);
-  }
-
-  Element get renderElement => _suggestedReplyElement;
+  ButtonAction(this.buttonText, this.onClick);
 }
 
-class SuggestedReplyGroupView {
-  DivElement _suggestedRepliesGroupElement;
-  DivElement _suggestedRepliesContainer;
-  SpanElement _title;
+class Button {
+  ButtonElement _element;
 
-  Map<String, SuggestedReplyView> replies = {};
+  Button(ButtonType buttonType, {String buttonText = '', String hoverText = '', OnEventCallback onClick}) {
+    _element = new ButtonElement()
+      ..classes.add('button')
+      ..title = hoverText;
 
-  SuggestedReplyGroupView(String id, String name) {
-    _suggestedRepliesGroupElement = new DivElement()
-      ..classes.add('conversation-suggested-reply-group');
-    var removeButton = new ButtonElement()
-      ..classes.add('button-remove-conversation-suggested-replies')
-      ..text = 'x'
-      ..onClick.listen((_) {
-        var removeSuggestedRepliesModal = new DivElement()
-          ..classes.add('remove-conversation-suggested-replies-modal');
-        removeSuggestedRepliesModal
-          ..append(
-            new ParagraphElement()
-              ..classes.add('remove-conversation-suggested-replies-modal__message')
-              ..text = 'Are you sure?'
-          )
-          ..append(
-            new DivElement()
-              ..classes.add('remove-conversation-suggested-replies-modal-actions')
-              ..append(
-                new ButtonElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                  ..text = 'Yes'
-                  ..onClick.listen((_) => controller.command(controller.UIAction.removeSuggestedReplyGroup, new controller.SuggestedReplyGroupData(id)))
-              )
-              ..append(
-                new ButtonElement()
-                  ..classes.add('remove-conversation-suggested-replies-modal-actions__action')
-                  ..text = 'No'
-                  ..onClick.listen((_) => removeSuggestedRepliesModal.remove())
-              )
-          );
-        _suggestedRepliesGroupElement.append(removeSuggestedRepliesModal);
-      });
-    removeButton.style.visibility = 'hidden';
-    _suggestedRepliesGroupElement.append(removeButton);
+    onClick = onClick ?? (_) {};
+    _element.onClick.listen(onClick);
 
-    _title = new SpanElement()
-      ..classes.add('conversation-suggested-reply-group__title')
-      ..text = name
-      ..title = '<group name>'
-      ..contentEditable = 'true'
-      ..onBlur.listen((event) => controller.command(controller.UIAction.updateSuggestedReplyGroup, new controller.SuggestedReplyGroupData(id, groupName: name, newGroupName: _title.text)));
-    _suggestedRepliesGroupElement.append(_title);
-
-    _suggestedRepliesContainer = new DivElement()
-      ..classes.add('conversation-suggested-reply-container');
-    _suggestedRepliesGroupElement.append(_suggestedRepliesContainer);
-
-    var addButton = new ButtonElement()
-      ..classes.add('button-add-conversation-suggested-replies')
-      ..text = '+'
-      ..title = 'Add new suggested reply'
-      ..onClick.listen((event) => controller.command(controller.UIAction.addSuggestedReply, new controller.SuggestedReplyData(null, groupId: id)));
-    addButton.style.visibility = 'hidden';
-    _suggestedRepliesGroupElement.append(addButton);
-  }
-
-  Element get renderElement => _suggestedRepliesGroupElement;
-
-  void set name(String name) => _title.text = name;
-
-  void addReply(String id, SuggestedReplyView suggestedReplyView) {
-    _suggestedRepliesContainer.append(suggestedReplyView.renderElement);
-    replies[id] = suggestedReplyView;
-  }
-
-  void removeReply(String id) {
-    replies[id].renderElement.remove();
-    replies.remove(id);
-  }
-}
-
-class SuggestedRepliesView extends BaseView {
-  DivElement _suggestedRepliesElement;
-  DivElement _suggestedRepliesContainer;
-  SelectElement _replyCategories;
-
-  Map<String, SuggestedReplyGroupView> groups = {};
-
-  SuggestedRepliesView() {
-    _suggestedRepliesElement = new DivElement()
-      ..classes.add('conversation-suggested-replies');
-
-    _replyCategories = new SelectElement();
-    _replyCategories.onChange.listen((_) => controller.command(controller.UIAction.changeSuggestedRepliesCategory, new controller.SuggestedRepliesCategoryData(_replyCategories.value)));
-    _suggestedRepliesElement.append(_replyCategories);
-
-    _suggestedRepliesContainer = new DivElement();
-    _suggestedRepliesElement.append(_suggestedRepliesContainer);
-
-    var addButton = new ButtonElement()
-      ..classes.add('button-add-conversation-suggested-replies')
-      ..text = '+'
-      ..title = 'Add a new group of suggested replies'
-      ..onClick.listen((event) => controller.command(controller.UIAction.addSuggestedReplyGroup));
-    addButton.style.visibility = 'hidden';
-    _suggestedRepliesElement.append(addButton);
-  }
-
-  DivElement get renderElement => _suggestedRepliesElement;
-
-  void addReplyGroup(String id, SuggestedReplyGroupView suggestedReplyGroupView) {
-    _suggestedRepliesContainer.append(suggestedReplyGroupView.renderElement);
-    groups[id] = suggestedReplyGroupView;
-  }
-
-  void removeReplyGroup(String id) {
-    groups[id].renderElement.remove();
-    groups.remove(id);
-  }
-
-  set selectedCategory(String category) {
-    int index = _replyCategories.children.indexWhere((Element option) => (option as OptionElement).value == category);
-    if (index == -1) {
-      // Couldn't find category in list of suggested replies category, using first
-      _replyCategories.selectedIndex = 0;
-      controller.command(controller.UIAction.changeSuggestedRepliesCategory, new controller.SuggestedRepliesCategoryData(_replyCategories.value));
-      return;
-    }
-    _replyCategories.selectedIndex = index;
-  }
-
-  set categories(List<String> categories) {
-    _replyCategories.children.clear();
-    for (var category in categories) {
-      _replyCategories.append(
-        new OptionElement()
-          ..value = category
-          ..text = category);
+    switch (buttonType) {
+      case ButtonType.text:
+        _element.classes.add('button--text');
+        _element.text = buttonText;
+        break;
+      case ButtonType.add:
+        _element.classes.add('button--add');
+        break;
+      case ButtonType.remove:
+        _element.classes.add('button--remove');
+        break;
+      case ButtonType.confirm:
+        _element.classes.add('button--confirm');
+        break;
+      case ButtonType.edit:
+        _element.classes.add('button--edit');
+        break;
+      case ButtonType.speech:
+        _element.classes.add('button--speech');
+        break;
     }
   }
 
-  void clear() {
-    int repliesNo = _suggestedRepliesContainer.children.length;
-    for (int i = 0; i < repliesNo; i++) {
-      _suggestedRepliesContainer.firstChild.remove();
-    }
-    assert(_suggestedRepliesContainer.children.length == 0);
-    groups.clear();
+  Element get renderElement => _element;
+
+  void set visible(bool value) {
+    _element.classes.toggle('hidden', !value);
   }
+
+  void set parent(Element value) => value.append(_element);
+  void remove() => _element.remove();
 }
 
-_makeSuggestedReplyMessageViewTextareasSynchronisable(List<SuggestedReplyMessageView> suggestedReplyViews) {
-  var onTextareaHeightChangeCallback = (int height) {
-    var maxHeight = height;
-    for (var responseView in suggestedReplyViews) {
-      var textareaScrollHeight = responseView.textareaScrollHeight;
-      if (textareaScrollHeight > maxHeight) {
-        maxHeight = textareaScrollHeight;
+class InlineOverlayModal {
+  DivElement inlineOverlayModal;
+
+  InlineOverlayModal(String message, List<Button> buttons) {
+    inlineOverlayModal = new DivElement()..classes.add('inline-overlay-modal');
+
+    inlineOverlayModal.append(new ParagraphElement()
+      ..classes.add('inline-overlay-modal__message')
+      ..text = message);
+
+    var actions = new DivElement()..classes.add('inline-overlay-modal__actions');
+    inlineOverlayModal.append(actions);
+    for (var button in buttons) {
+      button.parent = actions;
+    }
+  }
+
+  void set parent(Element value) => value.append(inlineOverlayModal);
+  void remove() => inlineOverlayModal.remove();
+}
+
+class PopupModal {
+  DivElement popupModal;
+
+  PopupModal(String message, List<Button> buttons) {
+    popupModal = new DivElement()..classes.add('popup-modal');
+
+    popupModal.append(new ParagraphElement()
+      ..classes.add('popup-modal__message')
+      ..text = message);
+
+    var actions = new DivElement()..classes.add('popup-modal__actions');
+    popupModal.append(actions);
+    for (var button in buttons) {
+      button.parent = actions;
+    }
+  }
+
+  void set parent(Element value) => value.append(popupModal);
+  void remove() => popupModal.remove();
+}
+
+class EditableText {
+  DivElement editableWrapper;
+
+  Button _editButton;
+  Button _saveButton;
+  Button _cancelButton;
+
+  String _textBeforeEdit;
+  bool _duringEdit;
+
+  EditableText(Element textElementToEdit, {OnEventCallback onEditStart, OnEventCallback onEditEnd, OnEventCallback onSave}) {
+    editableWrapper = new DivElement()..classes.add('editable-widget');
+    editableWrapper.append(textElementToEdit);
+
+    onEditStart = onEditStart ?? (_) {};
+    onEditEnd = onEditEnd ?? (_) {};
+    onSave = onSave ?? (_) {};
+
+    _duringEdit = false;
+    var saveEdits = (e) {
+      if (!_duringEdit) return;
+      _duringEdit = false;
+
+      _editButton.parent = editableWrapper;
+      _saveButton.remove();
+      _cancelButton.remove();
+
+      textElementToEdit.contentEditable = 'false';
+      onEditEnd(e);
+      onSave(e);
+    };
+
+    var cancelEdits = (e) {
+      if (!_duringEdit) return;
+      _duringEdit = false;
+
+      _editButton.parent = editableWrapper;
+      _saveButton.remove();
+      _cancelButton.remove();
+
+      textElementToEdit.contentEditable = 'false';
+      textElementToEdit.text = _textBeforeEdit;
+      onEditEnd(e);
+    };
+
+    var startEditing = (e) {
+      _duringEdit = true;
+
+      _editButton.remove();
+      _saveButton.parent = editableWrapper;
+      _cancelButton.parent = editableWrapper;
+
+      _textBeforeEdit = textElementToEdit.text;
+      _makeEditable(textElementToEdit, onBlur: cancelEdits, onEsc: cancelEdits, onEnter: (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        saveEdits(e);
+      });
+      onEditStart(e);
+      textElementToEdit.focus();
+    };
+
+    _editButton = new Button(ButtonType.edit, onClick: startEditing);
+    _editButton.parent = editableWrapper;
+
+    _saveButton = new Button(ButtonType.confirm, onClick: saveEdits);
+    _cancelButton = new Button(ButtonType.remove, onClick: cancelEdits);
+  }
+
+  void set parent(Element value) => value.append(editableWrapper);
+  void remove() => editableWrapper.remove();
+}
+
+void _makeEditable(Element element, {OnEventCallback onBlur, OnEventCallback onEnter, OnEventCallback onEsc}) {
+  element
+    ..contentEditable = 'true'
+    ..onBlur.listen((e) {
+      e.stopPropagation();
+      if (onBlur != null) onBlur(e);
+    })
+    ..onKeyPress.listen((e) => e.stopPropagation())
+    ..onKeyUp.listen((e) => e.stopPropagation())
+    ..onKeyDown.listen((e) {
+      e.stopPropagation();
+      if (onEnter != null && e.keyCode == KeyCode.ENTER) {
+        onEnter(e);
+        return;
       }
-    }
-    for (var responseView in suggestedReplyViews) {
-      responseView.textareaHeight = maxHeight;
-    }
-  };
-
-  for (var responseView in suggestedReplyViews) {
-    responseView.onTextareaHeightChangeCallback = onTextareaHeightChangeCallback;
-  }
+      if (onEsc != null && e.keyCode == KeyCode.ESC) {
+        onEsc(e);
+        return;
+      }
+    });
 }

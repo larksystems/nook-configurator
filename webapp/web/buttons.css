@@ -1,0 +1,182 @@
+@charset "utf-8";
+
+.button {
+  display: inline-block;
+  align-self: center;
+  vertical-align: middle;
+  background-color: #fff;
+  border-radius: 2px;
+  border: none;
+  margin: 2px;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.button:hover {
+  background-color: #eee;
+  border-color: #ccc;
+}
+
+.button:active {
+  background-color: #ddd;
+  border-color: #ccc;
+}
+
+.button--text {
+  border: 1px solid #ddd;
+  padding: 3px;
+}
+
+/* A simple x button to add a new tag */
+
+.button--remove {
+  width: 16px;
+  height: 16px;
+}
+
+.button--remove:before,
+.button--remove:after {
+  position: relative;
+  left: 7px;
+  top: 1px;
+  content: ' ';
+  height: 14px;
+  width: 1px;
+  background-color: #ccc;
+  display: block;
+}
+
+.button--remove:before {
+  transform: rotate(45deg);
+}
+
+.button--remove:after {
+  top: -13px;
+  transform: rotate(-45deg);
+}
+
+.tag:hover .button--remove {
+  opacity: 0.7;
+}
+
+.button--remove:hover:before,
+.button--remove:hover:after {
+  background-color: #888;
+}
+
+.button--remove:active:before,
+.button--remove:active:after {
+  background-color: #333;
+}
+
+/* A simple plus button to add a new tag */
+
+.button--add {
+  width: 16px;
+  height: 16px;
+}
+
+.button--add:before,
+.button--add:after {
+  position: relative;
+  left: 7px;
+  top: 1px;
+  content: ' ';
+  height: 14px;
+  width: 1px;
+  background-color: #ccc;
+  display: block;
+}
+
+.button--add:before {
+  transform: rotate(90deg);
+}
+
+.button--add:after {
+  top: -13px;
+}
+
+.message__tags:hover .button--add {
+  opacity: 0.7;
+}
+
+.button--add:hover:before,
+.button--add:hover:after {
+  background-color: #888;
+}
+
+.button--add:active:before,
+.button--add:active:after {
+  background-color: #333;
+}
+
+/* A simple tick button to add a new tag */
+
+.button--confirm {
+  width: 16px;
+  height: 16px;
+}
+
+.button--confirm:before,
+.button--confirm:after {
+  position: relative;
+  left: 7px;
+  top: 1px;
+  content: ' ';
+  height: 14px;
+  width: 1px;
+  background-color: #ccc;
+  display: block;
+}
+
+.button--confirm:before {
+  left: 10px;
+  height: 12px;
+  transform: rotate(40deg);
+}
+
+.button--confirm:after {
+  left: 4px;
+  top: -6px;
+  height: 7px;
+  transform: rotate(310deg);
+}
+
+.button--confirm:hover:before,
+.button--confirm:hover:after {
+  background-color: #888;
+}
+
+.button--confirm:active:before,
+.button--confirm:active:after {
+  background-color: #333;
+}
+
+
+/* A simple pencil button to edit something */
+
+.button--edit {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+}
+
+.button--edit:before {
+  content: '✎';
+  display: block;
+}
+
+/* A baloon button */
+
+.button--speech {
+  width: 16px;
+  height: 16px;
+}
+
+.button--speech:before {
+  content: '💬';
+  display: block;
+  position: relative;
+  top: -4px;
+}

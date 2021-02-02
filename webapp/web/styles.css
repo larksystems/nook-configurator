@@ -18,3 +18,14 @@ main {
     display: flex;
     height: 100%;
 }
+
+.content {
+    display: grid;
+    width: 100vw;
+    overflow-y: auto;
+    margin-top: 50px;
+}
+
+.editable-widget {
+    display: inline-block;
+}

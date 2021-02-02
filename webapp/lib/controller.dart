@@ -1,18 +1,19 @@
 library controller;
 
-
 import 'dart:html';
+import 'dart:math';
 
-import 'package:nook/model.dart' as new_model;
+import 'package:uuid/uuid.dart' as uuid;
+import 'package:nook/model.dart' as model;
 
 import 'logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
 import 'router.dart';
-import 'model.dart' as model;
 
 part 'controller_view_helper.dart';
 part 'controller_suggested_replies_helper.dart';
+part 'controller_tag_helper.dart';
 
 Logger log = new Logger('controller.dart');
 Router router;
@@ -22,7 +23,7 @@ enum UIAction {
   userSignedOut,
   signInButtonClicked,
   signOutButtonClicked,
-  savePackageConfiguration,
+  saveConfiguration,
 
   // Handling suggested replies
   addSuggestedReply,
@@ -32,7 +33,18 @@ enum UIAction {
   removeSuggestedReply,
   removeSuggestedReplyGroup,
   changeSuggestedRepliesCategory,
+
+  // Handling tags
+  addTag,
+  addTagGroup,
+  renameTag,
+  moveTag,
+  updateTagGroup,
+  removeTag,
+  removeTagGroup
 }
+
+// ViewModel style data
 
 class Data {}
 
@@ -46,6 +58,26 @@ class UserData extends Data {
   String toString() {
     return "UserData($displayName, $email, $photoUrl)";
   }
+}
+
+class TagData extends Data {
+  String id;
+
+  /// Used when renaming a tag
+  String text;
+
+  /// Used when removing, or moving a tag
+  String groupId;
+
+  /// Used when moving a tag
+  String newGroupId;
+  TagData(this.id, {this.text, this.groupId, this.newGroupId});
+}
+
+class TagGroupData extends Data {
+  String groupName;
+  String newGroupName;
+  TagGroupData(this.groupName, {this.newGroupName});
 }
 
 class SuggestedReplyData extends Data {
@@ -73,7 +105,6 @@ class SuggestedReplyGroupData extends Data {
   }
 }
 
-
 class SuggestedRepliesCategoryData extends Data {
   String category;
   SuggestedRepliesCategoryData(this.category);
@@ -84,15 +115,16 @@ class SuggestedRepliesCategoryData extends Data {
   }
 }
 
+// ====
 
-
-List<String> configurationSuggestedReplyLanguages;
 SuggestedRepliesManager suggestedRepliesManager = new SuggestedRepliesManager();
 String selectedSuggestedRepliesCategory;
-List<String> editedSuggestedReplies = [];
+Set<String> editedSuggestedReplyIds = {};
+
+TagManager tagManager = new TagManager();
+Set<String> editedTagIds = {};
 
 model.User signedInUser;
-final String selectedPackage = 'Change communications';
 
 void init() async {
   setupRoutes();
@@ -100,36 +132,16 @@ void init() async {
   await platform.init();
 }
 
-void initUI() {
-  router.routeTo(window.location.hash);
-
-  // Listener inits
-
-  platform.listenForSuggestedReplies(
-  (added, modified, removed) {
-    suggestedRepliesManager.addSuggestedReplies(added);
-    suggestedRepliesManager.updateSuggestedReplies(modified);
-    suggestedRepliesManager.removeSuggestedReplies(removed);
-
-    // Replace list of categories in the UI selector
-    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.categories = suggestedRepliesManager.categories;
-    // If the categories have changed under us and the selected one no longer exists,
-    // default to the first category, whichever it is
-    if (!suggestedRepliesManager.categories.contains(selectedSuggestedRepliesCategory)) {
-      selectedSuggestedRepliesCategory = suggestedRepliesManager.categories.first;
-    }
-    // Select the selected category in the UI and add the suggested replies for it
-    (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.selectedCategory = selectedSuggestedRepliesCategory;
-    _populateReplyPanelView(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
-  });
-}
-
 void setupRoutes() {
   router = new Router()
     ..addAuthHandler(new Route('#/auth', loadAuthView))
-    ..addDefaultHandler(new Route('#/configuration', loadPackageConfigurationView))
+    ..addDefaultHandler(new Route('#/configuration', loadConfigurationSelectionView))
+    ..addHandler(new Route('#/configuration/tags', loadTagsConfigurationView))
+    ..addHandler(new Route('#/configuration/suggested-replies', loadSuggestedRepliesConfigurationView))
     ..listen();
 }
+
+var page;
 
 void command(UIAction action, [Data actionData]) {
   log.verbose('command => $action : $actionData');
@@ -140,7 +152,7 @@ void command(UIAction action, [Data actionData]) {
         ..userName = userData.displayName
         ..userEmail = userData.email;
       view.navView.authHeaderViewPartial.signIn(userData.displayName, userData.photoUrl);
-      initUI();
+      router.routeTo(window.location.hash);
       break;
     case UIAction.userSignedOut:
       signedInUser = null;
@@ -154,13 +166,20 @@ void command(UIAction action, [Data actionData]) {
     case UIAction.signOutButtonClicked:
       platform.signOut();
       break;
-    case UIAction.savePackageConfiguration:
-      savePackageConfiguration();
+    case UIAction.saveConfiguration:
+      switch (page) {
+        case 'tags':
+          saveTagsConfiguration();
+          break;
+        case 'replies':
+          saveSuggestedRepliesConfiguration();
+          break;
+      }
       break;
 
     case UIAction.addSuggestedReply:
       SuggestedReplyData data = actionData;
-      var newSuggestedReply = new_model.SuggestedReply()
+      var newSuggestedReply = model.SuggestedReply()
         ..docId = suggestedRepliesManager.nextSuggestedReplyId
         ..text = ''
         ..translation = ''
@@ -173,8 +192,10 @@ void command(UIAction action, [Data actionData]) {
       suggestedRepliesManager.addSuggestedReply(newSuggestedReply);
 
       var newSuggestedReplyView = new view.SuggestedReplyView(newSuggestedReply.docId, newSuggestedReply.text, newSuggestedReply.translation);
-      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[data.groupId].addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
-      editedSuggestedReplies.add(newSuggestedReply.docId);
+      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage)
+          .groups[data.groupId]
+          .addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
+      editedSuggestedReplyIds.add(newSuggestedReply.docId);
       break;
     case UIAction.updateSuggestedReply:
       SuggestedReplyData data = actionData;
@@ -185,57 +206,182 @@ void command(UIAction action, [Data actionData]) {
       if (data.translation != null) {
         suggestedReply.translation = data.translation;
       }
-      editedSuggestedReplies.add(data.id);
+      editedSuggestedReplyIds.add(data.id);
       break;
     case UIAction.removeSuggestedReply:
       SuggestedReplyData data = actionData;
       var suggestedReply = suggestedRepliesManager.getSuggestedReplyById(data.id);
       suggestedRepliesManager.removeSuggestedReply(suggestedReply);
-      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[suggestedReply.groupId].removeReply(suggestedReply.suggestedReplyId);
+      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).groups[suggestedReply.groupId].removeReply(suggestedReply.suggestedReplyId);
       // TODO: queue suggested replies for removal once the backend infrastructure can handle removing them
       break;
     case UIAction.addSuggestedReplyGroup:
       var newGroupId = suggestedRepliesManager.nextSuggestedReplyGroupId;
       suggestedRepliesManager.emptyGroups[newGroupId] = '';
       var suggestedReplyGroupView = new view.SuggestedReplyGroupView(newGroupId, suggestedRepliesManager.emptyGroups[newGroupId]);
-      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.addReplyGroup(newGroupId, suggestedReplyGroupView);
+      // TODO: This will only work when the view is active, async updates will cause a
+      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).addReplyGroup(newGroupId, suggestedReplyGroupView);
       break;
     case UIAction.updateSuggestedReplyGroup:
       SuggestedReplyGroupData data = actionData;
       suggestedRepliesManager.updateSuggestedRepliesGroupDescription(data.groupId, data.newGroupName);
-      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.groups[data.groupId].name = data.newGroupName;
+      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).groups[data.groupId].name = data.newGroupName;
       break;
     case UIAction.removeSuggestedReplyGroup:
       SuggestedReplyGroupData data = actionData;
       suggestedRepliesManager.removeSuggestedRepliesGroup(data.groupId);
-      (view.contentView.renderedView as view.PackageConfiguratorView).suggestedRepliesView.removeReplyGroup(data.groupId);
+      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).removeReplyGroup(data.groupId);
       break;
     case UIAction.changeSuggestedRepliesCategory:
       SuggestedRepliesCategoryData data = actionData;
       selectedSuggestedRepliesCategory = data.category;
-      _populateReplyPanelView(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+      _populateSuggestedRepliesConfigPage(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+      break;
+
+    case UIAction.addTag:
+      TagData data = actionData;
+      var newTag = new model.Tag()
+        ..docId = generateTagId()
+        ..filterable = true
+        ..groups = [data.groupId]
+        ..isUnifier = false
+        ..text = ''
+        ..shortcut = ''
+        ..visible = true
+        ..type = model.TagType.Normal;
+
+      tagManager.addTag(newTag);
+
+      _addTagsToView({
+        data.groupId: [newTag]
+      });
+      editedTagIds.add(newTag.docId);
+      break;
+
+    case UIAction.renameTag:
+      TagData data = actionData;
+      model.Tag tag = tagManager.getTagById(data.id);
+      tag.text = data.text;
+      print(data.text);
+      editedTagIds.add(data.id);
+      _modifyTagsInView(Map.fromEntries(tag.groups.map((g) => new MapEntry(g, [tag]))));
+      break;
+    case UIAction.moveTag:
+      TagData data = actionData;
+      model.Tag tag = tagManager.getTagById(data.id);
+      tag.groups.remove(data.groupId);
+      tag.groups.add(data.newGroupId);
+      editedTagIds.add(data.id);
+      _removeTagsFromView({
+        data.groupId: [tag]
+      });
+      _addTagsToView({
+        data.newGroupId: [tag]
+      });
+      break;
+    case UIAction.removeTag:
+      TagData data = actionData;
+      model.Tag tag = tagManager.getTagById(data.id);
+      tag.groups.remove(data.groupId);
+      _removeTagsFromView({
+        data.groupId: [tag]
+      });
+      if (tag.groups.isEmpty) {
+        // handle removals
+      } else {
+        editedTagIds.add(data.id);
+      }
+      break;
+    case UIAction.addTagGroup:
+      var newGroupName = tagManager.nextTagGroupName;
+      tagManager.namesOfEmptyGroups.add(newGroupName);
+      _addTagsToView({newGroupName: []});
+      break;
+    case UIAction.updateTagGroup:
+      TagGroupData data = actionData;
+
+      break;
+    case UIAction.removeTagGroup:
+
+      // throw "Not implemented";
+      // TODO: Handle this case.
+      break;
   }
 }
 
-void loadAuthView() {
-  view.contentView.renderView(new view.AuthMainView());
-}
-
-void savePackageConfiguration() {
-  List<new_model.SuggestedReply> repliesToSave = editedSuggestedReplies.map((suggestedReplyId) => suggestedRepliesManager.getSuggestedReplyById(suggestedReplyId)).toList();
-  (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Saving...');
+void saveSuggestedRepliesConfiguration() {
+  List<model.SuggestedReply> repliesToSave =
+      editedSuggestedReplyIds.map((suggestedReplyId) => suggestedRepliesManager.getSuggestedReplyById(suggestedReplyId)).toList();
+  (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
   saveSuggestedReplies(repliesToSave).then((value) {
-    (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Saved!');
+    (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
   }, onError: (error, stacktrace) {
-    (view.contentView.renderedView as view.PackageConfiguratorView).showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
+    (view.contentView.renderedPage as view.ConfigurationPage)
+        .showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
   });
 }
 
-void loadPackageConfigurationView() {
-  var configuratorView = new view.PackageConfiguratorView();
-  view.contentView.renderView(configuratorView);
+void saveTagsConfiguration() {
+  List<model.Tag> tagsToSave = editedTagIds.map((tagId) => tagManager.getTagById(tagId)).toList();
+  (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
+  saveTags(tagsToSave).then((value) {
+    (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
+  }, onError: (error, stacktrace) {
+    (view.contentView.renderedPage as view.ConfigurationPage)
+        .showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
+  });
 }
 
-Future<void> saveSuggestedReplies(List<new_model.SuggestedReply> suggestedReplies) {
+void loadAuthView() {
+  view.contentView.renderView(new view.AuthPage());
+}
+
+void loadConfigurationSelectionView() {
+  var configSelectionPage = new view.ConfigurationSelectionPage();
+  view.contentView.renderView(configSelectionPage);
+}
+
+void loadSuggestedRepliesConfigurationView() {
+  page = 'replies';
+  view.contentView.renderView(new view.SuggestedRepliesConfigurationPage());
+
+  platform.listenForSuggestedReplies((added, modified, removed) {
+    suggestedRepliesManager.addSuggestedReplies(added);
+    suggestedRepliesManager.updateSuggestedReplies(modified);
+    suggestedRepliesManager.removeSuggestedReplies(removed);
+
+    // Replace list of categories in the UI selector
+    (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).categories = suggestedRepliesManager.categories;
+    // If the categories have changed under us and the selected one no longer exists,
+    // default to the first category, whichever it is
+    if (!suggestedRepliesManager.categories.contains(selectedSuggestedRepliesCategory)) {
+      selectedSuggestedRepliesCategory = suggestedRepliesManager.categories.first;
+    }
+    // Select the selected category in the UI and add the suggested replies for it
+    (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).selectedCategory = selectedSuggestedRepliesCategory;
+    _populateSuggestedRepliesConfigPage(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+  });
+}
+
+void loadTagsConfigurationView() {
+  page = 'tags';
+  view.contentView.renderView(new view.TagsConfigurationPage());
+
+  platform.listenForTags((added, modified, removed) {
+    tagManager.addTags(added);
+    tagManager.updateTags(modified);
+    tagManager.removeTags(removed);
+
+    _addTagsToView(_groupTagsIntoCategories(added));
+    _modifyTagsInView(_groupTagsIntoCategories(modified));
+    _removeTagsFromView(_groupTagsIntoCategories(removed));
+  });
+}
+
+Future<void> saveSuggestedReplies(List<model.SuggestedReply> suggestedReplies) {
   return platform.updateSuggestedReplies(suggestedReplies);
+}
+
+Future<void> saveTags(List<model.Tag> tags) {
+  return platform.updateTags(tags);
 }
