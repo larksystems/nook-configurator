@@ -294,7 +294,7 @@ void command(UIAction action, [Data actionData]) {
       break;
     case UIAction.addTagGroup:
       var newGroupName = tagManager.nextTagGroupName;
-      tagManager.emptyGroups.add(newGroupName);
+      tagManager.namesOfEmptyGroups.add(newGroupName);
       _addTagsToView({newGroupName: []});
       break;
     case UIAction.updateTagGroup:

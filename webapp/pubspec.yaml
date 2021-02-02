@@ -10,8 +10,6 @@ dependencies:
   intl: ^0.16.0
   dnd: ^1.4.0
   uuid: ^2.0.0
-  chartjs:
-    git: https://github.com/marianamarasoiu/chartjs.dart.git
   nook:
     git:
       url: https://github.com/larksystems/nook.git

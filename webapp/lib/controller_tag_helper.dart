@@ -10,9 +10,9 @@ class TagManager {
 
   factory TagManager() => _singleton;
 
-  Set<String> get groups => new Set.from(emptyGroups)..addAll(_groupTagsIntoCategories(tags).keys);
+  Set<String> get groupNames => new Set.from(namesOfEmptyGroups)..addAll(_groupTagsIntoCategories(tags).keys);
 
-  Set<String> emptyGroups = {};
+  Set<String> namesOfEmptyGroups = {};
 
   int _lastGroupSeqNo = 0;
   int get nextGroupSeqNo => ++_lastGroupSeqNo;
@@ -54,6 +54,6 @@ class TagManager {
   }
 }
 
-uuid.Uuid uuidGenerator = new uuid.Uuid();
+final uuidGenerator = new uuid.Uuid();
 
 String generateTagId() => 'tag-${uuidGenerator.v4().substring(0, 8)}';

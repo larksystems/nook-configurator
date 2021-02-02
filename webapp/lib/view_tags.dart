@@ -140,6 +140,7 @@ class TagGroupView {
   }
 }
 
+// This enum was adapted from Nook
 enum TagStyle {
   None,
   Green,
@@ -148,6 +149,7 @@ enum TagStyle {
   Important,
 }
 
+// This class was adapted from Nook
 class TagView {
   DivElement tag;
   SpanElement _tagText;
