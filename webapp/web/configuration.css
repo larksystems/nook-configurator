@@ -42,43 +42,43 @@
 }
 
 
-.suggested-replies-group {
+.standard-messages-group {
   position: relative;
   padding: 15px;
   margin: 15px 0;
   border: 1px solid #ddd;
 }
 
-.suggested-replies-group__title {
+.standard-messages-group__title {
   font-weight: 600;
   display: inline-block;
   padding: 0 1px;
   margin-left: 10px;
 }
 
-.suggested-replies-group__title:empty:not(:focus):before {
+.standard-messages-group__title:empty:not(:focus):before {
   content: attr(title);
   font-weight: 300;
   font-style: italic;
 }
 
-.suggested-reply {
+.standard-message {
   display: grid;
   grid-template-columns: 3% 47% 47%;
   grid-gap: 1.5%;
   position: relative;
 }
 
-.suggested-reply .button {
+.standard-message .button {
   margin-bottom: 20px;
 }
 
-.suggested-reply-language {
+.message {
   display: grid;
   margin: 10px 0;
 }
 
-.suggested-reply-language__text {
+.message__text {
   overflow-y: scroll;
   border: 1px solid #ddd;
   border-radius: 2px;
@@ -91,18 +91,18 @@
   resize: none;
 }
 
-.suggested-reply-language__text--alert {
+.message__text--alert {
   border-color: #fa8072;
   outline-color: #fa8072;
   margin-bottom: 16px;
 }
 
-.suggested-reply-language__text-count {
+.message__length-indicator {
   justify-self: flex-end;
   font-size: 0.8em;
 }
 
-.suggested-reply-language__text-count--alert {
+.message__length-indicator--alert {
   color: #fa8072;
   outline-color: #fa8072;
 }

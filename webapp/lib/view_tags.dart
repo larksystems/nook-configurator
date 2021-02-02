@@ -27,8 +27,8 @@ class TagsConfigurationPage extends ConfigurationPage {
   }
 
   void clear() {
-    int repliesNo = _tagsContainer.children.length;
-    for (int i = 0; i < repliesNo; i++) {
+    int messagesNo = _tagsContainer.children.length;
+    for (int i = 0; i < messagesNo; i++) {
       _tagsContainer.firstChild.remove();
     }
     assert(_tagsContainer.children.length == 0);

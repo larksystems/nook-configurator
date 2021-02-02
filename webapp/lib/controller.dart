@@ -12,7 +12,7 @@ import 'view.dart' as view;
 import 'router.dart';
 
 part 'controller_view_helper.dart';
-part 'controller_suggested_replies_helper.dart';
+part 'controller_messages_helper.dart';
 part 'controller_tag_helper.dart';
 
 Logger log = new Logger('controller.dart');
@@ -25,14 +25,14 @@ enum UIAction {
   signOutButtonClicked,
   saveConfiguration,
 
-  // Handling suggested replies
-  addSuggestedReply,
-  addSuggestedReplyGroup,
-  updateSuggestedReply,
-  updateSuggestedReplyGroup,
-  removeSuggestedReply,
-  removeSuggestedReplyGroup,
-  changeSuggestedRepliesCategory,
+  // Handling standard messages
+  addStandardMessage,
+  addStandardMessagesGroup,
+  updateStandardMessage,
+  updateStandardMessagesGroup,
+  removeStandardMessage,
+  removeStandardMessagesGroup,
+  changeStandardMessagesCategory,
 
   // Handling tags
   addTag,
@@ -80,46 +80,46 @@ class TagGroupData extends Data {
   TagGroupData(this.groupName, {this.newGroupName});
 }
 
-class SuggestedReplyData extends Data {
+class StandardMessageData extends Data {
   String id;
   String text;
   String translation;
   String groupId;
-  SuggestedReplyData(this.id, {this.text, this.translation, this.groupId});
+  StandardMessageData(this.id, {this.text, this.translation, this.groupId});
 
   @override
   String toString() {
-    return "SuggestedReplyData($id, '$text', '$translation', $groupId)";
+    return "StandardMessageData($id, '$text', '$translation', $groupId)";
   }
 }
 
-class SuggestedReplyGroupData extends Data {
+class StandardMessagesGroupData extends Data {
   String groupId;
   String groupName;
   String newGroupName;
-  SuggestedReplyGroupData(this.groupId, {this.groupName, this.newGroupName});
+  StandardMessagesGroupData(this.groupId, {this.groupName, this.newGroupName});
 
   @override
   String toString() {
-    return "SuggestedReplyGroupData($groupName, $newGroupName)";
+    return "StandardMessagesGroupData($groupName, $newGroupName)";
   }
 }
 
-class SuggestedRepliesCategoryData extends Data {
+class StandardMessagesCategoryData extends Data {
   String category;
-  SuggestedRepliesCategoryData(this.category);
+  StandardMessagesCategoryData(this.category);
 
   @override
   String toString() {
-    return "SuggestedRepliesCategoryData($category)";
+    return "StandardMessagesCategoryData($category)";
   }
 }
 
 // ====
 
-SuggestedRepliesManager suggestedRepliesManager = new SuggestedRepliesManager();
-String selectedSuggestedRepliesCategory;
-Set<String> editedSuggestedReplyIds = {};
+StandardMessagesManager standardMessagesManager = new StandardMessagesManager();
+String selectedStandardMessagesCategory;
+Set<String> editedStandardMessageIds = {};
 
 TagManager tagManager = new TagManager();
 Set<String> editedTagIds = {};
@@ -137,7 +137,7 @@ void setupRoutes() {
     ..addAuthHandler(new Route('#/auth', loadAuthView))
     ..addDefaultHandler(new Route('#/configuration', loadConfigurationSelectionView))
     ..addHandler(new Route('#/configuration/tags', loadTagsConfigurationView))
-    ..addHandler(new Route('#/configuration/suggested-replies', loadSuggestedRepliesConfigurationView))
+    ..addHandler(new Route('#/configuration/messages', loadStandardMessagesConfigurationView))
     ..listen();
 }
 
@@ -171,71 +171,71 @@ void command(UIAction action, [Data actionData]) {
         case 'tags':
           saveTagsConfiguration();
           break;
-        case 'replies':
-          saveSuggestedRepliesConfiguration();
+        case 'messages':
+          saveStandardMessagesConfiguration();
           break;
       }
       break;
 
-    case UIAction.addSuggestedReply:
-      SuggestedReplyData data = actionData;
-      var newSuggestedReply = model.SuggestedReply()
-        ..docId = suggestedRepliesManager.nextSuggestedReplyId
+    case UIAction.addStandardMessage:
+      StandardMessageData data = actionData;
+      var newStandardMessage = model.SuggestedReply()
+        ..docId = standardMessagesManager.nextStandardMessageId
         ..text = ''
         ..translation = ''
         ..shortcut = ''
-        ..seqNumber = suggestedRepliesManager.lastSuggestedReplySeqNo
-        ..category = selectedSuggestedRepliesCategory
+        ..seqNumber = standardMessagesManager.lastStandardMessageSeqNo
+        ..category = selectedStandardMessagesCategory
         ..groupId = data.groupId
-        ..groupDescription = suggestedRepliesManager.groups[data.groupId]
-        ..indexInGroup = suggestedRepliesManager.getNextIndexInGroup(data.groupId);
-      suggestedRepliesManager.addSuggestedReply(newSuggestedReply);
+        ..groupDescription = standardMessagesManager.groups[data.groupId]
+        ..indexInGroup = standardMessagesManager.getNextIndexInGroup(data.groupId);
+      standardMessagesManager.addStandardMessage(newStandardMessage);
 
-      var newSuggestedReplyView = new view.SuggestedReplyView(newSuggestedReply.docId, newSuggestedReply.text, newSuggestedReply.translation);
-      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage)
+      var newStandardMessageView = new view.StandardMessageView(newStandardMessage.docId, newStandardMessage.text, newStandardMessage.translation);
+      (view.contentView.renderedPage as view.StandardMessagesConfigurationPage)
           .groups[data.groupId]
-          .addReply(newSuggestedReply.suggestedReplyId, newSuggestedReplyView);
-      editedSuggestedReplyIds.add(newSuggestedReply.docId);
+          .addMessage(newStandardMessage.suggestedReplyId, newStandardMessageView);
+      editedStandardMessageIds.add(newStandardMessage.docId);
       break;
-    case UIAction.updateSuggestedReply:
-      SuggestedReplyData data = actionData;
-      var suggestedReply = suggestedRepliesManager.getSuggestedReplyById(data.id);
+    case UIAction.updateStandardMessage:
+      StandardMessageData data = actionData;
+      var standardMessage = standardMessagesManager.getStandardMessageById(data.id);
       if (data.text != null) {
-        suggestedReply.text = data.text;
+        standardMessage.text = data.text;
       }
       if (data.translation != null) {
-        suggestedReply.translation = data.translation;
+        standardMessage.translation = data.translation;
       }
-      editedSuggestedReplyIds.add(data.id);
+      editedStandardMessageIds.add(data.id);
       break;
-    case UIAction.removeSuggestedReply:
-      SuggestedReplyData data = actionData;
-      var suggestedReply = suggestedRepliesManager.getSuggestedReplyById(data.id);
-      suggestedRepliesManager.removeSuggestedReply(suggestedReply);
-      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).groups[suggestedReply.groupId].removeReply(suggestedReply.suggestedReplyId);
-      // TODO: queue suggested replies for removal once the backend infrastructure can handle removing them
+    case UIAction.removeStandardMessage:
+      StandardMessageData data = actionData;
+      var standardMessage = standardMessagesManager.getStandardMessageById(data.id);
+      standardMessagesManager.removeStandardMessage(standardMessage);
+      (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).groups[standardMessage.groupId].removeMessage(standardMessage.suggestedReplyId);
+      // TODO: queue suggested messages for removal once the backend infrastructure can handle removing them
       break;
-    case UIAction.addSuggestedReplyGroup:
-      var newGroupId = suggestedRepliesManager.nextSuggestedReplyGroupId;
-      suggestedRepliesManager.emptyGroups[newGroupId] = '';
-      var suggestedReplyGroupView = new view.SuggestedReplyGroupView(newGroupId, suggestedRepliesManager.emptyGroups[newGroupId]);
+    case UIAction.addStandardMessagesGroup:
+      var newGroupId = standardMessagesManager.nextStandardMessagesGroupId;
+      standardMessagesManager.emptyGroups[newGroupId] = '';
+      var standardMessagesGroupView = new view.StandardMessagesGroupView(newGroupId, standardMessagesManager.emptyGroups[newGroupId]);
       // TODO: This will only work when the view is active, async updates will cause a
-      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).addReplyGroup(newGroupId, suggestedReplyGroupView);
+      (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).addGroup(newGroupId, standardMessagesGroupView);
       break;
-    case UIAction.updateSuggestedReplyGroup:
-      SuggestedReplyGroupData data = actionData;
-      suggestedRepliesManager.updateSuggestedRepliesGroupDescription(data.groupId, data.newGroupName);
-      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).groups[data.groupId].name = data.newGroupName;
+    case UIAction.updateStandardMessagesGroup:
+      StandardMessagesGroupData data = actionData;
+      standardMessagesManager.updateStandardMessagesGroupDescription(data.groupId, data.newGroupName);
+      (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).groups[data.groupId].name = data.newGroupName;
       break;
-    case UIAction.removeSuggestedReplyGroup:
-      SuggestedReplyGroupData data = actionData;
-      suggestedRepliesManager.removeSuggestedRepliesGroup(data.groupId);
-      (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).removeReplyGroup(data.groupId);
+    case UIAction.removeStandardMessagesGroup:
+      StandardMessagesGroupData data = actionData;
+      standardMessagesManager.removeStandardMessagesGroup(data.groupId);
+      (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).removeGroup(data.groupId);
       break;
-    case UIAction.changeSuggestedRepliesCategory:
-      SuggestedRepliesCategoryData data = actionData;
-      selectedSuggestedRepliesCategory = data.category;
-      _populateSuggestedRepliesConfigPage(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+    case UIAction.changeStandardMessagesCategory:
+      StandardMessagesCategoryData data = actionData;
+      selectedStandardMessagesCategory = data.category;
+      _populateStandardMessagesConfigPage(standardMessagesManager.standardMessagesByCategory[selectedStandardMessagesCategory]);
       break;
 
     case UIAction.addTag:
@@ -309,11 +309,11 @@ void command(UIAction action, [Data actionData]) {
   }
 }
 
-void saveSuggestedRepliesConfiguration() {
-  List<model.SuggestedReply> repliesToSave =
-      editedSuggestedReplyIds.map((suggestedReplyId) => suggestedRepliesManager.getSuggestedReplyById(suggestedReplyId)).toList();
+void saveStandardMessagesConfiguration() {
+  List<model.SuggestedReply> messagesToSave =
+      editedStandardMessageIds.map((standardMessageId) => standardMessagesManager.getStandardMessageById(standardMessageId)).toList();
   (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
-  saveSuggestedReplies(repliesToSave).then((value) {
+  saveStandardMessages(messagesToSave).then((value) {
     (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
   }, onError: (error, stacktrace) {
     (view.contentView.renderedPage as view.ConfigurationPage)
@@ -341,25 +341,25 @@ void loadConfigurationSelectionView() {
   view.contentView.renderView(configSelectionPage);
 }
 
-void loadSuggestedRepliesConfigurationView() {
-  page = 'replies';
-  view.contentView.renderView(new view.SuggestedRepliesConfigurationPage());
+void loadStandardMessagesConfigurationView() {
+  page = 'messages';
+  view.contentView.renderView(new view.StandardMessagesConfigurationPage());
 
   platform.listenForSuggestedReplies((added, modified, removed) {
-    suggestedRepliesManager.addSuggestedReplies(added);
-    suggestedRepliesManager.updateSuggestedReplies(modified);
-    suggestedRepliesManager.removeSuggestedReplies(removed);
+    standardMessagesManager.addStandardMessages(added);
+    standardMessagesManager.updateStandardMessages(modified);
+    standardMessagesManager.removeStandardMessages(removed);
 
     // Replace list of categories in the UI selector
-    (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).categories = suggestedRepliesManager.categories;
+    (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).categories = standardMessagesManager.categories;
     // If the categories have changed under us and the selected one no longer exists,
     // default to the first category, whichever it is
-    if (!suggestedRepliesManager.categories.contains(selectedSuggestedRepliesCategory)) {
-      selectedSuggestedRepliesCategory = suggestedRepliesManager.categories.first;
+    if (!standardMessagesManager.categories.contains(selectedStandardMessagesCategory)) {
+      selectedStandardMessagesCategory = standardMessagesManager.categories.first;
     }
-    // Select the selected category in the UI and add the suggested replies for it
-    (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).selectedCategory = selectedSuggestedRepliesCategory;
-    _populateSuggestedRepliesConfigPage(suggestedRepliesManager.suggestedRepliesByCategory[selectedSuggestedRepliesCategory]);
+    // Select the selected category in the UI and add the standard messages for it
+    (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).selectedCategory = selectedStandardMessagesCategory;
+    _populateStandardMessagesConfigPage(standardMessagesManager.standardMessagesByCategory[selectedStandardMessagesCategory]);
   });
 }
 
@@ -378,8 +378,8 @@ void loadTagsConfigurationView() {
   });
 }
 
-Future<void> saveSuggestedReplies(List<model.SuggestedReply> suggestedReplies) {
-  return platform.updateSuggestedReplies(suggestedReplies);
+Future<void> saveStandardMessages(List<model.SuggestedReply> standardMessages) {
+  return platform.updateSuggestedReplies(standardMessages);
 }
 
 Future<void> saveTags(List<model.Tag> tags) {
