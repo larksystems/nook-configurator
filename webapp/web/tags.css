@@ -1,26 +1,24 @@
 @charset "utf-8";
 
+.tags-group-list {
+  border-top: 1px solid #ccc;
+}
+
 .tags-group {
   position: relative;
+  border-bottom: 1px solid #ccc;
 }
 
 .tags-group__title {
   margin: 8px;
   cursor: pointer;
-}
-
-.tags-group__separator {
-  text-align: center;
-  border-bottom: 1px solid #bbb;
-  border-top: 7px solid white;
-  border-left: 32px solid white;
-  border-right: 32px solid white;
+  display: inline-block;
 }
 
 .tags-group__tags {
   display: grid;
   grid-template-columns: repeat(auto-fill, 138px);
-  grid-gap: 4px 10px;
+  grid-gap: 10px 10px;
 }
 
 .tag {

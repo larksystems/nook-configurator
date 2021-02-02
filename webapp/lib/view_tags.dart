@@ -9,7 +9,7 @@ class TagsConfigurationPage extends ConfigurationPage {
   TagsConfigurationPage() : super() {
     _configurationTitle.text = 'How do you want to tag the messages and conversations?';
 
-    _tagsContainer = new DivElement();
+    _tagsContainer = new DivElement()..classes.add('tags-group-list');
     _configurationContent.append(_tagsContainer);
 
     addGroupButton = new Button(ButtonType.add, hoverText: 'Add a new tag group', onClick: (_) => controller.command(controller.UIAction.addTagGroup));
