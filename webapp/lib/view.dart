@@ -256,7 +256,6 @@ enum ButtonType {
   remove,
   confirm,
   edit,
-  speech,
 }
 
 class ButtonAction {
@@ -293,9 +292,6 @@ class Button {
         break;
       case ButtonType.edit:
         _element.classes.add('button--edit');
-        break;
-      case ButtonType.speech:
-        _element.classes.add('button--speech');
         break;
     }
   }
@@ -356,19 +352,23 @@ class EditableText {
   DivElement editableWrapper;
 
   Button _editButton;
+  Button _removeButton;
   Button _saveButton;
   Button _cancelButton;
 
   String _textBeforeEdit;
   bool _duringEdit;
 
-  EditableText(Element textElementToEdit, {OnEventCallback onEditStart, OnEventCallback onEditEnd, OnEventCallback onSave}) {
+  EditableText(Element textElementToEdit, {bool alwaysShowButtons: false, OnEventCallback onEditStart, OnEventCallback onEditEnd, OnEventCallback onSave, OnEventCallback onRemove}) {
     editableWrapper = new DivElement()..classes.add('editable-widget');
+    if (alwaysShowButtons)
+      editableWrapper..classes.add('editable-widget--always-show-buttons');
     editableWrapper.append(textElementToEdit);
 
     onEditStart = onEditStart ?? (_) {};
     onEditEnd = onEditEnd ?? (_) {};
     onSave = onSave ?? (_) {};
+    onRemove = onRemove ?? (_) {};
 
     _duringEdit = false;
     var saveEdits = (e) {
@@ -376,6 +376,7 @@ class EditableText {
       _duringEdit = false;
 
       _editButton.parent = editableWrapper;
+      _removeButton.parent = editableWrapper;
       _saveButton.remove();
       _cancelButton.remove();
 
@@ -389,6 +390,7 @@ class EditableText {
       _duringEdit = false;
 
       _editButton.parent = editableWrapper;
+      _removeButton.parent = editableWrapper;
       _saveButton.remove();
       _cancelButton.remove();
 
@@ -401,11 +403,12 @@ class EditableText {
       _duringEdit = true;
 
       _editButton.remove();
+      _removeButton.remove();
       _saveButton.parent = editableWrapper;
       _cancelButton.parent = editableWrapper;
 
       _textBeforeEdit = textElementToEdit.text;
-      _makeEditable(textElementToEdit, onBlur: cancelEdits, onEsc: cancelEdits, onEnter: (e) {
+      _makeEditable(textElementToEdit, onEsc: cancelEdits, onEnter: (e) {
         e.stopPropagation();
         e.preventDefault();
         saveEdits(e);
@@ -417,7 +420,12 @@ class EditableText {
     _editButton = new Button(ButtonType.edit, onClick: startEditing);
     _editButton.parent = editableWrapper;
 
+    _removeButton = new Button(ButtonType.remove, onClick: onRemove);
+    _removeButton.renderElement.classes.add('button--on-hover-red');
+    _removeButton.parent = editableWrapper;
+
     _saveButton = new Button(ButtonType.confirm, onClick: saveEdits);
+    _saveButton.renderElement.classes.add('button--green');
     _cancelButton = new Button(ButtonType.remove, onClick: cancelEdits);
   }
 
