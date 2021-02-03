@@ -44,7 +44,7 @@ class NavView {
     navViewElement = new DivElement()..classes.add('nav');
     _appLogos = new DivElement()
       ..classes.add('nav__app-logo')
-      ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
+      ..append(new ImageElement(src: 'assets/katikati-logo.svg'));
     _backBtn = new ButtonElement()
       ..classes.add('nav-links__back-btn')
       ..text = '< Back'
@@ -157,7 +157,6 @@ class AuthPage extends PageView {
   ButtonElement _signInButton;
 
   final descriptionText1 = 'Sign in to Katikati';
-  final descriptionText2 = 'Please contact Africa\'s Voices for login details.';
 
   AuthPage() {
     authElement = new DivElement()..classes.add('auth-main');
@@ -165,13 +164,12 @@ class AuthPage extends PageView {
     var logosContainer = new DivElement()..classes.add('auth-main__logos');
     authElement.append(logosContainer);
 
-    var avfLogo = new ImageElement(src: 'assets/africas-voices-logo.svg')..classes.add('auth-main__partner-logo');
+    var avfLogo = new ImageElement(src: 'assets/katikati-logo.svg')..classes.add('auth-main__partner-logo');
     logosContainer.append(avfLogo);
 
     var shortDescription = new DivElement()
       ..classes.add('auth-main__project-description')
-      ..append(new ParagraphElement()..text = descriptionText1)
-      ..append(new ParagraphElement()..text = descriptionText2);
+      ..append(new ParagraphElement()..text = descriptionText1);
     authElement.append(shortDescription);
 
     _signInButton = new ButtonElement()
