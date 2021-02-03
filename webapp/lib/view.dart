@@ -11,7 +11,7 @@ import 'platform.dart' as platform;
 
 import 'sample_data_helper.dart';
 
-part 'view_suggested_replies.dart';
+part 'view_messages.dart';
 part 'view_tags.dart';
 
 Logger log = new Logger('view.dart');
@@ -194,7 +194,7 @@ class ConfigurationSelectionPage extends PageView {
 }
 
 /// An empty page to be inherited to create different options for configuring,
-/// (e.g. tags or suggested replies), and a save button with an indicator.
+/// (e.g. tags or messages), and a save button with an indicator.
 class ConfigurationPage extends PageView {
   DivElement renderElement;
   DivElement _configurationTitle;

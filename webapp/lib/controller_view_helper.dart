@@ -1,18 +1,18 @@
 part of controller;
 
-void _populateSuggestedRepliesConfigPage(List<model.SuggestedReply> replies) {
-  Map<String, List<model.SuggestedReply>> repliesByGroups = _groupRepliesIntoGroups(replies);
-  (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).clear();
-  for (var groupId in repliesByGroups.keys) {
-    var repliesInGroup = repliesByGroups[groupId];
-    if (repliesInGroup.isEmpty) continue;
-    var groupDescription = repliesInGroup.first.groupDescription;
-    view.SuggestedReplyGroupView group = new view.SuggestedReplyGroupView(groupId, groupDescription);
-    for (var reply in repliesInGroup) {
-      var replyView = new view.SuggestedReplyView(reply.docId, reply.text, reply.translation);
-      group.addReply(reply.docId, replyView);
+void _populateStandardMessagesConfigPage(List<model.SuggestedReply> messages) {
+  Map<String, List<model.SuggestedReply>> messagesByGroups = _groupMessagesIntoGroups(messages);
+  (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).clear();
+  for (var groupId in messagesByGroups.keys) {
+    var messagesInGroup = messagesByGroups[groupId];
+    if (messagesInGroup.isEmpty) continue;
+    var groupDescription = messagesInGroup.first.groupDescription;
+    view.StandardMessagesGroupView group = new view.StandardMessagesGroupView(groupId, groupDescription);
+    for (var message in messagesInGroup) {
+      var messageView = new view.StandardMessageView(message.docId, message.text, message.translation);
+      group.addMessage(message.docId, messageView);
     }
-    (view.contentView.renderedPage as view.SuggestedRepliesConfigurationPage).addReplyGroup(groupId, group);
+    (view.contentView.renderedPage as view.StandardMessagesConfigurationPage).addGroup(groupId, group);
   }
 }
 
@@ -48,17 +48,17 @@ void _modifyTagsInView(Map<String, List<model.Tag>> tagsByCategory) {
   }
 }
 
-Map<String, List<model.SuggestedReply>> _groupRepliesIntoGroups(List<model.SuggestedReply> replies) {
+Map<String, List<model.SuggestedReply>> _groupMessagesIntoGroups(List<model.SuggestedReply> messages) {
   Map<String, List<model.SuggestedReply>> result = {};
-  for (model.SuggestedReply reply in replies) {
-    if (!result.containsKey(reply.groupId)) {
-      result[reply.groupId] = [];
+  for (model.SuggestedReply message in messages) {
+    if (!result.containsKey(message.groupId)) {
+      result[message.groupId] = [];
     }
-    result[reply.groupId].add(reply);
+    result[message.groupId].add(message);
   }
   for (String groupId in result.keys) {
     // TODO (mariana): once we've transitioned to using groups, we can remove the sequence number comparison
-    result[groupId].sort((reply1, reply2) => (reply1.indexInGroup ?? reply1.seqNumber).compareTo(reply2.indexInGroup ?? reply2.seqNumber));
+    result[groupId].sort((message1, message2) => (message1.indexInGroup ?? message1.seqNumber).compareTo(message2.indexInGroup ?? message2.seqNumber));
   }
   return result;
 }
