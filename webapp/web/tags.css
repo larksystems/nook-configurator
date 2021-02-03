@@ -1,32 +1,38 @@
 @charset "utf-8";
 
+.tags-group-list {
+  border-top: 1px solid #ccc;
+}
+
 .tags-group {
   position: relative;
+  border-bottom: 1px solid #ccc;
 }
 
 .tags-group__title {
   margin: 8px;
   cursor: pointer;
+  display: flex;
 }
 
-.tags-group__separator {
-  text-align: center;
-  border-bottom: 1px solid #bbb;
-  border-top: 7px solid white;
-  border-left: 32px solid white;
-  border-right: 32px solid white;
+.tags-group__title__text {
+  display: inline-block;
 }
 
 .tags-group__tags {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 138px);
-  grid-gap: 4px 10px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 10px 10px;
+  margin: 8px;
+  margin-left: 23px;
+  margin-bottom: 12px;
 }
 
 .tag {
   font-size: 12px;
   font-style: italic;
   display: flex;
+  flex-wrap: nowrap;
   position: relative;
 }
 
@@ -89,7 +95,7 @@
 
 .tooltip {
   position: absolute;
-  top: 20px;
+  top: 100%;
   width: 300px;
   height: 300px;
   overflow-y: scroll;
