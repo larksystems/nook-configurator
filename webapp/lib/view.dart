@@ -186,10 +186,34 @@ class AuthPage extends PageView {
 /// The page for selecting between the configuration pages
 class ConfigurationSelectionPage extends PageView {
   DivElement renderElement;
+  DivElement linkToTags;
+  DivElement linkToMessages;
 
-  ConfigurationSelectionPage() {
-    renderElement = new DivElement()..classes.add('configuration-page-selection-view');
-    renderElement.text = 'Available configurations:';
+  ConfigurationSelectionPage(List<controller.PageInfo> pages) {
+    renderElement = new DivElement()..classes.add('configuration-view');
+
+    var title = new DivElement()
+      ..classes.add('configuration-view__title')
+      ..text = 'Available configurations:';
+    renderElement.append(title);
+
+
+    DivElement pageContent = new DivElement()
+      ..classes.add('configuration-view__content')
+      ..classes.add('config-page-options');
+    renderElement.append(pageContent);
+    for (var page in pages) {
+      var button  = Button(ButtonType.contained, buttonText: page.goToButtonText, onClick: (_) {
+        controller.router.routeTo(page.urlPath);
+      });
+      button.renderElement.classes.add('config-page-option__action');
+      button.parent = pageContent;
+
+      var description = new SpanElement()
+        ..classes.add('config-page-option__description')
+        ..text = page.shortDescription;
+      pageContent..append(description);
+    }
   }
 }
 
@@ -206,6 +230,12 @@ class ConfigurationPage extends PageView {
 
   ConfigurationPage() {
     renderElement = new DivElement()..classes.add('configuration-view');
+
+    var backPageLink = new Element.a()
+      ..classes.add('configuration-view__back-link')
+      ..text = 'Back to the main configuration page'
+      ..onClick.listen((event) => controller.router.routeTo(controller.pages[controller.SELECT_CONFIG_PAGE].urlPath));
+    renderElement.append(backPageLink);
 
     _configurationTitle = new DivElement()..classes.add('configuration-view__title');
     renderElement.append(_configurationTitle);
@@ -251,7 +281,12 @@ class ConfigurationPage extends PageView {
 typedef void OnEventCallback(Event e);
 
 enum ButtonType {
+  // Text buttons
   text,
+  outlined,
+  contained,
+
+  // Icon buttons
   add,
   remove,
   confirm,
@@ -281,6 +316,15 @@ class Button {
         _element.classes.add('button--text');
         _element.text = buttonText;
         break;
+      case ButtonType.outlined:
+        _element.classes.add('button--outlined');
+        _element.text = buttonText;
+        break;
+      case ButtonType.contained:
+        _element.classes.add('button--contained');
+        _element.text = buttonText;
+        break;
+
       case ButtonType.add:
         _element.classes.add('button--add');
         break;

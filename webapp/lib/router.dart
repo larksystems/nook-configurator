@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html';
 import 'controller.dart' as controller;
 
@@ -21,32 +22,33 @@ class Router {
     _routes = {};
   }
 
-  void addAuthHandler(Route route) {
+  void set authPageHandler(Route route) {
     _routes[route.path] = route;
     _authRoute = route;
   }
 
-  void addDefaultHandler(Route route) {
+  void set defaultPageHandler(Route route) {
     _routes[route.path] = route;
     _defaultRoute = route;
   }
 
-  void addHandler(Route route) {
+  void addOtherPageHandler(Route route) {
     _routes[route.path] = route;
   }
 
+  StreamSubscription _locationChangeListener;
   void listen() {
-    window.onPopState.listen((_) => routeTo(window.location.hash));
+    _locationChangeListener = window.onPopState.listen((_) => routeTo(window.location.hash));
   }
 
   Map<String, String> get routeParams => _currentRoute.params;
   void routeTo(String path) {
     if (controller.signedInUser == null) {
-      _setRouteAndLoad(_authRoute);
+      _setRouteAndHandle(_authRoute);
       return;
     }
     if (controller.signedInUser != null && _currentRoute == _authRoute) {
-      _setRouteAndLoad(_defaultRoute);
+      _setRouteAndHandle(_defaultRoute);
       return;
     }
     var pathUri = Uri.parse(path);
@@ -60,21 +62,37 @@ class Router {
     }
     var desiredRoute = _routes['#${pathUri.fragment}'];
     if (desiredRoute == null) {
-      _setRouteAndLoad(_defaultRoute);
+      _setRouteAndHandle(_defaultRoute);
       return;
     }
     if (pathUri.hasQuery) {
       desiredRoute.params = pathUri.queryParameters;
     }
-    _setRouteAndLoad(desiredRoute);
+    _setRouteOrReload(desiredRoute);
   }
 
-  void _setRouteAndLoad(Route route) {
+  /// Sets the route and calls its corresponding handler if the location has changed.
+  /// To be used for pages that don't carry any data, and so where loading the page multiple times doesn't cause an issue.
+  void _setRouteAndHandle(Route route) {
     _currentRoute = route;
     if (window.location.hash != _currentRoute.path) {
-      // when the location hash is changed, the current route will be loaded again anyway
-      // no need to duplicate it, so set the new has and return
       window.location.hash = _currentRoute.path;
+      return;
+    }
+    _currentRoute.handler();
+  }
+
+  /// Sets the route and reloads the page if the URL has changed, otherwise calls its corresponding handler.
+  /// To be used for pages processing data, and so where loading the page multiple times can cause an issue.
+  void _setRouteOrReload(Route route) {
+    _currentRoute = route;
+    if (window.location.hash != _currentRoute.path) {
+      var newFragment = _currentRoute.path.replaceAll('#', '');
+      var newUrl = Uri.parse(window.location.href).replace(fragment: newFragment);
+
+      _locationChangeListener.cancel();
+      window.location.href = newUrl.toString();
+      window.location.reload();
       return;
     }
     _currentRoute.handler();
