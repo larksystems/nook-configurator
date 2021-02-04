@@ -44,7 +44,7 @@ class NavView {
     navViewElement = new DivElement()..classes.add('nav');
     _appLogos = new DivElement()
       ..classes.add('nav__app-logo')
-      ..append(new ImageElement(src: 'assets/africas-voices-logo.svg'));
+      ..append(new ImageElement(src: 'assets/katikati-logo.svg'));
     _backBtn = new ButtonElement()
       ..classes.add('nav-links__back-btn')
       ..text = '< Back'
@@ -157,7 +157,6 @@ class AuthPage extends PageView {
   ButtonElement _signInButton;
 
   final descriptionText1 = 'Sign in to Katikati';
-  final descriptionText2 = 'Please contact Africa\'s Voices for login details.';
 
   AuthPage() {
     authElement = new DivElement()..classes.add('auth-main');
@@ -165,13 +164,12 @@ class AuthPage extends PageView {
     var logosContainer = new DivElement()..classes.add('auth-main__logos');
     authElement.append(logosContainer);
 
-    var avfLogo = new ImageElement(src: 'assets/africas-voices-logo.svg')..classes.add('auth-main__partner-logo');
+    var avfLogo = new ImageElement(src: 'assets/katikati-logo.svg')..classes.add('auth-main__partner-logo');
     logosContainer.append(avfLogo);
 
     var shortDescription = new DivElement()
       ..classes.add('auth-main__project-description')
-      ..append(new ParagraphElement()..text = descriptionText1)
-      ..append(new ParagraphElement()..text = descriptionText2);
+      ..append(new ParagraphElement()..text = descriptionText1);
     authElement.append(shortDescription);
 
     _signInButton = new ButtonElement()
@@ -186,33 +184,88 @@ class AuthPage extends PageView {
 /// The page for selecting between the configuration pages
 class ConfigurationSelectionPage extends PageView {
   DivElement renderElement;
-  DivElement linkToTags;
-  DivElement linkToMessages;
 
-  ConfigurationSelectionPage(List<controller.PageInfo> pages) {
+  ConfigurationSelectionPage(
+      List<controller.PageInfo> conversePages,
+      List<controller.PageInfo> configurePages,
+      List<controller.PageInfo> comprehendPages) {
     renderElement = new DivElement()..classes.add('configuration-view');
 
-    var title = new DivElement()
-      ..classes.add('configuration-view__title')
-      ..text = 'Available configurations:';
-    renderElement.append(title);
+    {
+      var title = new DivElement()
+        ..classes.add('configuration-view__title')
+        ..text = 'Converse';
+      renderElement.append(title);
 
 
-    DivElement pageContent = new DivElement()
-      ..classes.add('configuration-view__content')
-      ..classes.add('config-page-options');
-    renderElement.append(pageContent);
-    for (var page in pages) {
-      var button  = Button(ButtonType.contained, buttonText: page.goToButtonText, onClick: (_) {
-        controller.router.routeTo(page.urlPath);
-      });
-      button.renderElement.classes.add('config-page-option__action');
-      button.parent = pageContent;
+      DivElement pageContent = new DivElement()
+        ..classes.add('configuration-view__content')
+        ..classes.add('config-page-options');
+      renderElement.append(pageContent);
+      for (var page in conversePages) {
+        var button  = Button(ButtonType.contained, buttonText: page.goToButtonText, onClick: (_) {
+          controller.router.routeTo(page.urlPath);
+        });
+        button.renderElement.classes.add('config-page-option__action');
+        button.parent = pageContent;
 
-      var description = new SpanElement()
-        ..classes.add('config-page-option__description')
-        ..text = page.shortDescription;
-      pageContent..append(description);
+        var description = new SpanElement()
+          ..classes.add('config-page-option__description')
+          ..text = page.shortDescription;
+        pageContent..append(description);
+      }
+    }
+
+    {
+      var title = new DivElement()
+        ..classes.add('configuration-view__title')
+        ..text = 'Configure';
+      renderElement.append(title);
+
+
+      DivElement pageContent = new DivElement()
+        ..classes.add('configuration-view__content')
+        ..classes.add('config-page-options');
+      renderElement.append(pageContent);
+      for (var page in configurePages) {
+        var button  = Button(ButtonType.contained, buttonText: page.goToButtonText, onClick: (_) {
+          controller.router.routeTo(page.urlPath);
+        });
+        button.renderElement.classes.add('config-page-option__action');
+        button.parent = pageContent;
+
+        var description = new SpanElement()
+          ..classes.add('config-page-option__description')
+          ..text = page.shortDescription;
+        pageContent..append(description);
+      }
+    }
+
+    {
+      var title = new DivElement()
+        ..classes.add('configuration-view__title')
+        ..text = 'Comprehend';
+      renderElement.append(title);
+
+
+      DivElement pageContent = new DivElement()
+        ..classes.add('configuration-view__content')
+        ..classes.add('config-page-options');
+      renderElement.append(pageContent);
+      for (var page in comprehendPages) {
+        var button  = Button(ButtonType.contained, buttonText: page.goToButtonText, onClick: (_) {
+          controller.router.routeTo(page.urlPath);
+        });
+        button.renderElement
+          ..classes.add('config-page-option__action')
+          ..classes.add('config-page-option__action--disabled');
+        button.parent = pageContent;
+
+        var description = new SpanElement()
+          ..classes.add('config-page-option__description')
+          ..text = page.shortDescription;
+        pageContent..append(description);
+      }
     }
   }
 }
