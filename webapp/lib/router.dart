@@ -60,7 +60,12 @@ class Router {
         query: tuple[1]
       );
     }
-    var desiredRoute = _routes['#${pathUri.fragment}'];
+    var desiredRoute;
+    if (pathUri.fragment.isNotEmpty) {
+      desiredRoute = _routes['#${pathUri.fragment}'];
+    } else {
+      desiredRoute = _routes[pathUri.path];
+    }
     if (desiredRoute == null) {
       _setRouteAndHandle(_defaultRoute);
       return;
@@ -86,6 +91,13 @@ class Router {
   /// To be used for pages processing data, and so where loading the page multiple times can cause an issue.
   void _setRouteOrReload(Route route) {
     _currentRoute = route;
+    if (route.path.startsWith('/')) {
+      _locationChangeListener.cancel();
+      var baseWebsite = window.location.href.split('configure').first;
+      var newUrl = '$baseWebsite${route.path}';
+      window.location.replace(newUrl);
+      return;
+    }
     if (window.location.hash != _currentRoute.path) {
       var newFragment = _currentRoute.path.replaceAll('#', '');
       var newUrl = Uri.parse(window.location.href).replace(fragment: newFragment);

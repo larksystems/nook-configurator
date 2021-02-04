@@ -130,12 +130,15 @@ const SELECT_CONFIG_PAGE = 'configuration';
 const MESSAGES_CONFIG_PAGE = 'messages';
 const TAGS_CONFIG_PAGE = 'tags';
 const CONVERSATIONS_PAGE = 'nook';
+const EXPLORER_PAGE = 'explorer';
 
 Map<String, PageInfo> pages = {
   AUTH_PAGE: PageInfo('', '', '#/auth', loadAuthView),
   SELECT_CONFIG_PAGE: PageInfo('', '', '#/configure', loadConfigurationSelectionView),
   TAGS_CONFIG_PAGE: PageInfo('How do you want to label messages and conversations?', 'Configure tags', '#/tags', loadTagsConfigurationView),
   MESSAGES_CONFIG_PAGE: PageInfo('What standard messages do you want to send?', 'Configure messages', '#/messages', loadStandardMessagesConfigurationView),
+  CONVERSATIONS_PAGE: PageInfo('View conversations and send messages', 'Go to Nook', '/', loadConversationsView),
+  EXPLORER_PAGE: PageInfo('Explore trends and analyse themes', 'Explore', '/explorer', loadConversationsView),
 };
 
 String currentPage;
@@ -146,6 +149,8 @@ void setupPageRouter() {
     ..defaultPageHandler = new Route(pages[SELECT_CONFIG_PAGE].urlPath, pages[SELECT_CONFIG_PAGE].loadViewCallback)
     ..addOtherPageHandler(new Route(pages[TAGS_CONFIG_PAGE].urlPath, pages[TAGS_CONFIG_PAGE].loadViewCallback))
     ..addOtherPageHandler(new Route(pages[MESSAGES_CONFIG_PAGE].urlPath, pages[MESSAGES_CONFIG_PAGE].loadViewCallback))
+    ..addOtherPageHandler(new Route(pages[CONVERSATIONS_PAGE].urlPath, pages[CONVERSATIONS_PAGE].loadViewCallback))
+    ..addOtherPageHandler(new Route(pages[EXPLORER_PAGE].urlPath, pages[EXPLORER_PAGE].loadViewCallback))
     ..listen();
 }
 
@@ -335,9 +340,10 @@ void loadAuthView() {
 
 void loadConfigurationSelectionView() {
   currentPage = SELECT_CONFIG_PAGE;
-  var configSelectionPage = new view.ConfigurationSelectionPage([
-    pages[MESSAGES_CONFIG_PAGE], pages[TAGS_CONFIG_PAGE],
-  ]);
+  var configSelectionPage = new view.ConfigurationSelectionPage(
+    [pages[CONVERSATIONS_PAGE]],
+    [pages[MESSAGES_CONFIG_PAGE], pages[TAGS_CONFIG_PAGE]],
+    [pages[EXPLORER_PAGE]]);
   view.contentView.renderView(configSelectionPage);
 }
 
@@ -377,6 +383,11 @@ void loadTagsConfigurationView() {
     _removeTagsFromView(_groupTagsIntoCategories(removed));
   });
 }
+
+void loadConversationsView() {
+  // Nothing to do here, the page will be redirected anyway
+}
+
 
 // Save page helpers
 

@@ -43,3 +43,8 @@ main {
 .editable-widget .button:hover {
     opacity: 1;
 }
+
+.config-page-option__action.config-page-option__action--disabled {
+    background: #bbbbbb;
+    pointer-events: none;
+}
