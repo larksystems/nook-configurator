@@ -7,7 +7,6 @@
   background-color: #fff;
   border-radius: 2px;
   border: none;
-  margin: 2px;
   padding: 0;
   cursor: pointer;
   outline: none;
@@ -28,11 +27,46 @@
   padding: 3px;
 }
 
+
+.button--outline {
+  padding: 8px;
+  border: 1px solid #5c2196;
+  color: #5c2196;
+}
+
+.button--outline:hover {
+  border: 1px solid #5c2196;
+}
+
+.button--outline:active {
+  border: 1px solid #5c2196;
+}
+
+
+.button--contained {
+  padding: 8px;
+  background-color: #5c2196;
+  color: #ffffff;
+  font-weight: lighter;
+}
+
+.button--contained:hover {
+  background-color: #5c2196;
+  opacity: 0.8;
+}
+
+.button--contained:active {
+  background-color: #5c2196;
+  opacity: 0.6;
+}
+
+
 /* A simple x button to add a new tag */
 
 .button--remove {
   width: 16px;
   height: 16px;
+  margin: 2px;
 }
 
 .button--remove:before,
@@ -75,6 +109,7 @@
 .button--add {
   width: 16px;
   height: 16px;
+  margin: 2px;
 }
 
 .button--add:before,
@@ -116,6 +151,7 @@
 .button--confirm {
   width: 16px;
   height: 16px;
+  margin: 2px;
 }
 
 .button--confirm:before,
@@ -160,6 +196,7 @@
   width: 16px;
   height: 16px;
   opacity: 0.6;
+  margin: 2px;
 }
 
 .button--edit:before {

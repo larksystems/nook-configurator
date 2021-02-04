@@ -6,10 +6,34 @@
   width: 750px;
 }
 
+.configuration-view__back-link {
+  color: #999;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+.configuration-view__back-link:hover {
+  color: #777;
+}
+
+.configuration-view__back-link:hover {
+  color: #666;
+}
+
 .configuration-view__title {
   font-size: large;
   font-weight: bold;
-  padding: 30px 0;
+  padding: 30px 0 30px;
+}
+
+.config-page-options {display: grid;grid-template-columns: max-content auto;column-gap: 12px;row-gap: 12px;}
+
+.config-page-option {
+  padding: 8px;
+}
+
+.config-page-option__description {
+  padding: 8px;
 }
 
 .configuration-actions {

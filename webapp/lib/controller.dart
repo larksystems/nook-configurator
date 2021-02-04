@@ -117,6 +117,41 @@ class StandardMessagesCategoryData extends Data {
 
 // ====
 
+class PageInfo {
+  String shortDescription;
+  String goToButtonText;
+  String urlPath;
+  void Function() loadViewCallback;
+  PageInfo(this.shortDescription, this.goToButtonText, this.urlPath, this.loadViewCallback);
+}
+
+const AUTH_PAGE = 'auth';
+const SELECT_CONFIG_PAGE = 'configuration';
+const MESSAGES_CONFIG_PAGE = 'messages';
+const TAGS_CONFIG_PAGE = 'tags';
+const CONVERSATIONS_PAGE = 'nook';
+
+Map<String, PageInfo> pages = {
+  AUTH_PAGE: PageInfo('', '', '#/auth', loadAuthView),
+  SELECT_CONFIG_PAGE: PageInfo('', '', '#/configure', loadConfigurationSelectionView),
+  TAGS_CONFIG_PAGE: PageInfo('How do you want to label messages and conversations?', 'Configure tags', '#/tags', loadTagsConfigurationView),
+  MESSAGES_CONFIG_PAGE: PageInfo('What standard messages do you want to send?', 'Configure messages', '#/messages', loadStandardMessagesConfigurationView),
+};
+
+String currentPage;
+
+void setupPageRouter() {
+  router = new Router()
+    ..authPageHandler = new Route(pages[AUTH_PAGE].urlPath, pages[AUTH_PAGE].loadViewCallback)
+    ..defaultPageHandler = new Route(pages[SELECT_CONFIG_PAGE].urlPath, pages[SELECT_CONFIG_PAGE].loadViewCallback)
+    ..addOtherPageHandler(new Route(pages[TAGS_CONFIG_PAGE].urlPath, pages[TAGS_CONFIG_PAGE].loadViewCallback))
+    ..addOtherPageHandler(new Route(pages[MESSAGES_CONFIG_PAGE].urlPath, pages[MESSAGES_CONFIG_PAGE].loadViewCallback))
+    ..listen();
+}
+
+
+// ====
+
 StandardMessagesManager standardMessagesManager = new StandardMessagesManager();
 String selectedStandardMessagesCategory;
 Set<String> editedStandardMessageIds = {};
@@ -127,21 +162,10 @@ Set<String> editedTagIds = {};
 model.User signedInUser;
 
 void init() async {
-  setupRoutes();
+  setupPageRouter();
   view.init();
   await platform.init();
 }
-
-void setupRoutes() {
-  router = new Router()
-    ..addAuthHandler(new Route('#/auth', loadAuthView))
-    ..addDefaultHandler(new Route('#/configuration', loadConfigurationSelectionView))
-    ..addHandler(new Route('#/configuration/tags', loadTagsConfigurationView))
-    ..addHandler(new Route('#/configuration/messages', loadStandardMessagesConfigurationView))
-    ..listen();
-}
-
-var page;
 
 void command(UIAction action, [Data actionData]) {
   log.verbose('command => $action : $actionData');
@@ -158,7 +182,7 @@ void command(UIAction action, [Data actionData]) {
       signedInUser = null;
       view.navView.authHeaderViewPartial.signOut();
       view.navView.projectTitle = '';
-      router.routeTo('#/auth');
+      router.routeTo(pages[AUTH_PAGE].urlPath);
       break;
     case UIAction.signInButtonClicked:
       platform.signIn();
@@ -167,14 +191,7 @@ void command(UIAction action, [Data actionData]) {
       platform.signOut();
       break;
     case UIAction.saveConfiguration:
-      switch (page) {
-        case 'tags':
-          saveTagsConfiguration();
-          break;
-        case 'messages':
-          saveStandardMessagesConfiguration();
-          break;
-      }
+      saveConfiguration();
       break;
 
     case UIAction.addStandardMessage:
@@ -309,40 +326,23 @@ void command(UIAction action, [Data actionData]) {
   }
 }
 
-void saveStandardMessagesConfiguration() {
-  List<model.SuggestedReply> messagesToSave =
-      editedStandardMessageIds.map((standardMessageId) => standardMessagesManager.getStandardMessageById(standardMessageId)).toList();
-  (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
-  saveStandardMessages(messagesToSave).then((value) {
-    (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
-  }, onError: (error, stacktrace) {
-    (view.contentView.renderedPage as view.ConfigurationPage)
-        .showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
-  });
-}
-
-void saveTagsConfiguration() {
-  List<model.Tag> tagsToSave = editedTagIds.map((tagId) => tagManager.getTagById(tagId)).toList();
-  (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
-  saveTags(tagsToSave).then((value) {
-    (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
-  }, onError: (error, stacktrace) {
-    (view.contentView.renderedPage as view.ConfigurationPage)
-        .showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
-  });
-}
+// Load page helpers
 
 void loadAuthView() {
+  currentPage = AUTH_PAGE;
   view.contentView.renderView(new view.AuthPage());
 }
 
 void loadConfigurationSelectionView() {
-  var configSelectionPage = new view.ConfigurationSelectionPage();
+  currentPage = SELECT_CONFIG_PAGE;
+  var configSelectionPage = new view.ConfigurationSelectionPage([
+    pages[MESSAGES_CONFIG_PAGE], pages[TAGS_CONFIG_PAGE],
+  ]);
   view.contentView.renderView(configSelectionPage);
 }
 
 void loadStandardMessagesConfigurationView() {
-  page = 'messages';
+  currentPage = MESSAGES_CONFIG_PAGE;
   view.contentView.renderView(new view.StandardMessagesConfigurationPage());
 
   platform.listenForSuggestedReplies((added, modified, removed) {
@@ -364,7 +364,7 @@ void loadStandardMessagesConfigurationView() {
 }
 
 void loadTagsConfigurationView() {
-  page = 'tags';
+  currentPage = TAGS_CONFIG_PAGE;
   view.contentView.renderView(new view.TagsConfigurationPage());
 
   platform.listenForTags((added, modified, removed) {
@@ -375,6 +375,44 @@ void loadTagsConfigurationView() {
     _addTagsToView(_groupTagsIntoCategories(added));
     _modifyTagsInView(_groupTagsIntoCategories(modified));
     _removeTagsFromView(_groupTagsIntoCategories(removed));
+  });
+}
+
+// Save page helpers
+
+void saveConfiguration() {
+  switch (currentPage) {
+    case MESSAGES_CONFIG_PAGE:
+      saveStandardMessagesConfiguration();
+      break;
+    case TAGS_CONFIG_PAGE:
+      saveTagsConfiguration();
+      break;
+  }
+}
+
+void saveStandardMessagesConfiguration() {
+  List<model.SuggestedReply> messagesToSave =
+      editedStandardMessageIds.map((standardMessageId) => standardMessagesManager.getStandardMessageById(standardMessageId)).toList();
+  (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
+  saveStandardMessages(messagesToSave).then((value) {
+    (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
+    messagesToSave.clear();
+  }, onError: (error, stacktrace) {
+    (view.contentView.renderedPage as view.ConfigurationPage)
+        .showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
+  });
+}
+
+void saveTagsConfiguration() {
+  List<model.Tag> tagsToSave = editedTagIds.map((tagId) => tagManager.getTagById(tagId)).toList();
+  (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saving...');
+  saveTags(tagsToSave).then((value) {
+    (view.contentView.renderedPage as view.ConfigurationPage).showSaveStatus('Saved!');
+    tagsToSave.clear();
+  }, onError: (error, stacktrace) {
+    (view.contentView.renderedPage as view.ConfigurationPage)
+        .showSaveStatus('Unable to save. Please check your connection and try again. If the issue persists, please contact your project administrator');
   });
 }
 
