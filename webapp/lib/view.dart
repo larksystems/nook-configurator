@@ -44,7 +44,8 @@ class NavView {
     navViewElement = new DivElement()..classes.add('nav');
     _appLogos = new DivElement()
       ..classes.add('nav__app-logo')
-      ..append(new ImageElement(src: 'assets/katikati-logo.svg'));
+      ..append(new ImageElement(src: 'assets/logo-katikati.svg', height: 26))
+      ..append(new ImageElement(src: 'assets/logo-ifrc.svg', height: 26));
     _backBtn = new ButtonElement()
       ..classes.add('nav-links__back-btn')
       ..text = '< Back'
@@ -164,8 +165,10 @@ class AuthPage extends PageView {
     var logosContainer = new DivElement()..classes.add('auth-main__logos');
     authElement.append(logosContainer);
 
-    var avfLogo = new ImageElement(src: 'assets/katikati-logo.svg')..classes.add('auth-main__partner-logo');
-    logosContainer.append(avfLogo);
+    var katikatiLogo = new ImageElement(src: 'assets/logo-katikati.svg')..classes.add('auth-main__partner-logo');
+    logosContainer.append(katikatiLogo);
+    var ifrcLogo = new ImageElement(src: 'assets/logo-ifrc.svg')..classes.add('auth-main__partner-logo');
+    logosContainer.append(ifrcLogo);
 
     var shortDescription = new DivElement()
       ..classes.add('auth-main__project-description')
