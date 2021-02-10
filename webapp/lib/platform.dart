@@ -2,7 +2,7 @@ import 'package:firebase/firebase.dart' as firebase;
 import 'package:firebase/firestore.dart' as firestore;
 
 import 'controller.dart' as controller;
-import 'logger.dart';
+import 'package:katikati_ui_lib/components/logger.dart';
 import 'package:katikati_ui_lib/components/platform/platform.dart' as katikati_platform;
 export 'package:katikati_ui_lib/components/platform/platform.dart';
 import 'package:katikati_ui_lib/components/platform/platform_constants.dart' as platform_constants;
