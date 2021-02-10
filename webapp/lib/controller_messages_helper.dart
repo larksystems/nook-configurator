@@ -66,6 +66,10 @@ class StandardMessagesManager {
 
   void addStandardMessages(List<model.SuggestedReply> standardMessages) {
     for (var standardMessage in standardMessages) {
+      if (_standardMessages.where((element) => element.suggestedReplyId == standardMessage.suggestedReplyId).isNotEmpty) {
+        updateStandardMessage(standardMessage);
+        continue;
+      }
       _standardMessages.add(standardMessage);
       _standardMessagesByCategory.putIfAbsent(standardMessage.category, () => []);
       _standardMessagesByCategory[standardMessage.category].add(standardMessage);
