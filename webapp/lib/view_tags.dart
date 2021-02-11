@@ -147,6 +147,8 @@ class TagView {
   EditableText _editableTag;
   String tagId;
 
+  static bool dragInProgress = false;
+
   TagView(String text, String tagId, String groupId, TagStyle tagStyle) {
     this.tagId = tagId;
     tag = new DivElement()
@@ -169,6 +171,9 @@ class TagView {
       default:
     }
     var draggableTag = new dnd.Draggable(tag, avatarHandler: dnd.AvatarHandler.original(), draggingClass: 'tag__name');
+    draggableTag
+      ..onDragStart.listen((_) => dragInProgress = true)
+      ..onDragEnd.listen((_) => dragInProgress = false);
 
     _tagText = new SpanElement()
       ..classes.add('tag__name')
@@ -192,6 +197,7 @@ class TagView {
 
     var tooltip = new SampleMessagesTooltip('Sample messages for tag "$text"');
     _tagText.onMouseEnter.listen((event) {
+      if (dragInProgress) return;
       tooltip.parent = tag;
       getSampleMessages(platform.fireStoreInstance, this.tagId).then((value) => tooltip.displayMessages(value));
     });
