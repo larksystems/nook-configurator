@@ -1,12 +1,11 @@
 library controller;
 
 import 'dart:html';
-import 'dart:math';
 
 import 'package:uuid/uuid.dart' as uuid;
 import 'package:nook/model.dart' as model;
 
-import 'logger.dart';
+import 'package:katikati_ui_lib/components/logger.dart';
 import 'platform.dart' as platform;
 import 'view.dart' as view;
 import 'router.dart';

@@ -5,7 +5,7 @@ import 'dart:html';
 
 import 'package:dnd/dnd.dart' as dnd;
 
-import 'logger.dart';
+import 'package:katikati_ui_lib/components/logger.dart';
 import 'controller.dart' as controller;
 import 'platform.dart' as platform;
 
