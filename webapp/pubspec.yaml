@@ -13,7 +13,7 @@ dependencies:
     git:
       url: https://github.com/larksystems/nook.git
       path: webapp
-      ref: 067646e0dc7f4ca4b5e4e3959d2e5bda2a500a69
+      ref: 1a0267b42cc1f0fce4ca13374fcf54fad41978f6
   katikati_ui_lib:
     git:
       url: https://github.com/larksystems/katikati_ui_lib.dart.git
