@@ -1,24 +1,3 @@
-.auth-header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    float: right;
-    margin: 0 6px;
-}
-
-.auth-header__user-pic {
-    width: 30px;
-    height: 30px;
-    border-radius: 2px;
-    background-size: contain;
-    margin: 6px;
-}
-
-.auth-header__user-name {
-    margin: 6px;
-    white-space: nowrap;
-}
-
 .auth-main {
     display: flex;
     flex-direction: column;

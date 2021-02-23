@@ -179,12 +179,12 @@ void command(UIAction action, [Data actionData]) {
       signedInUser = new model.User()
         ..userName = userData.displayName
         ..userEmail = userData.email;
-      view.navView.authHeaderViewPartial.signIn(userData.displayName, userData.photoUrl);
+      view.navView.authHeaderView.signIn(userData.displayName, userData.photoUrl);
       router.routeTo(window.location.hash);
       break;
     case UIAction.userSignedOut:
       signedInUser = null;
-      view.navView.authHeaderViewPartial.signOut();
+      view.navView.authHeaderView.signOut();
       view.navView.projectTitle = '';
       router.routeTo(pages[AUTH_PAGE].urlPath);
       break;

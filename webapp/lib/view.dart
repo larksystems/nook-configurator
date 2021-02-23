@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:dnd/dnd.dart' as dnd;
-
+import 'package:katikati_ui_lib/components/auth/auth_header.dart';
 import 'package:katikati_ui_lib/components/logger.dart';
 import 'controller.dart' as controller;
 import 'platform.dart' as platform;
@@ -36,7 +36,7 @@ class NavView {
   DivElement _navLinks;
   DivElement _projectTitle;
   DivElement _projectOrganizations;
-  AuthHeaderViewPartial authHeaderViewPartial;
+  AuthHeaderView authHeaderView;
   ButtonElement _backBtn;
   AnchorElement _allProjectsLink;
 
@@ -63,12 +63,16 @@ class NavView {
       ..classes.add('nav-project-details')
       ..append(_projectTitle)
       ..append(_projectOrganizations);
-    authHeaderViewPartial = new AuthHeaderViewPartial();
+    authHeaderView = new AuthHeaderView((){
+      controller.command(controller.UIAction.signInButtonClicked, null);
+    }, (){
+      controller.command(controller.UIAction.signOutButtonClicked, null);
+    });
 
     navViewElement.append(_appLogos);
     navViewElement.append(_navLinks);
     navViewElement.append(projectDetails);
-    navViewElement.append(authHeaderViewPartial.authElement);
+    navViewElement.append(authHeaderView.authElement);
   }
 
   Element get backBtn => _backBtn;
@@ -78,58 +82,6 @@ class NavView {
   void set projectTitle(String projectName) => _projectTitle.text = projectName;
 
   void set projectOrganizations(List<String> organizations) => _projectOrganizations.text = organizations?.first;
-}
-
-class AuthHeaderViewPartial {
-  DivElement authElement;
-  DivElement _userPic;
-  DivElement _userName;
-  ButtonElement _signOutButton;
-  ButtonElement _signInButton;
-
-  AuthHeaderViewPartial() {
-    authElement = new DivElement()..classes.add('auth-header');
-
-    _userPic = new DivElement()..classes.add('auth-header__user-pic');
-    authElement.append(_userPic);
-
-    _userName = new DivElement()..classes.add('auth-header__user-name');
-    authElement.append(_userName);
-
-    _signOutButton = new ButtonElement()
-      ..text = 'Sign out'
-      ..onClick.listen((_) => controller.command(controller.UIAction.signOutButtonClicked, null));
-    authElement.append(_signOutButton);
-
-    _signInButton = new ButtonElement()
-      ..text = 'Sign in'
-      ..onClick.listen((_) => controller.command(controller.UIAction.signInButtonClicked, null));
-    authElement.append(_signInButton);
-  }
-
-  void signIn(String userName, userPicUrl) {
-    // Set the user's profile pic and name
-    _userPic.style.backgroundImage = 'url($userPicUrl)';
-    _userName.text = userName;
-
-    // Show user's profile pic, name and sign-out button.
-    _userName.attributes.remove('hidden');
-    _userPic.attributes.remove('hidden');
-    _signOutButton.attributes.remove('hidden');
-
-    // Hide sign-in button.
-    _signInButton.setAttribute('hidden', 'true');
-  }
-
-  void signOut() {
-    // Hide user's profile pic, name and sign-out button.
-    _userName.attributes['hidden'] = 'true';
-    _userPic.attributes['hidden'] = 'true';
-    _signOutButton.attributes['hidden'] = 'true';
-
-    // Show sign-in button.
-    _signInButton.attributes.remove('hidden');
-  }
 }
 
 class PageRenderer {
